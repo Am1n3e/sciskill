@@ -1,0 +1,35 @@
+---
+import '../styles/global.css';
+interface Props { title?: string; description?: string; }
+const { title = 'Science Skills — Agent tools and skills for scientists', description = 'Practical tools and agent skills for scientist-led work. Audit references, organize reviewer concerns, and keep the evidence in view.' } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#ffffff" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg?v=2`} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <header class="site-header wrap">
+      <a class="brand" href={base} aria-label="Science Skills home"><span>Science<span class="brand-light">Skills</span></span></a>
+      <nav aria-label="Main navigation">
+        <a href={base}>Home</a>
+        <a href={`${base}#skills`}>Skills</a>
+        <a class="nav-cta" href="https://github.com/Am1n3e">GitHub <span aria-hidden="true">↗</span></a>
+      </nav>
+    </header>
+    <main id="main"><slot /></main>
+    <footer class="site-footer wrap">
+      <a href="https://github.com/Am1n3e">About the author <span aria-hidden="true">↗</span></a>
+    </footer>
+  </body>
+</html>
