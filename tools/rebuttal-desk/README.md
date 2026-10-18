@@ -108,9 +108,9 @@ Rendering currently uses sanitized Markdown/HTML; OpenReview-style layout does *
 
 Reviews optionally include `comments`: a list of `{ "id": "comment-1", "label": "Author clarification", "document": "comments/clarification.md" }`. Comments use the same file containment and rendering rules as reviews. Editor/save support and agent skills remain later work.
 
-## Annotation visual example
+## Annotations
 
-Open `examples/annotation-preview.html` in a browser to inspect the reviewed highlight/link and expandable pane layout using synthetic content. It is a standalone visual example. The viewer now supports the agreed annotation rendering; the reusable skill remains to be written after workflow approval.
+Annotation rendering is part of the packaged viewer. Use `rebuttal-desk init` to create a runnable synthetic workspace; review the analysis skill under `skills/sciskill` in the collection repository for the annotation workflow.
 
 Annotations use `<science-skills-annotation id="..." type="clarification|change_request">...</science-skills-annotation>` within `annotated_content`. They may include an optional nonempty `subtype` attribute for a finer work category; supported values are `manuscript_change` and `additional_experiments`.
 

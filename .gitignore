@@ -7,7 +7,15 @@ dist/
 !.env.example
 
 # Local design review screenshots
-preview-*.png
+/preview-*.png
+/*.png
+/screenshots/
 
 # Private local research workspaces
 .local/
+
+# Local Python test and lint artifacts
+__pycache__/
+*.py[cod]
+.ruff_cache/
+.pytest_cache/

@@ -104,7 +104,7 @@ Use the project-specific `<science-skills-annotation>` wrapper inside `annotated
 
 ## Saved visual example
 
-The reviewed link/pane interaction is retained in `tools/rebuttal-desk/examples/annotation-preview.html`, using a minimal synthetic passage and the package stylesheet. It includes the agreed highlight, link-controlled expansion, Response/Analysis tabs, slightly pink background, counts at the top right, and Hide drafts behavior. It is a standalone visual example, not the production annotation renderer or the completed agent skill. Captured review content remains in ignored local files.
+A standalone synthetic mockup was used to review the link/pane interaction before the production renderer was implemented. That obsolete mockup was archived outside the checkout during repository cleanup. The packaged viewer and its tests now define the current behavior. Captured review content remains in ignored local files.
 
 ### Step 11 — Annotate the selected review completely
 

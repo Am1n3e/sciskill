@@ -40,3 +40,7 @@ Public name: Science Skills. Source repository target and package: `science-skil
 ## Delegation scope rule
 
 Every task handoff must explicitly state: implement only what the user has discussed and approved. No optional features, speculative extensibility, extra modes, or additional functionality. If a material scope decision is missing, bring it back for discussion rather than inventing a feature. OpenReview is the only current viewer style; additional styles require an explicit future request.
+
+## Repository hygiene
+
+Save screenshots, temporary mockups, and design exports outside the repository, in the OS temporary directory or Codex artifact storage. Keep working plans in this planning directory; do not create duplicate plan files at the repository root. Keep only currently used product images under `public/images/`. Local research workspaces remain under ignored `.local/`.
