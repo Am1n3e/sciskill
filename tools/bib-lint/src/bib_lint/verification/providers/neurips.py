@@ -19,9 +19,9 @@ class NeuripsProvider(ArchiveProvider):
     descriptor = ProviderDescriptor(
         "neurips",
         "NeurIPS",
-        "1",
+        "2",
         "publication_archive",
-        ("proceedings.neurips.cc", "papers.nips.cc"),
+        ("proceedings.neurips.cc", "papers.nips.cc", "datasets-benchmarks-proceedings.neurips.cc"),
     )
 
     def direct_url(self, query):

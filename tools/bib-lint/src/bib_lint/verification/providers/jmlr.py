@@ -18,7 +18,7 @@ ROOT = "https://jmlr.org/papers/"
 
 class JmlrProvider(ArchiveProvider):
     descriptor = ProviderDescriptor(
-        "jmlr", "JMLR", "1", "publication_archive", ("jmlr.org", "www.jmlr.org")
+        "jmlr", "JMLR", "2", "publication_archive", ("jmlr.org", "www.jmlr.org")
     )
 
     def direct_url(self, query):

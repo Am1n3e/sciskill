@@ -697,3 +697,23 @@ def test_openreview_title_search_uses_phrase_not_any_word(tmp_path):
     result = assert_contract(provider, query("openreview", direct=False), context)
     assert result.complete and result.candidates and len(calls) == 1
     client.close()
+
+
+def test_neurips_official_datasets_catalog_host(tmp_path):
+    provider = METHODS["neurips"]
+    host = "datasets-benchmarks-proceedings.neurips.cc"
+
+    def respond(request):
+        if request.url.host == "proceedings.neurips.cc":
+            body = f'<a href="https://{host}/paper/2025">Datasets and Benchmarks 2025</a>'
+        elif request.url.path == "/paper/2025":
+            body = '<a href="/paper/2025/hash/abc-Abstract.html">An Example Paper</a>'
+        else:
+            body = payload("neurips")
+        return httpx.Response(200, text=body)
+
+    client, context, calls = client_for(tmp_path, provider, respond)
+    result = assert_contract(provider, query("neurips", direct=False), context)
+    assert result.complete and result.candidates
+    assert calls[-1].url.host == host
+    client.close()
