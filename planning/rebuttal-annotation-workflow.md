@@ -22,7 +22,7 @@ Use the fresh local OpenReview workspace (`.local/workspaces/openreview-fresh`),
 
 ## Agreed annotation format
 
-Use the project-specific `<science-skills-annotation>` wrapper inside `annotated_content`, with `id` and `type` attributes. Each annotation has one type: `response` or `change_request`. Start with these minimal attributes; do not add more fields without discussion.
+Use the project-specific `<science-skills-annotation>` wrapper inside `annotated_content`, with `id` and `type` attributes, plus an optional `subtype`. Each annotation has one type: `response` or `change_request`. Start with these minimal attributes; do not add more fields without discussion.
 
 ```html
 <science-skills-annotation id="GruC-C1" type="change_request">Exact original passage.</science-skills-annotation>
@@ -155,3 +155,46 @@ For every visual change, open the latest version in the user's browser, verify t
 - User requested a visible response text box even when a draft is empty.
 - Response tabs now display the Markdown source in a text box with a minimum visible height; blank drafts show a blank box.
 - The tool remains read-only at this stage; saving/editor controls are not introduced by this display change.
+
+### Step 18 — Optional subtype on the annotation tag
+
+- User chose to keep change-request subcategory information in the same HTML-style annotation tag, using an optional `subtype` attribute.
+- Added parser support for a nonempty subtype when supplied, without changing the two main types.
+- Subcategory vocabulary and assignments remain under discussion. No existing annotation has been assigned a subtype.
+
+### Step 19 — Keep change-request subcategories minimal
+
+- User narrowed the vocabulary to two work categories:
+  - **Manuscript change:** add details, clarify text, revise claims, discuss limitations, or otherwise update the manuscript.
+  - **Additional experiments:** run an additional experiment or set of experiments.
+- Purpose: communicate the scale/type of work, particularly distinguishing new experimental work from manuscript revisions.
+- Do not introduce analysis, artifacts, related work, or method as separate subcategories at this stage.
+- Existing annotations have not yet been assigned these subtypes. Exact serialized values and how to handle mixed requests can be settled on the example.
+
+### Step 20 — One combined label inside the expanded pane
+
+- User requested the main type and subtype as one label in the expanded pane near its reviewer/concern heading.
+- Display format: `Change request: Manuscript change` or `Change request: Additional experiments`; without an assigned subtype, show `Change request`. Response passages show `Response`.
+- Chose serialized values `manuscript_change` and `additional_experiments` for the two agreed subcategories.
+- The passage itself retains only the bracket markers and colored underline. Existing annotations remain without subtypes until the assignments are discussed.
+
+### Step 21 — Rename Response and use one classification chip
+
+- User found the main type “Response” ambiguous because all items eventually receive a response. Renamed it `clarification` (UI: Clarification); `change_request` remains the other main type. Response drafts/tabs and author responses retain their existing names.
+- One chip appears below the reviewer/concern heading inside the expanded pane. Clarification is blue; change request is purple.
+- Combined subtype wording uses a slash: `Change request / Manuscript change` or `Change request / Additional experiments`. Without a subtype, the single chip says `Change request`.
+- Matched change-request underlines and boundaries to purple as well, removing gold from the current annotation presentation.
+- Migrated the four clarification annotations in the local selected review; no original content or checksum changed. Subtype assignments are still pending.
+
+### Step 22 — Apply subtypes to the selected example
+
+- User requested applying the labels/subtypes and showing the annotated example in the browser.
+- Assigned `additional_experiments` to alternative pruning criteria (`C5`), extending to attention blocks (`C6`), and demonstrating hardware-usable sparsity (`C9`). These imply developing/testing additional experimental variants.
+- Assigned `manuscript_change` to reconciling reported numbers or explaining differences (`C8`); this marks the requested paper correction/clarification, without claiming experiments can never be necessary.
+- Left code availability (`C1`) without a subtype: publishing code is not accurately represented by either of the two agreed work categories.
+- The four clarification passages remain `clarification`. All original content and checksums still validate.
+
+### Step 23 — Close control inside the pane
+
+- Added an icon-only close button at the expanded pane's top right, as requested.
+- Closing hides the pane, synchronizes the passage's expanded state, and returns keyboard focus to that passage. Clicking the passage still toggles it.

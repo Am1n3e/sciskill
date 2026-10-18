@@ -135,7 +135,12 @@ def rendered(source, filename, annotated=False):
         tags=tags,
         attributes={
             "a": ["href", "title"],
-            "mark": ["class", "data-annotation-id", "data-annotation-type"],
+            "mark": [
+                "class",
+                "data-annotation-id",
+                "data-annotation-type",
+                "data-annotation-subtype",
+            ],
             "div": ["class"],
             "span": ["class"],
             "strong": ["class"],

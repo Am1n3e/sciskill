@@ -17,12 +17,23 @@ def annotation_attributes(tag):
     parser.feed(tag)
     pairs = getattr(parser, "attributes", [])
     attrs = dict(pairs)
-    if len(pairs) != 2 or set(attrs) != {"id", "type"}:
-        raise ValueError("Annotations require only id and type")
+    if (
+        len(pairs) != len(attrs)
+        or not {"id", "type"} <= set(attrs)
+        or set(attrs) - {"id", "type", "subtype"}
+    ):
+        raise ValueError("Annotations require id and type, with optional subtype")
     if not re.fullmatch(r"[A-Za-z0-9_-]+", attrs["id"] or ""):
         raise ValueError("Invalid annotation ID")
-    if attrs["type"] not in {"response", "change_request"}:
-        raise ValueError("Annotation type must be response or change_request")
+    if attrs["type"] not in {"clarification", "change_request"}:
+        raise ValueError("Annotation type must be clarification or change_request")
+    if "subtype" in attrs and attrs["subtype"] not in {
+        "manuscript_change",
+        "additional_experiments",
+    }:
+        raise ValueError(
+            "Annotation subtype must be manuscript_change or additional_experiments"
+        )
     return attrs
 
 
@@ -49,6 +60,12 @@ def annotation_markup(original, annotated):
                 + escape(opened["id"], quote=True)
                 + '" data-annotation-type="'
                 + opened["type"]
+                + (
+                    '" data-annotation-subtype="'
+                    + escape(opened["subtype"], quote=True)
+                    if "subtype" in opened
+                    else ""
+                )
                 + '">'
             )
         position = match.end()

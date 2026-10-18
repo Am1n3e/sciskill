@@ -140,7 +140,7 @@ class OpenReviewImportTests(unittest.TestCase):
         section = raw["sections"][0]
         self.assertEqual(section["annotated_content"], section["content"])
         section["annotated_content"] = (
-            '<science-skills-annotation id="C1" type="response">Original wording</science-skills-annotation>'
+            '<science-skills-annotation id="C1" type="clarification">Original wording</science-skills-annotation>'
         )
         path.write_text(yaml.safe_dump(raw))
         load_workspace(self.output)

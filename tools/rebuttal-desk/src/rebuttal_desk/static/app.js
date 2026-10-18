@@ -125,7 +125,14 @@ function attachAnnotations(reviewText,review,selected){
     const drawer=concernDrawer(concern,review,selected);
     const pane=node('div',undefined,'annotation-pane workbench-drawer');pane.id=identity;pane.dataset.open=String(selected===identity);pane.hidden=selected!==identity;
     const header=node('div',undefined,'annotation-pane-header');
-    header.append(drawer.querySelector('.drawer-heading'),drawer.querySelector('.response-metrics'));
+    const headingBlock=node('div',undefined,'annotation-heading-block');
+    const type=mark.dataset.annotationType==='change_request'?'Change request':'Clarification';
+    const subtype={manuscript_change:'Manuscript change',additional_experiments:'Additional experiments'}[mark.dataset.annotationSubtype];
+    headingBlock.append(drawer.querySelector('.drawer-heading'),node('span',subtype?`${type} / ${subtype}`:type,`annotation-kind-label kind-${mark.dataset.annotationType}`));
+    const close=node('button',undefined,'annotation-close');close.type='button';close.setAttribute('aria-label',`Close ${identity} pane`);close.title='Close';
+    close.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>';
+    close.addEventListener('click',()=>{pane.dataset.open='false';pane.hidden=true;mark.setAttribute('aria-expanded','false');mark.focus();});
+    header.append(headingBlock,drawer.querySelector('.response-metrics'),close);
     pane.append(header,drawer.querySelector('.workbench-body'));
     const anchor=mark.closest('p,li')||mark;anchor.after(pane);
     mark.dataset.annotationLabel=identity.includes('-C')?'C'+identity.split('-C').pop():identity;
