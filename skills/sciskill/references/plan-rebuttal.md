@@ -52,7 +52,7 @@ For an existing answer, explain it and cite its location rather than merely poin
 
 Group concerns by the underlying issue or evidence needed to resolve them. Retain material issues raised by a single reviewer. Explain each reviewer's request within the shared analysis, including differences or conflicting expectations.
 
-Give each theme a stable ID and number, title, Markdown content file, explicit reviewer IDs, and linked concern IDs. Keep the detailed assessments in concern files; the theme content should make the shared findings and reviewer-specific needs accessible in the viewer.
+Give each theme a stable ID and number, title, Markdown content file, explicit reviewer IDs, and linked concern IDs. The viewer displays theme content; concern assessment files are working records, not separate viewer panels. Include each linked concern’s request, underlying issue, resolution criterion, paper evidence, coverage, and remaining work in its theme content, with links to the concern. Consolidate shared evidence while retaining reviewer-specific qualifications so the author can assess every finding in the Analysis tab.
 
 **Output:** linked themes covering the assessed concerns. A theme's reviewer list contains exactly the distinct owners of its linked concerns; shared membership does not imply agreement on every point.
 
@@ -88,7 +88,7 @@ Run:
 uvx sciskill rebuttal validate my-rebuttal
 ```
 
-Check complete review coverage, original checksums and exact text preservation, matching annotation/concern IDs, unique task/theme numbers, existing linked files, and empty response drafts. Use the tool's checksum verification; source changes are errors, not a reason to replace the checksum. Theme numbers and task IDs in the populated template must be YAML integers.
+The command checks structure, files, and links; an imported review with no concerns can pass. Separately check complete review coverage, original checksums and exact text preservation, matching annotation/concern IDs, unique task/theme numbers, existing linked files, and empty response drafts. Use the tool's checksum verification; source changes are errors, not a reason to replace the checksum. Theme numbers and task IDs in the populated template must be YAML integers.
 
 Use these viewer links with persisted IDs: `#REVIEWER/CONCERN-ID`, `#theme-THEME-ID`, and `#task-NUMBER`. A reviewer-only link opens the full review.
 

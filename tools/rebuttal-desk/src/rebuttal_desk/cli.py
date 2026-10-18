@@ -16,7 +16,8 @@ def main(argv=None, *, prog="rebuttal-desk"):
         "init", help="Create a synthetic template in a new directory"
     ).add_argument("workspace")
     commands.add_parser(
-        "validate", help="Validate manifest, documents and links"
+        "validate",
+        help="Validate structure, documents and links (not analysis coverage)",
     ).add_argument("workspace")
     view = commands.add_parser("view", help="Open a read-only local review viewer")
     view.add_argument("workspace")
@@ -43,7 +44,9 @@ def run(args):
         print("Created synthetic workspace template.")
     elif args.command == "validate":
         workspace = load_workspace(args.workspace)
-        print(f"Valid: {len(workspace['reviews'])} reviews.")
+        print(
+            f"Valid structure: {len(workspace['reviews'])} reviews. Analysis coverage is not checked."
+        )
     else:
         with make_server(args.workspace, args.port) as server:
             url = f"http://127.0.0.1:{server.server_port}/"

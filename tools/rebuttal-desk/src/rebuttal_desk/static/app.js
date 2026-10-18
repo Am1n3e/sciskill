@@ -33,34 +33,21 @@ function prose(html, className = 'markdown-rendered') {
   });
   return item;
 }
-function followWorkspaceLink(href) {
-  if (!href?.startsWith('#')) return false;
-  const target = href.slice(1);
-  const theme = workspace.analysis.themes.find(item => target === `theme-${item.id}`);
-  if (theme) {
-    setView('analysis');
-    const section = document.getElementById(target);
-    section.open = true;
-    section.scrollIntoView({block:'start'});
-    return true;
-  }
-  if (workspace.tasks.some(item => target === `task-${item.id}`)) {
-    taskReviewer = 'all';
-    renderTasks();
-    setView('tasks');
-    document.getElementById(target).scrollIntoView({block:'center'});
-    return true;
-  }
+function workspaceRoute(href) {
+  if (!href?.startsWith('#')) return null;
+  let target;
+  try { target = decodeURIComponent(href.slice(1)); } catch { return null; }
+  if (workspace.analysis.themes.some(item => target === `theme-${item.id}`)) return {view:'analysis', target};
+  if (workspace.tasks.some(item => target === `task-${item.id}`)) return {view:'tasks', target};
   const [reviewId, concernId, extra] = target.split('/');
   const review = workspace.reviews.find(item => item.id === reviewId);
-  if (!review || extra !== undefined || (concernId && !review.concerns.some(item => item.id === concernId))) return false;
-  showOriginal = false;
-  originalToggle.setAttribute('aria-checked', 'true');
-  setView('reviews');
-  // Re-render even when revisiting the currently selected concern from another tab.
-  history.pushState(null, '', href);
+  if (!review || extra !== undefined || (concernId && !review.concerns.some(item => item.id === concernId))) return null;
+  return {view:'reviews', reviewId, concernId, target:concernId || 'reviews-panel'};
+}
+function followWorkspaceLink(href) {
+  if (!workspaceRoute(href)) return false;
+  if (location.hash !== href) history.pushState(null, '', href);
   render();
-  if (!concernId) document.getElementById('reviews-panel').scrollIntoView({block:'start'});
   return true;
 }
 function drafted(source) { return Boolean(source.trim()) && !/^\[?\s*tbd\s*\]?$/i.test(source.trim()); }
@@ -121,7 +108,7 @@ function concernDrawer(concern, review, selected) {
     } else panel.append(prose(concern.analysis.html,'external-markdown analysis-markdown markdown-rendered'));
     panels.append(panel);
   }
-  for(const theme of workspace.analysis.themes.filter(item=>item.annotations.includes(concern.id))){const link=node('a',`Theme ${theme.number}: ${theme.title}`,'concern-theme-link');link.href=`#theme-${theme.id}`;link.addEventListener('click',event=>{event.preventDefault();setView('analysis');document.getElementById(`theme-${theme.id}`).scrollIntoView({block:'start'});});tabs.append(link);}
+  for(const theme of workspace.analysis.themes.filter(item=>item.annotations.includes(concern.id))){const link=node('a',`Theme ${theme.number}: ${theme.title}`,'concern-theme-link');link.href=`#theme-${theme.id}`;link.addEventListener('click',event=>{event.preventDefault();followWorkspaceLink(link.getAttribute('href'));});tabs.append(link);}
   body.append(tabs,panels);drawer.append(body);show('response');
   drawer.addEventListener('toggle',()=>{if(drawer.open) history.replaceState(null,'',`#${review.id}/${concern.id}`);});
   return drawer;
@@ -262,13 +249,19 @@ function renderAnalysis(){
     const annotations=node('div',undefined,'theme-links');annotations.append(node('strong','Related reviews'));
     for(const id of theme.annotations){const link=relatedLink(id);link.addEventListener('click',()=>{showOriginal=false;originalToggle.setAttribute('aria-checked','true');setView('reviews');});annotations.append(link);}
     const tasks=node('div',undefined,'theme-links');tasks.append(node('strong','Related tasks'));
-    for(const id of theme.tasks){const task=workspace.tasks.find(item=>item.id===id);const link=node('a',`Task ${task.id}: ${task.title}`);link.href=`#task-${id}`;link.addEventListener('click',event=>{event.preventDefault();taskReviewer='all';renderTasks();setView('tasks');document.getElementById(`task-${id}`).scrollIntoView({block:'center'});});tasks.append(link);}
+    for(const id of theme.tasks){const task=workspace.tasks.find(item=>item.id===id);const link=node('a',`Task ${task.id}: ${task.title}`);link.href=`#task-${id}`;link.addEventListener('click',event=>{event.preventDefault();followWorkspaceLink(link.getAttribute('href'));});tasks.append(link);}
     header.append(identity,annotations,tasks);section.append(header,prose(theme.content.html,'markdown-rendered theme-body'));panel.append(section);
   }
   if(!workspace.analysis.themes.length)panel.append(node('p','No analysis yet.'));
 }
 function render() {
-  const [reviewId,concernId]=location.hash.slice(1).split('/');
+  const route = workspaceRoute(location.hash);
+  const {reviewId, concernId} = route || {};
+  if (route) {
+    activeView = route.view;
+    if (route.view === 'tasks') taskReviewer = 'all';
+    if (concernId) { showOriginal = false; originalToggle.setAttribute('aria-checked','true'); }
+  }
   const review=workspace.reviews.find(r=>r.id===reviewId)||workspace.reviews[0];nav.replaceChildren();
   for(const candidate of workspace.reviews){
     const button=node('button',undefined,'reviewer-button');button.type='button';button.classList.toggle('active',candidate===review);
@@ -299,7 +292,11 @@ function render() {
   renderConversation(review,article,note);
   content.replaceChildren(article,aggregate(review));
   applyOriginalView();renderTasks();renderAnalysis();setView(activeView);
-  if(concernId && !showOriginal)document.getElementById(concernId)?.scrollIntoView({block:'center'});
+  if (route) {
+    const target = document.getElementById(route.target);
+    if (route.view === 'analysis' && target) target.open = true;
+    target?.scrollIntoView({block:'center'});
+  }
 }
 async function load(){try{const response=await fetch('/workspace.json');if(!response.ok)throw new Error('Workspace could not be loaded.');workspace=await response.json();document.querySelector('#workspace-title').textContent=workspace.title;render();}catch(error){content.replaceChildren(node('p',error.message));}}
 for(const [index,name] of ['analysis','reviews','tasks'].entries()){

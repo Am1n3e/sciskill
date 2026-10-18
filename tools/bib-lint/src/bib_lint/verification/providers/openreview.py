@@ -32,7 +32,7 @@ class OpenReviewProvider:
     descriptor = ProviderDescriptor(
         "openreview",
         "OpenReview",
-        "1",
+        "2",
         "review_platform",
         ("openreview.net", "api2.openreview.net", "api.openreview.net"),
         discovery_config=(("venues", "ICLR.cc,ICML.cc,NeurIPS.cc,TMLR"),),
@@ -72,8 +72,8 @@ class OpenReviewProvider:
                     V2,
                     "/notes/search",
                     {
-                        "term": query.title,
-                        "type": "terms",
+                        "term": normalize(query.title),
+                        "type": "exact",
                         "content": "title",
                         "limit": 20,
                         "offset": offset,
@@ -108,6 +108,8 @@ class OpenReviewProvider:
             raise LookupFailure("invalid_response", "OpenReview paper needs note ID and title")
         status, venue, year, proof = self._qualification(note, values)
         authors = values.get("authors") or []
+        if isinstance(authors, list):
+            authors = [a.get("fullname") if isinstance(a, dict) else a for a in authors]
         if not isinstance(authors, list) or any(not isinstance(a, str) for a in authors):
             raise LookupFailure("invalid_response", "OpenReview authors must be a public list")
         authors = [a for a in authors if a.casefold() not in {"anonymous", "anonymous authors"}]

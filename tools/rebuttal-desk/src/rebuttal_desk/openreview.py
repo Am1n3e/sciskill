@@ -201,7 +201,7 @@ def import_openreview(html_file, directory):
         "version": 1,
         "source": "openreview",
         "title": title.get_text(" ", strip=True),
-        "presentation": {"character_limit": 10000},
+        "presentation": {"character_limit": None},
         "reviews": [
             {
                 "id": r["reviewer_id"],

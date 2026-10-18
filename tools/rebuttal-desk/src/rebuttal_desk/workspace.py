@@ -191,7 +191,7 @@ def presentation(raw):
         not set(raw) - {"character_limit"},
         "Only character_limit is configurable in presentation",
     )
-    limit = raw.get("character_limit", 10000)
+    limit = raw.get("character_limit")
     require(
         limit is None or (type(limit) is int and limit > 0),
         "character_limit must be positive or null",
@@ -456,7 +456,7 @@ def init_workspace(directory):
     manifest = {
         "version": 1,
         "title": "Example review workspace",
-        "presentation": {"character_limit": 10000},
+        "presentation": {"character_limit": None},
         "reviews": [
             {
                 "id": "reviewer-1",

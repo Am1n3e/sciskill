@@ -128,7 +128,7 @@ def test_changed_source_rejects_stale_checkpoint(tmp_path):
         verify_file(other, output=tmp_path / "references.json", client=FakeClient())
 
 
-def test_errors_retry_on_resume_but_completed_methods_skip(tmp_path):
+def test_errors_preserved_on_resume_and_retried_on_refresh(tmp_path):
     source = report_file(tmp_path)
 
     def failure(r, c):
@@ -147,7 +147,16 @@ def test_errors_retry_on_resume_but_completed_methods_skip(tmp_path):
     _, summary = verify_file(
         source,
         client=FakeClient(),
-        methods=fixture_registry({"first": forbidden, "second": lambda r, c: result("second")}),
+        methods=fixture_registry({"first": forbidden, "second": forbidden}),
+    )
+    assert summary["method_errors"] == 1
+    _, summary = verify_file(
+        source,
+        refresh=True,
+        client=FakeClient(),
+        methods=fixture_registry(
+            {"first": lambda r, c: result("first"), "second": lambda r, c: result("second")}
+        ),
     )
     assert summary["method_errors"] == 0
 

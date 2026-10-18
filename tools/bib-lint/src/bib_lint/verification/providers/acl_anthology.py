@@ -31,7 +31,7 @@ VENUES = {
 
 class AclAnthologyProvider(ArchiveProvider):
     descriptor = ProviderDescriptor(
-        "acl_anthology", "ACL Anthology", "1", "publication_archive", ("aclanthology.org",)
+        "acl_anthology", "ACL Anthology", "2", "publication_archive", ("aclanthology.org",)
     )
 
     def direct_url(self, query):
@@ -91,6 +91,12 @@ class AclAnthologyProvider(ArchiveProvider):
                 for target, _, _ in links
                 if urlsplit(target).path.rstrip("/").endswith("-" + str(year))
             ]
+        events = list(dict.fromkeys(events))
+        if not series and len(events) > context.policy.max_pages - context.pages:
+            raise LookupFailure(
+                "incomplete_search",
+                "ACL discovery spans too many events; provide a venue, volume, or direct paper URL",
+            )
         for event in events:
             try:
                 text = context.get(event, page=True)
