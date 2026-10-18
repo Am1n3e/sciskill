@@ -8,6 +8,7 @@ import yaml
 from bs4 import BeautifulSoup
 from markdownify import markdownify
 
+from .integrity import content_checksum
 from .workspace import identifier, require
 
 
@@ -169,6 +170,9 @@ def build_reviews(comments):
             _, entry["author"] = reviewer_identity(comment["author"])
         review["conversation"].append(entry)
     for review in reviews.values():
+        review["content_checksum"] = content_checksum(review["sections"])
+        for section in review["sections"]:
+            section["annotated_content"] = section["content"]
         review["conversation"].sort(key=lambda c: (c["created_at"], c["id"]))
     return list(reviews.values())
 

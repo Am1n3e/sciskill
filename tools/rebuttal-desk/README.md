@@ -44,7 +44,7 @@ reviews:
     concerns: []
 ```
 
-Each review file stores the original review and its conversation together:
+Each review file stores the original review and its conversation together. The importer also writes `content_checksum` (SHA-256) over all initial section headings and original content in order:
 
 ```yaml
 id: review-id
@@ -54,10 +54,13 @@ author: Reviewer aB12
 source_type: Review
 created_at: '2025-01-01T10:00'
 timestamp_text: '01 Jan 2025, 10:00'
+content_checksum: sha256:c5f9af2a32dad4c80d16159cfba8206ca697c81036aa8e3a577442d669c5fc22
 reply_to: null
 sections:
   - heading: 'Claims And Evidence:'
     content: |
+      Original review text.
+    annotated_content: |
       Original review text.
 conversation:
   - id: response-id
@@ -73,6 +76,8 @@ conversation:
         content: |
           Original author response.
 ```
+
+Original `content` remains the source of truth. Each initial section has a separate `annotated_content` attribute, initially identical. The viewer currently renders original content; annotation rendering is a later step. On every load, the original headings and content must match `content_checksum`, or loading fails. YAML formatting, annotations, and conversation entries are excluded from this checksum. This detects accidental source edits; it is not protection against someone rewriting both the source and checksum.
 
 Concerns can later be added to a review with `id`, a concise `title`, the original `question`, `analysis` and `response` Markdown file paths, and `related` concern IDs. Original review content remains separate from those drafts. Existing JSON workspaces remain readable.
 
@@ -102,3 +107,7 @@ The viewer always uses its OpenReview-style review cards and threaded comment gr
 Rendering currently uses sanitized Markdown/HTML; OpenReview-style layout does **not** imply exact OpenReview Markdown/math renderer parity. Exact parity requires further work and fixtures. No external parser is loaded in the browser.
 
 Reviews optionally include `comments`: a list of `{ "id": "comment-1", "label": "Author clarification", "document": "comments/clarification.md" }`. Comments use the same file containment and rendering rules as reviews. Editor/save support and agent skills remain later work.
+
+## Annotation visual example
+
+Open `examples/annotation-preview.html` in a browser to inspect the reviewed highlight/link and expandable pane layout using synthetic content. It is standalone; production annotation rendering and the reusable skill are not implemented yet.

@@ -14,6 +14,7 @@ Status: discussion and planning only. Implementation is on hold until the releva
 | [Skill installation](skill-installation.md) | skills.sh compatibility and installation instructions | Discussing |
 | [Evaluation and evidence](evaluation.md) | Evaluation reporting, limitations, availability claims | To discuss |
 | [Publishing](publishing.md) | GitHub Pages, deployment, release readiness | To discuss |
+| [Rebuttal annotation working log](rebuttal-annotation-workflow.md) | Develop annotations on an example, record decisions, then write the skill after approval | Iterating with user |
 
 ## How we work
 

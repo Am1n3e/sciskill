@@ -125,6 +125,41 @@ class OpenReviewImportTests(unittest.TestCase):
         loaded = load_workspace(self.output)["reviews"][0]["comments"]
         self.assertEqual([c["id"] for c in loaded], ["earlier", "later"])
 
+    def test_original_checksum_and_separate_annotation_content(self):
+        self.capture(
+            note(
+                "review",
+                "Review",
+                "Reviewer Ab12",
+                field("Question:", "Original wording"),
+            )
+        )
+        import_openreview(self.html, self.output)
+        path = self.output / "reviews/review.yaml"
+        raw = yaml.safe_load(path.read_text())
+        section = raw["sections"][0]
+        self.assertEqual(section["annotated_content"], section["content"])
+        section["annotated_content"] = (
+            '<concern id="C1" type="question">Original wording</concern>'
+        )
+        path.write_text(yaml.safe_dump(raw))
+        load_workspace(self.output)
+        for key, value in [
+            ("heading", "Changed heading"),
+            ("content", "Changed wording"),
+        ]:
+            with self.subTest(key=key):
+                changed = yaml.safe_load(path.read_text())
+                changed["sections"][0][key] = value
+                path.write_text(yaml.safe_dump(changed))
+                with self.assertRaisesRegex(WorkspaceError, "checksum mismatch"):
+                    load_workspace(self.output)
+                path.write_text(yaml.safe_dump(raw))
+        del raw["content_checksum"]
+        path.write_text(yaml.safe_dump(raw))
+        with self.assertRaisesRegex(WorkspaceError, "checksum mismatch"):
+            load_workspace(self.output)
+
     def test_unloaded_malformed_and_unsafe_input(self):
         for content in [
             "<h2>Title</h2>",

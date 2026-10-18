@@ -9,6 +9,8 @@ import bleach
 import markdown
 import yaml
 
+from .integrity import content_checksum
+
 
 class WorkspaceError(ValueError):
     """Invalid workspace configuration or document."""
@@ -65,6 +67,10 @@ def structured_html(source):
         heading = text(section.get("heading"), "section heading")
         content = section.get("content")
         require(isinstance(content, str), "Section content must be text")
+        require(
+            isinstance(section.get("annotated_content", content), str),
+            "Annotated content must be text",
+        )
         body = markdown.markdown(content, extensions=["tables", "fenced_code"])
         blocks.append(
             '<div><strong class="note-content-field">'
@@ -72,6 +78,11 @@ def structured_html(source):
             + '</strong><div class="note-content-value markdown-rendered">'
             + body
             + "</div></div>"
+        )
+    if "reviewer_id" in raw or "content_checksum" in raw:
+        require(
+            raw.get("content_checksum") == content_checksum(sections),
+            "Original review content checksum mismatch",
         )
     return "\n".join(blocks)
 
