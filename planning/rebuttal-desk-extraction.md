@@ -23,3 +23,7 @@ Validated profile data invariance/defaults/override/unknown rejection, comment p
 ## User correction — one viewer
 
 Removed the generic viewer/profile alternative and branching. OpenReview-style cards/threaded comments are always used. Presentation configuration now accepts only character_limit (default 10,000, null disables). Underlying review data remains independent of display. Earlier profile planning is superseded. Exact renderer/math parity and editing remain deferred.
+
+## Corrected viewer acceptance target
+
+Use synthetic input data to populate the original Rebuttal Desk visual layout, launched by the new uvx package. Do not substitute a simplified synthetic interface or show private reviews for acceptance. Current demo has two reviewers and a meta-review, five concerns, analysis and response files, related concerns, response-first drawers and assembled rendered responses. Uses original CSS and corresponding DOM classes. Exact OpenReview math/Markdown parity remains a later phase.

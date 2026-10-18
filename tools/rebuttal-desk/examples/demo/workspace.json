@@ -1,27 +1,70 @@
 {
   "version": 1,
-  "title": "Example review workspace",
+  "title": "Science Skills \u00b7 Demo submission",
   "reviews": [
     {
       "id": "reviewer-1",
       "label": "Reviewer 1",
-      "document": "review.md",
+      "document": "reviewer-1.md",
       "concerns": [
         {
-          "id": "concern-1",
-          "title": "Explain the measurements",
-          "analysis": "analysis.md",
-          "response": "response.md",
+          "id": "r1-c1",
+          "title": "Clarify how the reference checker distinguishes missing records from metadata mismatches.",
+          "analysis": "r1-c1-analysis.md",
+          "response": "r1-c1-response.md",
+          "related": []
+        },
+        {
+          "id": "r1-c2",
+          "title": "Report source coverage separately from correctness.",
+          "analysis": "r1-c2-analysis.md",
+          "response": "r1-c2-response.md",
+          "related": [
+            "m-c1"
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "id": "reviewer-2",
+      "label": "Reviewer 2",
+      "document": "reviewer-2.md",
+      "concerns": [
+        {
+          "id": "r2-c1",
+          "title": "Explain whether reviewer comments stay linked to the original review text.",
+          "analysis": "r2-c1-analysis.md",
+          "response": "r2-c1-response.md",
+          "related": []
+        },
+        {
+          "id": "r2-c2",
+          "title": "Describe how authors inspect and revise a proposed response.",
+          "analysis": "r2-c2-analysis.md",
+          "response": "r2-c2-response.md",
           "related": []
         }
       ],
-      "comments": [
+      "comments": []
+    },
+    {
+      "id": "meta",
+      "label": "Meta-review",
+      "document": "meta.md",
+      "concerns": [
         {
-          "id": "comment-1",
-          "label": "Follow-up clarification",
-          "document": "comment.md"
+          "id": "m-c1",
+          "title": "Summarize the limits of automated checks and preserve author judgment.",
+          "analysis": "m-c1-analysis.md",
+          "response": "m-c1-response.md",
+          "related": [
+            "r1-c2",
+            "r2-c2"
+          ]
         }
-      ]
+      ],
+      "comments": []
     }
   ],
   "presentation": {

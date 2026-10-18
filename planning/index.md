@@ -31,3 +31,7 @@ The local website represents the intended finished public-facing page, not a pro
 ## Current names and routes
 
 Public name: Science Skills. Source repository target and package: `science-skills`. Base path: `/science-skills/`; Skills fragment: `#skills`. Namespace: `/sciskill`, actions `init`, `bib-lint`, and `plan-rebuttal`. Earlier planning entries retain historical names as decision history; these current names supersede them. The physical local project folder remains `science-skillset`.
+
+## Delegation scope rule
+
+Every task handoff must explicitly state: implement only what the user has discussed and approved. No optional features, speculative extensibility, extra modes, or additional functionality. If a material scope decision is missing, bring it back for discussion rather than inventing a feature. OpenReview is the only current viewer style; additional styles require an explicit future request.
