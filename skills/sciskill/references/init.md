@@ -1,4 +1,6 @@
-# Initialize
+# Initialize SciSkill
+
+This reference describes how to initialize a research project to use SciSkill.
 
 Create `.sciskill/config.yaml` for project paths and the optional venue, plus `cache/` and `tmp/` directories for local artifacts. Existing settings and artifacts are preserved.
 
@@ -9,5 +11,4 @@ Create `.sciskill/config.yaml` for project paths and the optional venue, plus `c
    uvx sciskill init --latex paper.tex --bib references.bib --venue NeurIPS
    ```
 
-   If uv is unavailable, use the [official installation instructions](https://docs.astral.sh/uv/getting-started/installation/) within the environment's permissions.
 3. On success, read `.sciskill/config.yaml` and confirm the stored paths, venue, and whether `.gitignore` changed. On failure, report the error instead of claiming initialization succeeded.
