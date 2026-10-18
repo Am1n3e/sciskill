@@ -9,12 +9,13 @@ eyebrow: Skills / Review & response planning
 
 Rebuttal Desk imports a rendered OpenReview HTML capture into YAML. It preserves reviewer IDs, section headings, original content, timestamps, and nested conversations. Its bundled browser viewer runs on a local Python server.
 
-```sh
-uvx sciskill rebuttal import-openreview discussion.html my-rebuttal
-uvx sciskill rebuttal view my-rebuttal
+## Use with your agent
+
+```text
+/sciskill plan-rebuttal
 ```
 
-The tools and their browser assets run locally; no repository checkout is required.
+Provide your initial reviews and submitted manuscript, including the appendix. Your agent imports the review content, analyzes it against the paper, and opens the resulting Rebuttal Desk view.
 
 ## Analyze and plan
 

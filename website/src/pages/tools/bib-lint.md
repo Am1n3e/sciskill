@@ -39,13 +39,10 @@ Current and previous benchmark runs must be interpreted alongside evaluated cove
 
 The audit concerns core citation metadata. It does not establish whether a paper supports a manuscript's claim, and does not fully verify pages, volume, edition, or every publication domain. Provider coverage, citation formatting, and publication-version differences can require human review.
 
-## Use the tool
+## Use with your agent
 
-Run the SciSkill bibliography tool:
-
-```sh
-uvx sciskill bib-lint verify references.bib
-uvx sciskill bib-lint view references.bib-lint
+```text
+/sciskill bib-lint references.bib
 ```
 
-The viewer is bundled HTML, CSS, and JavaScript served locally by Python. It can start audits, open saved reports, inspect evidence, and stop or resume runs. Source bibliographies are not modified.
+Your agent can use the bibliography configured during initialization or a file you provide. It checks metadata, reviews the evidence, and opens the local report for you to inspect. Provide a compiled AUX file when you want only cited references checked. Source bibliographies are not modified.
