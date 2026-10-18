@@ -119,20 +119,16 @@ def load_comment(root, raw):
 
 def presentation(raw):
     require(isinstance(raw, dict), "presentation must be an object")
-    profile = raw.get("profile", "generic")
-    require(profile in ("generic", "openreview"), "Unknown presentation profile")
-    limit = raw.get("character_limit", 10000 if profile == "openreview" else None)
+    require(
+        not set(raw) - {"character_limit"},
+        "Only character_limit is configurable in presentation",
+    )
+    limit = raw.get("character_limit", 10000)
     require(
         limit is None or (type(limit) is int and limit > 0),
         "character_limit must be positive or null",
     )
-    # Profiles configure display, never rewrite underlying review or response data.
-    return {
-        "profile": profile,
-        "character_limit": limit,
-        "comment_layout": "thread" if profile == "openreview" else "sections",
-        "rendering": "sanitized-markdown",
-    }
+    return {"character_limit": limit}
 
 
 def load_review(root, raw):
@@ -206,7 +202,7 @@ def init_workspace(directory):
     manifest = {
         "version": 1,
         "title": "Example review workspace",
-        "presentation": {"profile": "generic", "character_limit": None},
+        "presentation": {"character_limit": 10000},
         "reviews": [
             {
                 "id": "reviewer-1",

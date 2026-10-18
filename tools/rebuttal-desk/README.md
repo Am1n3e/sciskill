@@ -20,7 +20,7 @@ uvx --from ./tools/rebuttal-desk rebuttal-desk view ./my-rebuttal --no-browser -
 {
   "version": 1,
   "title": "My rebuttal",
-  "presentation": {"profile": "openreview", "character_limit": 10000},
+  "presentation": {"character_limit": 10000},
   "reviews": [
     {
       "id": "reviewer-1",
@@ -59,8 +59,10 @@ uv build tools/rebuttal-desk
 
 The stylesheet was extracted from the author's local Rebuttal Review Desk. The general workspace JavaScript and Python CLI replace its paper-specific review constants, HTML workbench assumptions and validation script. No original reviews, manuscript identifiers, private analysis or response content are included. The generated template is authored from scratch. Distributed under GPL-3.0-only, consistent with this repository; browser dependency vendoring is unnecessary because rendering happens in Python.
 
-## Presentation profiles
+## Presentation and comments
 
-The review/comment/concern/analysis/response data is venue-neutral. Change only `presentation` to switch display without rewriting documents. `profile` accepts `generic` (default, simple sections, no default length limit) or `openreview` (review card and threaded comment grouping, default 10,000-character limit). An explicit `character_limit`, including null, overrides the profile default. Rendering remains sanitized Markdown/HTML for both; OpenReview is a layout approximation, **not exact OpenReview Markdown/math renderer parity**. Exact parity requires further work and fixtures before claiming it. No external parser is loaded in the browser.
+The viewer always uses its OpenReview-style review cards and threaded comment grouping. There is no alternate viewer or selectable profile. Review/comment/concern/analysis/response data remains independent of presentation. `presentation` accepts only `character_limit`: a positive integer, or null to disable the limit. If omitted, the limit is 10,000 characters per assembled response.
 
-Reviews optionally include `comments`: a list of `{ "id": "comment-1", "label": "Author clarification", "document": "comments/clarification.md" }`. Comments use the same file containment and rendering rules as reviews. Profiles group comments differently; source data stays unchanged. Profiles do not select data adapters or execute code. Editor/save support and agent skills remain later work.
+Rendering currently uses sanitized Markdown/HTML; OpenReview-style layout does **not** imply exact OpenReview Markdown/math renderer parity. Exact parity requires further work and fixtures. No external parser is loaded in the browser.
+
+Reviews optionally include `comments`: a list of `{ "id": "comment-1", "label": "Author clarification", "document": "comments/clarification.md" }`. Comments use the same file containment and rendering rules as reviews. Editor/save support and agent skills remain later work.

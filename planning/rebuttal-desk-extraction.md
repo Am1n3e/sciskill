@@ -19,3 +19,7 @@ Stop after each phase for user review. Underlying implementation precedes site p
 Restored generalized read-only viewer with a versioned local manifest, explicit document paths, reviewer navigation, response-first drawers/analysis toggle, related concern links, Refresh, aggregate drafts and length counts. Added optional review comments and a separate `presentation` object. Profiles `generic` and `openreview` configure grouping/layout and default limits while loaded review data stays identical. Both currently use sanitized Markdown/HTML rendering; OpenReview exact Markdown/math parity remains unimplemented, with formula source displayed as text. No editor or save endpoint.
 
 Validated profile data invariance/defaults/override/unknown rejection, comment path containment, manifest/files, sanitization, restricted server and independent workspaces. Synthetic fixture only; no private input data. Parent should visually review demo after package launch. Phase 3 remains deferred.
+
+## User correction — one viewer
+
+Removed the generic viewer/profile alternative and branching. OpenReview-style cards/threaded comments are always used. Presentation configuration now accepts only character_limit (default 10,000, null disables). Underlying review data remains independent of display. Earlier profile planning is superseded. Exact renderer/math parity and editing remain deferred.

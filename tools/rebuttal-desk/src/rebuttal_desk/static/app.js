@@ -69,10 +69,10 @@ function render() {
     button.type = 'button'; button.setAttribute('aria-current', candidate === review ? 'page' : 'false');
     button.addEventListener('click', () => { location.hash = candidate.id; }); nav.append(button);
   }
-  content.className = `content profile-${workspace.presentation.profile}`;
+  content.className = "content";
   content.replaceChildren(node('h2', review.label), prose(review.document.html));
   if (review.comments.length) {
-    const comments = node('section', undefined, `review-comments ${workspace.presentation.comment_layout}`);
+    const comments = node('section', undefined, 'review-comments');
     comments.append(node('h3', 'Comments'));
     for (const comment of review.comments) {
       const entry = node('article', undefined, 'review-comment');

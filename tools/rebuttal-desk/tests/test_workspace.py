@@ -87,23 +87,17 @@ class WorkspaceTests(unittest.TestCase):
             load_workspace(other)["reviews"][0]["document"],
         )
 
-    def test_profiles_keep_data_stable_and_configure_display(self):
-        generic = load_workspace(self.root)
-        self.mutate(lambda x: x.update(presentation={"profile": "openreview"}))
-        openreview = load_workspace(self.root)
-        self.assertEqual(generic["reviews"], openreview["reviews"])
-        self.assertIsNone(generic["presentation"]["character_limit"])
-        self.assertEqual(openreview["presentation"]["character_limit"], 10000)
-        self.assertEqual(openreview["presentation"]["comment_layout"], "thread")
-        self.mutate(
-            lambda x: x.update(
-                presentation={"profile": "openreview", "character_limit": 500}
+    def test_limit_defaults_override_and_disable(self):
+        original = load_workspace(self.root)
+        self.assertEqual(original["presentation"]["character_limit"], 10000)
+        for limit in [500, None]:
+            self.mutate(
+                lambda x, limit=limit: x.update(presentation={"character_limit": limit})
             )
-        )
-        self.assertEqual(
-            load_workspace(self.root)["presentation"]["character_limit"], 500
-        )
-        self.mutate(lambda x: x.update(presentation={"profile": "unknown"}))
+            changed = load_workspace(self.root)
+            self.assertEqual(changed["presentation"]["character_limit"], limit)
+            self.assertEqual(changed["reviews"], original["reviews"])
+        self.mutate(lambda x: x.update(presentation={"unknown_option": True}))
         with self.assertRaises(WorkspaceError):
             load_workspace(self.root)
 

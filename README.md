@@ -41,4 +41,4 @@ All demo citations and review passages on the homepage are illustrative. No real
 
 ## Local tools
 
-[Rebuttal Desk](tools/rebuttal-desk/README.md) provides a standalone, read-only review workspace viewer with local manifest-linked files and configurable generic/OpenReview-style presentation.
+[Rebuttal Desk](tools/rebuttal-desk/README.md) provides a standalone, read-only review workspace viewer with local manifest-linked files and OpenReview-style presentation and a configurable response length limit.
