@@ -236,6 +236,11 @@ def load_conversation(content):
                 "type": kind,
                 "created_at": timestamp,
                 "reply_to": entry.get("reply_to"),
+                "unresolved_reply_title": text(
+                    entry["unresolved_reply_title"], "unresolved reply title"
+                )
+                if "unresolved_reply_title" in entry
+                else None,
                 "document": {"html": rendered(yaml.safe_dump(entry), "entry.yaml")},
             }
         )
@@ -263,6 +268,9 @@ def load_review(root, raw):
     )
     return {
         "document_id": structured.get("id", raw.get("id")),
+        "source_type": text(
+            structured.get("source_type", "Official Review"), "review type"
+        ),
         "comments": [load_comment(root, comment) for comment in comments]
         + conversation,
         "id": identifier(raw.get("id")),

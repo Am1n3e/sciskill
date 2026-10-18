@@ -355,6 +355,12 @@ select {
   line-height: 15px;
 }
 
+.openreview-note .subheading .reply-context {
+  display: block;
+  height: auto;
+  padding: 0;
+}
+
 .openreview-note .subheading .invitation {
   padding-left: 0;
 }

@@ -23,9 +23,9 @@ uvx sciskill rebuttal view ./my-rebuttal
 
 The importer refuses to overwrite an existing directory. It writes `workspace.yaml` and one `reviews/<review-id>.yaml` per initial review or decision. Each review file contains its original sections and a `conversation` of `author_response` and `reviewer_comment` entries. Every entry preserves its ID, author, title, source type, timestamp, reply target, and ordered field headings with content converted to Markdown. Formula TeX is recovered from KaTeX annotations when available.
 
-Conversations are sorted by creation time, with the ID breaking equal-time ties. The displayed timestamp and its original text are retained; captures without timezone information do not acquire an invented timezone. Reply targets are resolved from explicit “Replying to” headings when present, otherwise from HTML nesting. Ambiguous reply targets, missing timestamps, and threads that cannot be associated with a review cause an import error instead of silently losing content. Separate threads started by the same reviewer or editor are included in that review's conversation; their root has no reply target.
+Conversations are sorted by creation time, with the ID breaking equal-time ties. The displayed timestamp and its original text are retained; captures without timezone information do not acquire an invented timezone. Reply targets are resolved within their captured thread using “Replying to” headings, creation times, and HTML nesting. When repeated titles leave an exact target unclear, the reply stays under its captured parent, retains `unresolved_reply_title`, and displays that uncertainty. Missing targets, missing timestamps, and threads that cannot be associated with a review cause an import error instead of silently losing content. Separate threads started by the same reviewer or editor are included in that review's conversation; their root has no reply target.
 
-No concerns, analysis, or response drafts are inferred by import. Action editor labels use the role and exported ID without a personal name. The import is offline and does not execute scripts or fetch links from the HTML. An initial HTML shell without loaded comments is rejected; the importer cannot recover content missing from the capture.
+No concerns, analysis, or response drafts are inferred by import. Action editor labels use the role and exported ID without a personal name. ICLR Program Chairs decisions retain their group label and use the source document ID as their stable manifest ID. The import is offline and does not execute scripts or fetch links from the HTML. An initial HTML shell without loaded comments is rejected; the importer cannot recover content missing from the capture.
 
 ## Workspace format
 
@@ -102,7 +102,7 @@ The stylesheet was extracted from the author's local Rebuttal Review Desk. The g
 
 ## Presentation and comments
 
-The viewer always uses its OpenReview-style review cards and threaded comment grouping. There is no alternate viewer or selectable profile. Review/comment/concern/analysis/response data remains independent of presentation. `presentation` accepts only `character_limit`: a positive integer, or null to disable the limit. If omitted, the limit is 10,000 characters per assembled response.
+The viewer always uses its OpenReview-style review cards and threaded comment grouping. There is no alternate viewer or selectable profile. Review/comment/concern/analysis/response data remains independent of presentation. `presentation` accepts only `character_limit`: a positive integer, or null to disable the limit. If omitted, the limit is unknown; no maximum is displayed.
 
 Rendering currently uses sanitized Markdown/HTML; OpenReview-style layout does **not** imply exact OpenReview Markdown/math renderer parity. Exact parity requires further work and fixtures. No external parser is loaded in the browser.
 

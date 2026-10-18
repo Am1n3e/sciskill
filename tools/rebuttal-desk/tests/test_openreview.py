@@ -176,3 +176,158 @@ class OpenReviewImportTests(unittest.TestCase):
                 with self.assertRaises(WorkspaceError):
                     import_openreview(self.html, self.output)
                 self.assertFalse(self.output.exists())
+
+    def test_program_chairs_decision_preserves_role_and_source_identity(self):
+        self.capture(
+            note(
+                "decision",
+                "Decision",
+                "Program Chairs",
+                field("Decision:", "Accept (Oral)"),
+            )
+        )
+        import_openreview(self.html, self.output)
+        workspace = load_workspace(self.output)
+        review = workspace["reviews"][0]
+        self.assertEqual(review["id"], "decision")
+        self.assertEqual(review["label"], "Program Chairs")
+        self.assertEqual(review["source_type"], "Decision")
+        self.assertIn("Accept (Oral)", review["document"]["html"])
+
+    def test_repeated_reply_titles_use_thread_and_creation_time(self):
+        first = note(
+            "first",
+            "Official Comment",
+            "Reviewer Ab12",
+            field("Comment:", "First"),
+            date="02 Jan 2025, 10:00",
+            title="Official Comment",
+        )
+        later = note(
+            "later",
+            "Official Comment",
+            "Reviewer Ab12",
+            field("Comment:", "Later"),
+            date="04 Jan 2025, 10:00",
+            title="Official Comment",
+        )
+        answer = note(
+            "answer",
+            "Official Comment",
+            "Authors",
+            field("Comment:", "Answer"),
+            date="03 Jan 2025, 10:00",
+            title="Answer",
+            replying_to="Official Comment",
+        )
+        unrelated = note(
+            "unrelated",
+            "Official Comment",
+            "Reviewer Cd34",
+            field("Comment:", "Other thread"),
+            date="02 Jan 2025, 09:00",
+            title="Official Comment",
+        )
+        self.capture(
+            note(
+                "review",
+                "Review",
+                "Reviewer Ab12",
+                field("Review:", "Question"),
+                first + later + answer,
+            )
+            + note(
+                "other", "Review", "Reviewer Cd34", field("Review:", "Other"), unrelated
+            )
+        )
+        import_openreview(self.html, self.output)
+        review = yaml.safe_load((self.output / "reviews/review.yaml").read_text())
+        reply = next(c for c in review["conversation"] if c["id"] == "answer")
+        self.assertEqual(reply["reply_to"], "first")
+        self.assertNotIn("unresolved_reply_title", reply)
+
+    def test_ambiguous_reply_keeps_captured_thread_and_exposes_uncertainty(self):
+        first = note(
+            "first",
+            "Official Comment",
+            "Reviewer Ab12",
+            field("Comment:", "First"),
+            date="02 Jan 2025, 10:00",
+            title="Official Comment",
+        )
+        second = note(
+            "second",
+            "Official Comment",
+            "Reviewer Ab12",
+            field("Comment:", "Second"),
+            date="03 Jan 2025, 10:00",
+            title="Official Comment",
+        )
+        answer = note(
+            "answer",
+            "Official Comment",
+            "Authors",
+            field("Comment:", "Answer"),
+            date="04 Jan 2025, 10:00",
+            title="Answer",
+            replying_to="Official Comment",
+        )
+        self.capture(
+            note(
+                "review",
+                "Review",
+                "Reviewer Ab12",
+                field("Review:", "Question"),
+                first + second + answer,
+            )
+        )
+        import_openreview(self.html, self.output)
+        comments = load_workspace(self.output)["reviews"][0]["comments"]
+        reply = next(c for c in comments if c["id"] == "answer")
+        self.assertEqual(reply["reply_to"], "review")
+        self.assertEqual(reply["unresolved_reply_title"], "Official Comment")
+
+    def test_nested_parent_disambiguates_identical_titles(self):
+        answer = note(
+            "answer",
+            "Official Comment",
+            "Authors",
+            field("Comment:", "Answer"),
+            date="04 Jan 2025, 10:00",
+            title="Answer",
+            replying_to="Official Comment",
+        )
+        first = note(
+            "first",
+            "Official Comment",
+            "Reviewer Ab12",
+            field("Comment:", "First"),
+            answer,
+            date="02 Jan 2025, 10:00",
+            title="Official Comment",
+        )
+        second = note(
+            "second",
+            "Official Comment",
+            "Reviewer Ab12",
+            field("Comment:", "Second"),
+            date="03 Jan 2025, 10:00",
+            title="Official Comment",
+        )
+        self.capture(
+            note(
+                "review",
+                "Review",
+                "Reviewer Ab12",
+                field("Review:", "Question"),
+                first + second,
+            )
+        )
+        import_openreview(self.html, self.output)
+        reply = next(
+            c
+            for c in load_workspace(self.output)["reviews"][0]["comments"]
+            if c["id"] == "answer"
+        )
+        self.assertEqual(reply["reply_to"], "first")
+        self.assertIsNone(reply["unresolved_reply_title"])
