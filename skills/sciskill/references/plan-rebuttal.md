@@ -76,7 +76,7 @@ annotated_content: <science-skills-annotation id="a1-C1" type="clarification">Pl
 
 Allowed tag attributes: `id`, `type`, optional `subtype`. Types: `clarification`, `change_request`. Subtypes for change requests: `manuscript_change`, `additional_experiments`. No nested/overlapping tags; all IDs must be globally unique and have matching manifest concerns. Original Markdown remains inside the wrappers.
 
-Use the [Rebuttal manifest template](../assets/rebuttal-manifest.yaml) for the manifest structure. The viewer reads this file as `workspace.yaml` inside the rebuttal folder. Adapt the template to the imported review IDs and paths; preserve imported source data and existing decisions.
+Use the [Rebuttal manifest template](../assets/rebuttal-manifest.yaml) for the manifest structure. The viewer reads this file as `workspace.yaml` inside the rebuttal folder. Replace its placeholders with actual values, using YAML integers for theme numbers and task IDs. Preserve imported source data and existing decisions.
 
 Statuses: `proposed`, `pending`, `in_progress`, `done`, `not_doing`. Theme task links use the same numeric IDs. Document paths are relative to the rebuttal folder and cannot escape its folder. The loader expects the analysis and response files to exist, even when a response is empty. It renders theme and overview Markdown, while concern panes link to themes.
 
