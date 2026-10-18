@@ -7,6 +7,8 @@ from pathlib import Path
 
 import yaml
 
+from sciskill.requirements import check_required_tools
+
 IGNORE_ENTRIES = {".sciskill", ".sciskill/", "/.sciskill", "/.sciskill/"}
 
 
@@ -105,6 +107,7 @@ def main(argv=None):
     )
     args = parser.parse_args(argv)
     try:
+        versions = check_required_tools()
         path = initialize(
             Path.cwd(),
             latex=args.latex,
@@ -114,5 +117,6 @@ def main(argv=None):
         )
     except (ValueError, OSError, yaml.YAMLError) as exc:
         parser.exit(2, f"sciskill init: {exc}\n")
+    print("Required tools ready: " + ", ".join(versions.values()))
     print(f"Initialized {path}")
     return 0
