@@ -39,5 +39,3 @@ Import OpenReview discussions and view reviews, linked themes, tasks, and respon
 ```sh
 uvx --prerelease allow sciskill rebuttal --help
 ```
-
-For repository development, checks, website setup, and release instructions, see [Contributing](CONTRIBUTING.md).
