@@ -1,6 +1,6 @@
 # Plan a rebuttal
 
-Turn initial reviews and the manuscript into an evidence-grounded response plan. Read the [workspace contract](workspace.md) before writing workspace data. Use the Rebuttal Desk importer and validator through UVX.
+Turn initial reviews and the manuscript into an evidence-grounded response plan. Use the output format below when writing workspace data. Use the Rebuttal Desk importer and validator through UVX.
 
 The manuscript and its available appendix or supplement are required. Preserve existing human decisions and drafts on reruns. Do not generate response drafts, run experiments, modify the manuscript, or mark tasks accepted or done unless requested. Distinguish the reviewer's stated request from your interpretation; describe evidence that would resolve it rather than predicting the reviewer's vote.
 
@@ -8,7 +8,7 @@ The manuscript and its available appendix or supplement are required. Preserve e
 
 Record manuscript path/version/hash, source review paths/hashes, extraction tool, and review scope. Read the complete manuscript and appendix relevant to the claims, plus all initial reviews. Use the initial version of the paper when available. A later PDF can be examined only with its provenance stated; answers found there are not automatically evidence of what the reviewer received. Use only initial review entries: exclude author responses, later exchanges, decisions informed by them, and prior rebuttal analyses. Record uncertainty if a captured initial review was subsequently edited.
 
-Import a complete saved OpenReview HTML with `rebuttal-desk import-openreview`. For isolated initial-review fragments, assemble only the selected original review elements under the importer containers; retain the originals and log the assembly. Create a new workspace for a fresh analysis instead of overwriting an existing rebuttal. Keep personal captures and generated analysis in the repository's ignored workspace area.
+Import a complete saved OpenReview HTML with `uvx sciskill rebuttal import-openreview`. For isolated initial-review fragments, assemble only the selected original review elements under the importer containers; retain the originals and log the assembly. Create a new workspace for a fresh analysis instead of overwriting an existing rebuttal. Keep personal captures and generated analysis in the repository's ignored workspace area.
 
 ## Understand and annotate
 
@@ -55,3 +55,68 @@ Create tasks for concrete deliverables, linking all concerns they resolve. All n
 Validate all files and links, unique IDs/numbers, annotation-to-concern correspondence, original checksums, exact text preservation, and empty drafts for an analysis-only run. Review coverage against the full initial reviews, including compound requests and repeated limitations. Check no theme claims more reviewers than its links support.
 
 If independent reviewers are requested, ask for concrete omissions, mismatched evidence, and misprioritized work with source references; unsupported suggestions do not become tasks. Reconcile their findings and record the decisions. Open the resulting workspace through the UVX viewer, refresh the actual user-facing tab, and verify the displayed title, themes, annotations, and tasks before reporting completion.
+
+## Output format
+
+Use the published tools to import, validate, and view the workspace:
+
+```sh
+uvx sciskill rebuttal import-openreview initial-reviews.html new-workspace
+uvx sciskill rebuttal validate new-workspace
+uvx sciskill rebuttal view new-workspace
+```
+
+The importer writes one YAML per initial review, with `sections` containing `heading`, immutable `content`, and `annotated_content`. It also stores source identity, timestamps, a checksum, and a conversation list. For an initial-only run that list is empty. Original headings/content remain byte-for-byte identical as strings. Use the package's checksum function; do not reset a checksum to conceal edits.
+
+```yaml
+heading: Questions
+content: Please clarify how the gates are generated.
+annotated_content: <science-skills-annotation id="a1-C1" type="clarification">Please clarify how the gates are generated.</science-skills-annotation>
+```
+
+Allowed tag attributes: `id`, `type`, optional `subtype`. Types: `clarification`, `change_request`. Subtypes for change requests: `manuscript_change`, `additional_experiments`. No nested/overlapping tags; all IDs must be globally unique and have matching manifest concerns. Original Markdown remains inside the wrappers.
+
+The `workspace.yaml` shape is:
+
+```yaml
+version: 1
+source: openreview
+title: Paper title
+presentation:
+  character_limit: 10000 # use the confirmed venue limit, or null if unknown
+reviews:
+  - id: a1
+    label: Reviewer a1
+    document: reviews/source-id.yaml
+    concerns:
+      - id: a1-C1
+        title: Gate construction
+        related: [] # IDs of other concerns sharing this issue
+        analysis: concerns/a1-C1/analysis.md
+        response: concerns/a1-C1/response.md # empty for analysis-only runs
+analysis:
+  overview: analysis/overview.md
+  themes:
+    - id: gate-reliability
+      number: 1 # stable positive integer, not an array position
+      title: Gate reliability
+      content: analysis/gate-reliability.md
+      reviewers: [a1] # explicit; exactly the owners of linked annotations
+      annotations: [a1-C1]
+      tasks: [1]
+tasks:
+  - id: 1 # stable unique positive integer
+    title: Document gate construction and check its evidence
+    annotations: [a1-C1]
+    status: proposed
+    priority: high
+    effort: medium
+    note: Explain the concrete deliverable and why it matters.
+    external_link: null
+```
+
+Statuses: `proposed`, `pending`, `in_progress`, `done`, `not_doing`. Theme task links use the same numeric IDs. Document paths are workspace-relative and cannot escape the workspace. The loader expects the analysis and response files to exist, even when a response is empty. It renders theme and overview Markdown, while concern panes link to themes.
+
+Overview and theme Markdown can link directly to `#REVIEWER/CONCERN-ID`, `#theme-THEME-ID`, or `#task-NUMBER`; `#REVIEWER` opens the full review. Use the exact persisted IDs. The viewer opens the corresponding tab and expands a linked theme. Theme display order is descending unique reviewer count, then stable theme number.
+
+Keep provenance and audit results in workspace-local YAML/Markdown. Detailed reasoning fits the existing Markdown content files; do not expand the UI schema merely to store prose. If a new attribute is necessary, document and validate its meaning without duplicating a derived count or a source field. Do not include personal review content in the distributable skill.
