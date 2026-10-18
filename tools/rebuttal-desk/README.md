@@ -102,7 +102,7 @@ uv run --project tools/rebuttal-desk python -m unittest discover -s tools/rebutt
 uv build tools/rebuttal-desk
 ```
 
-The stylesheet was extracted from the author's local Rebuttal Review Desk. The general workspace JavaScript and Python CLI replace its paper-specific review constants, HTML workbench assumptions and validation script. No original reviews, manuscript identifiers, private analysis or response content are included. The generated template is authored from scratch. Distributed under GPL-3.0-only, consistent with this repository; browser dependency vendoring is unnecessary because rendering happens in Python.
+The stylesheet was extracted from the author's local Rebuttal Review Desk. The general workspace JavaScript and Python CLI replace its paper-specific review constants, HTML workbench assumptions and validation script. No original reviews, manuscript identifiers, private analysis or response content are included. The generated template is authored from scratch. Distributed under MIT; browser dependency vendoring is unnecessary because rendering happens in Python.
 
 ## Presentation and comments
 
