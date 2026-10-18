@@ -3,6 +3,7 @@ requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
+authors = [{ name = "Amine El Hattami", email = "amine.elhattami@gmail.com" }]
 name = "science-skills-rebuttal-desk"
 version = "0.1.0"
 description = "Local review, analysis, and rebuttal response workspace"

@@ -51,3 +51,14 @@ Import OpenReview discussions and view reviews, linked themes, tasks, and respon
 ```sh
 uvx sciskill rebuttal --help
 ```
+
+## Citation
+
+```bibtex
+@misc{elhattami2026sciskill,
+  author = {El Hattami, Amine},
+  title = {{SciSkill}: Agent skills and tools for scientists},
+  year = {2026},
+  url = {https://github.com/Am1n3e/sciskill}
+}
+```
