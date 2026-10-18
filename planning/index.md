@@ -18,6 +18,7 @@ Status: discussion and planning only. Implementation is on hold until the releva
 | [Cross-review analysis](rebuttal-analysis.md) | Themes across reviewers, linked annotations and tasks | Discussing data |
 | [Rebuttal task list](rebuttal-task-list.md) | Define paper-wide researcher-maintained tasks, then presentation | Discussing data |
 | [Rebuttal analysis skill](rebuttal-skill.md) | Evidence-grounded initial-review analysis, skill workflow and independent checks | Implemented and exercised locally |
+| [bib-lint UI and skill review](bib-lint-review.md) | Current gaps, bibliography-audit workflow, and shared tool UI baseline | UI port implemented; skill workflow to discuss |
 
 ## How we work
 
