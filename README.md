@@ -39,7 +39,3 @@ Both tools and their browser assets are bundled. Dependencies stay outside your 
 See [bib-lint](tools/bib-lint/README.md) and [Rebuttal Desk](tools/rebuttal-desk/README.md) for inputs, outputs, and limitations.
 
 For repository development, checks, website setup, and release instructions, see [Contributing](CONTRIBUTING.md).
-
-## License
-
-SciSkill tools and agent skills are licensed under [MIT](LICENSE). The website retains [GPL-3.0](website/LICENSE) because it adapts Astroship; the template was modified on 18 October 2026.
