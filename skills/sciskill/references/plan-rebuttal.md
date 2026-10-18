@@ -1,6 +1,6 @@
 # Plan a rebuttal
 
-Turn initial reviews and the manuscript into an evidence-grounded response plan. Use the output format below when writing workspace data. Use the Rebuttal Desk importer and validator through UVX.
+Turn initial reviews and the manuscript into an evidence-grounded response plan. Use the Rebuttal project format below when saving the analysis. Use the Rebuttal Desk importer and validator through UVX.
 
 The manuscript and its available appendix or supplement are required. Preserve existing human decisions and drafts on reruns. Do not generate response drafts, run experiments, modify the manuscript, or mark tasks accepted or done unless requested. Distinguish the reviewer's stated request from your interpretation; describe evidence that would resolve it rather than predicting the reviewer's vote.
 
@@ -56,14 +56,14 @@ Validate all files and links, unique IDs/numbers, annotation-to-concern correspo
 
 If independent reviewers are requested, ask for concrete omissions, mismatched evidence, and misprioritized work with source references; unsupported suggestions do not become tasks. Reconcile their findings and record the decisions. Open the resulting workspace through the UVX viewer, refresh the actual user-facing tab, and verify the displayed title, themes, annotations, and tasks before reporting completion.
 
-## Output format
+## Rebuttal project
 
-Use the published tools to import, validate, and view the workspace:
+A rebuttal project is the folder containing one paper's reviews, analysis, tasks, and response drafts. Use the published tools to import, validate, and view it:
 
 ```sh
-uvx sciskill rebuttal import-openreview initial-reviews.html new-workspace
-uvx sciskill rebuttal validate new-workspace
-uvx sciskill rebuttal view new-workspace
+uvx sciskill rebuttal import-openreview initial-reviews.html my-rebuttal
+uvx sciskill rebuttal validate my-rebuttal
+uvx sciskill rebuttal view my-rebuttal
 ```
 
 The importer writes one YAML per initial review, with `sections` containing `heading`, immutable `content`, and `annotated_content`. It also stores source identity, timestamps, a checksum, and a conversation list. For an initial-only run that list is empty. Original headings/content remain byte-for-byte identical as strings. Use the package's checksum function; do not reset a checksum to conceal edits.
@@ -76,47 +76,10 @@ annotated_content: <science-skills-annotation id="a1-C1" type="clarification">Pl
 
 Allowed tag attributes: `id`, `type`, optional `subtype`. Types: `clarification`, `change_request`. Subtypes for change requests: `manuscript_change`, `additional_experiments`. No nested/overlapping tags; all IDs must be globally unique and have matching manifest concerns. Original Markdown remains inside the wrappers.
 
-The `workspace.yaml` shape is:
+Use the [Rebuttal project template](../assets/rebuttal-project.yaml) for the manifest structure. The viewer reads this file as `workspace.yaml` inside the rebuttal project folder. Adapt the template to the imported review IDs and paths; preserve imported source data and existing decisions.
 
-```yaml
-version: 1
-source: openreview
-title: Paper title
-presentation:
-  character_limit: 10000 # use the confirmed venue limit, or null if unknown
-reviews:
-  - id: a1
-    label: Reviewer a1
-    document: reviews/source-id.yaml
-    concerns:
-      - id: a1-C1
-        title: Gate construction
-        related: [] # IDs of other concerns sharing this issue
-        analysis: concerns/a1-C1/analysis.md
-        response: concerns/a1-C1/response.md # empty for analysis-only runs
-analysis:
-  overview: analysis/overview.md
-  themes:
-    - id: gate-reliability
-      number: 1 # stable positive integer, not an array position
-      title: Gate reliability
-      content: analysis/gate-reliability.md
-      reviewers: [a1] # explicit; exactly the owners of linked annotations
-      annotations: [a1-C1]
-      tasks: [1]
-tasks:
-  - id: 1 # stable unique positive integer
-    title: Document gate construction and check its evidence
-    annotations: [a1-C1]
-    status: proposed
-    priority: high
-    effort: medium
-    note: Explain the concrete deliverable and why it matters.
-    external_link: null
-```
-
-Statuses: `proposed`, `pending`, `in_progress`, `done`, `not_doing`. Theme task links use the same numeric IDs. Document paths are workspace-relative and cannot escape the workspace. The loader expects the analysis and response files to exist, even when a response is empty. It renders theme and overview Markdown, while concern panes link to themes.
+Statuses: `proposed`, `pending`, `in_progress`, `done`, `not_doing`. Theme task links use the same numeric IDs. Document paths are relative to the rebuttal project and cannot escape its folder. The loader expects the analysis and response files to exist, even when a response is empty. It renders theme and overview Markdown, while concern panes link to themes.
 
 Overview and theme Markdown can link directly to `#REVIEWER/CONCERN-ID`, `#theme-THEME-ID`, or `#task-NUMBER`; `#REVIEWER` opens the full review. Use the exact persisted IDs. The viewer opens the corresponding tab and expands a linked theme. Theme display order is descending unique reviewer count, then stable theme number.
 
-Keep provenance and audit results in workspace-local YAML/Markdown. Detailed reasoning fits the existing Markdown content files; do not expand the UI schema merely to store prose. If a new attribute is necessary, document and validate its meaning without duplicating a derived count or a source field. Do not include personal review content in the distributable skill.
+Keep provenance and audit results in project-local YAML/Markdown. Detailed reasoning fits the existing Markdown content files; do not expand the UI schema merely to store prose. If a new attribute is necessary, document and validate its meaning without duplicating a derived count or a source field. Do not include personal review content in the distributable skill.

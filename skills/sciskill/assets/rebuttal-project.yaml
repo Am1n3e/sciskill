@@ -1,0 +1,37 @@
+# Rebuttal project manifest template. The viewer reads this as workspace.yaml.
+# Replace example IDs, titles, and paths with the imported review's actual values.
+# Paths resolve inside the project folder; referenced files must exist.
+version: 1
+source: openreview
+title: Paper title
+presentation:
+  character_limit: null # set the confirmed venue limit, or leave null if unknown
+reviews:
+  - id: a1
+    label: Reviewer a1
+    document: reviews/source-id.yaml
+    concerns:
+      - id: a1-C1
+        title: Gate construction
+        related: [] # IDs of other concerns sharing this issue
+        analysis: concerns/a1-C1/analysis.md
+        response: concerns/a1-C1/response.md # empty for analysis-only runs
+analysis:
+  overview: analysis/overview.md
+  themes:
+    - id: gate-reliability
+      number: 1 # stable positive integer, not an array position
+      title: Gate reliability
+      content: analysis/gate-reliability.md
+      reviewers: [a1] # explicit; exactly the owners of linked annotations
+      annotations: [a1-C1]
+      tasks: [1]
+tasks:
+  - id: 1 # stable unique positive integer
+    title: Document gate construction and check its evidence
+    annotations: [a1-C1]
+    status: proposed
+    priority: high
+    effort: medium
+    note: Explain the concrete deliverable and why it matters.
+    external_link: null
