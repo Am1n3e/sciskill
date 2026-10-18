@@ -21,6 +21,12 @@ npx skills add Am1n3e/sciskill
 Initialize `.sciskill/` with your LaTeX and bibliography paths, optional venue, and local cache storage. Your `.gitignore` stays unchanged unless you opt in.
 
 ```text
+/sciskill bib-lint
+```
+
+Check bibliography metadata against scholarly records and inspect the findings and source evidence.
+
+```text
 /sciskill plan-rebuttal
 ```
 
