@@ -78,6 +78,35 @@ class WorkspaceTests(unittest.TestCase):
                 self.assertNotIn(forbidden, html)
             self.assertIn("safe", html)
 
+    def test_structured_review_sections(self):
+        raw = {
+            "sections": [
+                {
+                    "heading": "Claims And Evidence:",
+                    "markdown": "Yes\n\n- First point\n- Second point",
+                },
+                {
+                    "heading": "Requested Changes:",
+                    "markdown": "Keep $x^2$ and **emphasis**.",
+                },
+            ]
+        }
+        (self.root / "review.json").write_text(json.dumps(raw))
+        self.mutate(lambda x: x["reviews"][0].update(document="review.json"))
+        html = load_workspace(self.root)["reviews"][0]["document"]["html"]
+        self.assertIn("Claims And Evidence:", html)
+        self.assertIn("<li>First point</li>", html)
+        self.assertIn("<strong>emphasis</strong>", html)
+        self.assertIn("$x^2$", html)
+        for invalid in [
+            "{",
+            "[]",
+            '{"sections": [null]}',
+            '{"sections": [{"heading": "Title", "markdown": 3}]}',
+        ]:
+            with self.subTest(invalid=invalid), self.assertRaises(WorkspaceError):
+                rendered(invalid, "review.json")
+
     def test_unrelated_workspaces_are_independent(self):
         other = Path(self.temp.name) / "another"
         init_workspace(other)

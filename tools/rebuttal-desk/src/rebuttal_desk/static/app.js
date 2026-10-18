@@ -126,9 +126,16 @@ function render() {
   const heading=node('div',undefined,'heading');heading.append(node('h4',`Official Review by ${review.label}`), originalToggle);
   const subheading=node('div',undefined,'subheading');subheading.append(node('span','Official Review','invitation highlight'),node('span',`by ${review.label}`,'signatures'));
   const container=node('div',undefined,'note-content-container');const body=node('div',undefined,'note-content');
-  body.append(node('strong','Review:','note-content-field disable-tex-rendering'),prose(review.document.html,'note-content-value markdown-rendered'));
-  body.append(node('strong','Concerns / questions:','note-content-field disable-tex-rendering'));
-  const list=node('ol',undefined,'note-content-value');review.concerns.forEach(c=>{const item=node('li');item.append(node('p',c.question),concernDrawer(c,review,concernId));list.append(item);});body.append(list);
+  const reviewText=prose(review.document.html,'note-content-value markdown-rendered');
+  body.append(reviewText);
+  for (const concern of review.concerns) {
+    const normalized=concern.question.replace(/\s+/g,' ').trim();
+    const candidates=Array.from(reviewText.querySelectorAll('p, li'));
+    const anchor=candidates.find(item=>item.textContent.replace(/\s+/g,' ').trim()===normalized);
+    const drawer=concernDrawer(concern,review,concernId);
+    if(anchor) anchor.append(drawer);
+    else body.append(node('p',concern.question),drawer);
+  }
   if(review.comments.length){body.append(node('strong','Comments:','note-content-field'));review.comments.forEach(c=>body.append(node('h4',c.label),prose(c.document.html)));}
   container.append(body);note.append(heading,subheading,container);article.append(note);content.replaceChildren(article,aggregate(review));
   applyOriginalView();

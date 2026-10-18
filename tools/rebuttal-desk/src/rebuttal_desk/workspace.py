@@ -2,6 +2,7 @@
 
 import json
 import re
+from html import escape
 from pathlib import Path
 
 import bleach
@@ -38,8 +39,8 @@ def document(root, relative):
     path = (root / relative).resolve()
     require(path.is_relative_to(root), "Document path escapes workspace")
     require(
-        path.suffix.lower() in {".md", ".txt", ".html"},
-        "Documents must be .md, .txt or .html",
+        path.suffix.lower() in {".md", ".txt", ".html", ".json"},
+        "Documents must be .md, .txt, .html or .json",
     )
     require(path.is_file(), f"Missing document: {relative}")
     require(path.stat().st_size <= 2_000_000, f"Document too large: {relative}")
@@ -49,12 +50,41 @@ def document(root, relative):
         raise WorkspaceError(f"Document must be UTF-8: {relative}") from exc
 
 
+def structured_html(source):
+    try:
+        raw = json.loads(source)
+    except json.JSONDecodeError as exc:
+        raise WorkspaceError("Structured document must be valid JSON") from exc
+    require(isinstance(raw, dict), "Structured document must be an object")
+    sections = raw.get("sections")
+    require(isinstance(sections, list), "Structured document sections must be a list")
+    blocks = []
+    for section in sections:
+        require(isinstance(section, dict), "Section must be an object")
+        heading = text(section.get("heading"), "section heading")
+        content = section.get("markdown")
+        require(isinstance(content, str), "Section markdown must be text")
+        body = markdown.markdown(content, extensions=["tables", "fenced_code"])
+        blocks.append(
+            '<div><strong class="note-content-field">'
+            + escape(heading)
+            + '</strong><div class="note-content-value markdown-rendered">'
+            + body
+            + "</div></div>"
+        )
+    return "\n".join(blocks)
+
+
 def rendered(source, filename):
-    if filename.endswith(".html"):
+    if filename.endswith(".json"):
+        html = structured_html(source)
+    elif filename.endswith(".html"):
         html = source
     else:
         html = markdown.markdown(source, extensions=["tables", "fenced_code"])
     tags = {
+        "div",
+        "span",
         "p",
         "br",
         "h1",
@@ -81,7 +111,12 @@ def rendered(source, filename):
     return bleach.clean(
         html,
         tags=tags,
-        attributes={"a": ["href", "title"]},
+        attributes={
+            "a": ["href", "title"],
+            "div": ["class"],
+            "span": ["class"],
+            "strong": ["class"],
+        },
         protocols={"http", "https", "mailto"},
         strip=True,
     )

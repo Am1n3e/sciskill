@@ -8,3 +8,6 @@ dist/
 
 # Local design review screenshots
 preview-*.png
+
+# Private local research workspaces
+.local/
