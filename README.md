@@ -12,11 +12,11 @@ Keep your focus on the science. Let your agent handle the grunt work.
 npx skills add Am1n3e/sciskill
 ```
 
-## Use with your agent
+## Usage
 
-Ask your agent to use SciSkill's `plan-rebuttal` workflow and provide the initial reviews, submitted manuscript, and appendix. The agent analyzes reviewer requests against the paper, annotates actionable passages, and produces linked themes and proposed tasks for Rebuttal Desk.
+### `/sciskill plan-rebuttal`
 
-You review the proposed work and write the response drafts. See the [SciSkill instructions](skills/sciskill/SKILL.md) for the analysis workflow.
+Analyze initial reviews against your submitted manuscript and appendix. Annotate actionable passages, group related concerns into themes, and propose tasks for your review. You retain control of response drafts and manuscript changes.
 
 ## Run tools directly
 
