@@ -9,6 +9,7 @@ import bleach
 import markdown
 import yaml
 
+from .annotations import annotation_markup
 from .integrity import content_checksum
 
 
@@ -53,7 +54,7 @@ def document(root, relative):
         raise WorkspaceError(f"Document must be UTF-8: {relative}") from exc
 
 
-def structured_html(source):
+def structured_html(source, annotated=False):
     try:
         raw = yaml.safe_load(source)
     except yaml.YAMLError as exc:
@@ -71,7 +72,15 @@ def structured_html(source):
             isinstance(section.get("annotated_content", content), str),
             "Annotated content must be text",
         )
-        body = markdown.markdown(content, extensions=["tables", "fenced_code"])
+        try:
+            marked, _ = annotation_markup(
+                content, section.get("annotated_content", content)
+            )
+        except ValueError as exc:
+            raise WorkspaceError(str(exc)) from exc
+        body = markdown.markdown(
+            marked if annotated else content, extensions=["tables", "fenced_code"]
+        )
         blocks.append(
             '<div><strong class="note-content-field">'
             + escape(heading)
@@ -87,14 +96,15 @@ def structured_html(source):
     return "\n".join(blocks)
 
 
-def rendered(source, filename):
+def rendered(source, filename, annotated=False):
     if filename.endswith((".json", ".yaml", ".yml")):
-        html = structured_html(source)
+        html = structured_html(source, annotated)
     elif filename.endswith(".html"):
         html = source
     else:
         html = markdown.markdown(source, extensions=["tables", "fenced_code"])
     tags = {
+        "mark",
         "div",
         "span",
         "p",
@@ -125,6 +135,7 @@ def rendered(source, filename):
         tags=tags,
         attributes={
             "a": ["href", "title"],
+            "mark": ["class", "data-annotation-id", "data-annotation-type"],
             "div": ["class"],
             "span": ["class"],
             "strong": ["class"],
@@ -136,7 +147,10 @@ def rendered(source, filename):
 
 def load_content(root, filename):
     source = document(root, filename)
-    return {"source": source, "html": rendered(source, filename)}
+    result = {"source": source, "html": rendered(source, filename)}
+    if filename.endswith((".yaml", ".yml")):
+        result["annotated_html"] = rendered(source, filename, annotated=True)
+    return result
 
 
 def load_concern(root, raw):

@@ -140,7 +140,7 @@ class OpenReviewImportTests(unittest.TestCase):
         section = raw["sections"][0]
         self.assertEqual(section["annotated_content"], section["content"])
         section["annotated_content"] = (
-            '<concern id="C1" type="question">Original wording</concern>'
+            '<science-skills-annotation id="C1" type="response">Original wording</science-skills-annotation>'
         )
         path.write_text(yaml.safe_dump(raw))
         load_workspace(self.output)
@@ -152,7 +152,9 @@ class OpenReviewImportTests(unittest.TestCase):
                 changed = yaml.safe_load(path.read_text())
                 changed["sections"][0][key] = value
                 path.write_text(yaml.safe_dump(changed))
-                with self.assertRaisesRegex(WorkspaceError, "checksum mismatch"):
+                with self.assertRaisesRegex(
+                    WorkspaceError, "checksum mismatch|changes the original"
+                ):
                     load_workspace(self.output)
                 path.write_text(yaml.safe_dump(raw))
         del raw["content_checksum"]

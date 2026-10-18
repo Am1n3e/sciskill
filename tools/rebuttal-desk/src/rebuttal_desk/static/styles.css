@@ -1377,3 +1377,24 @@ body{background:#fffdfa}
 .comment-kind{display:inline-block;flex-shrink:0;align-self:flex-start;padding:4px 8px;border-radius:2px;color:#2c3a4a;font-size:12px;font-weight:700;line-height:18px;white-space:nowrap}
 .comment-kind.author_response{background:#bbf}
 .comment-kind.reviewer_comment{background:#fbb}
+
+/* Annotation passages are the sole trigger for the inline pane. */
+.annotation-link{background:#fff0bd;color:inherit;border-bottom:1px solid #d4b45b;padding:1px 3px;border-radius:2px;cursor:pointer}
+.annotation-link:hover{background:#ffe79a}.annotation-link:focus-visible{outline:2px solid #8c742c;outline-offset:2px}
+.annotation-pane.workbench-drawer{margin:10px 0 16px;padding:12px 14px;background:#fffdf5;border:0;border-top:1px solid #e8e3d5;border-radius:3px;box-shadow:none}
+.annotation-pane .workbench-body{padding:0;background:transparent}.annotation-pane-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:10px}
+.annotation-pane-header .drawer-kicker{margin:0;font-size:12px}.annotation-pane-header .response-metrics{padding:0;border:0;background:transparent;font-size:11px;white-space:nowrap;text-align:right;margin-left:auto}
+.annotation-pane .response-rendered{padding:14px 0 0}.annotation-pane .workbench-panel{background:transparent}
+
+.annotation-link[data-annotation-type=response]{background:#e6efff;border-color:#94aed6}.annotation-link[data-annotation-type=response]:hover{background:#d5e4ff}
+
+.annotation-link,.annotation-link:visited,.annotation-link:hover,.annotation-link[data-annotation-type=response],.annotation-link[data-annotation-type=response]:hover{background:transparent;border:0;padding:0;border-radius:0;text-decoration-line:underline;text-decoration-color:#d4b45b;text-decoration-thickness:2px;text-underline-offset:3px}.annotation-link[data-annotation-type=response],.annotation-link[data-annotation-type=response]:hover{text-decoration-color:#94aed6}
+
+.annotation-link{--annotation-boundary:#ad8a2b}.annotation-link[data-annotation-type=response]{--annotation-boundary:#6489bd}
+.annotation-link::before,.annotation-link::after{display:inline-block;color:var(--annotation-boundary);font-family:ui-monospace,monospace;font-size:11px;font-weight:600;line-height:1;vertical-align:baseline;text-decoration:none}
+.annotation-link::before{content:"[" attr(data-annotation-label) " ";padding-right:3px}.annotation-link::after{content:"]";padding-left:3px}
+
+.annotation-pane .workbench-tabs{background:transparent}
+
+.response-textbox{display:block;width:100%;min-height:140px;margin:14px 0 0;padding:10px 12px;box-sizing:border-box;border:1px solid #d6d2c8;border-radius:2px;background:#fff;color:#333;resize:vertical;font:14px/1.5 "Helvetica Neue",Helvetica,Arial,sans-serif}
+.response-textbox:focus{outline:2px solid #94aed6;outline-offset:1px}

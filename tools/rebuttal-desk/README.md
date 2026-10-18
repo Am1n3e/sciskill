@@ -77,7 +77,7 @@ conversation:
           Original author response.
 ```
 
-Original `content` remains the source of truth. Each initial section has a separate `annotated_content` attribute, initially identical. The viewer currently renders original content; annotation rendering is a later step. On every load, the original headings and content must match `content_checksum`, or loading fails. YAML formatting, annotations, and conversation entries are excluded from this checksum. This detects accidental source edits; it is not protection against someone rewriting both the source and checksum.
+Original `content` remains the source of truth. Each initial section has a separate `annotated_content` attribute, initially identical. The viewer renders validated annotation passages as colored underlined links: blue for response and gold for change request. Clicking a passage toggles its linked analysis/response pane. Hide drafts shows the original review. On every load, the original headings and content must match `content_checksum`, or loading fails. YAML formatting, annotations, and conversation entries are excluded from this checksum. This detects accidental source edits; it is not protection against someone rewriting both the source and checksum.
 
 Concerns can later be added to a review with `id`, a concise `title`, the original `question`, `analysis` and `response` Markdown file paths, and `related` concern IDs. Original review content remains separate from those drafts. Existing JSON workspaces remain readable.
 
@@ -110,4 +110,4 @@ Reviews optionally include `comments`: a list of `{ "id": "comment-1", "label": 
 
 ## Annotation visual example
 
-Open `examples/annotation-preview.html` in a browser to inspect the reviewed highlight/link and expandable pane layout using synthetic content. It is standalone; production annotation rendering and the reusable skill are not implemented yet.
+Open `examples/annotation-preview.html` in a browser to inspect the reviewed highlight/link and expandable pane layout using synthetic content. It is a standalone visual example. The viewer now supports the agreed annotation rendering; the reusable skill remains to be written after workflow approval.

@@ -9,7 +9,9 @@ originalToggle.setAttribute('aria-label', 'Hide drafts');
 originalToggle.innerHTML = '<span>Hide drafts</span><span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>';
 let showOriginal = false;
 function applyOriginalView() {
-  content.querySelectorAll('.workbench-drawer').forEach(item => { item.hidden = showOriginal; });
+  content.querySelectorAll('.workbench-drawer').forEach(item => { item.hidden = showOriginal || (item.classList.contains('annotation-pane') && item.dataset.open!=='true'); });
+  content.querySelectorAll('.original-review').forEach(item=>{item.hidden=!showOriginal;});
+  content.querySelectorAll('.annotated-review').forEach(item=>{item.hidden=showOriginal;});
 }
 originalToggle.addEventListener('click', () => { showOriginal = !showOriginal; originalToggle.setAttribute('aria-checked', String(showOriginal)); applyOriginalView(); });
 const content = document.querySelector('#content');
@@ -77,7 +79,8 @@ function concernDrawer(concern, review, selected) {
       const overall = count(review.concerns.map(c => c.response.source).filter(drafted).map(source => source.trim()).join('\n\n'));
       const limit = workspace.presentation.character_limit;
       const total = `Overall: ${overall.characters.toLocaleString()}${limit ? ` / ${limit.toLocaleString()}` : ''} characters`;
-      response.append(node('div',`${stats.words} words · ${stats.characters} characters · ${total}`,'response-metrics'),prose(concern.response.html,'response-rendered markdown-rendered'));
+      const textbox=node('textarea',undefined,'response-textbox');textbox.value=concern.response.source;textbox.rows=6;textbox.readOnly=true;textbox.setAttribute('aria-label',`${concern.id} response draft`);
+      response.append(node('div',`${stats.words} words · ${stats.characters} characters · ${total}`,'response-metrics'),textbox);
       section.append(response); panel.append(section);
     } else panel.append(prose(concern.analysis.html,'external-markdown analysis-markdown markdown-rendered'));
     panels.append(panel);
@@ -111,6 +114,30 @@ function aggregate(review) {
   if(responses.length) responses.forEach(c=>body.append(prose(c.html)));
   else body.append(node('p','No response drafts yet.','aggregate-empty'));
   card.append(body);return card;
+}
+function attachAnnotations(reviewText,review,selected){
+  const attached=new Set();
+  for(const mark of reviewText.querySelectorAll('mark.review-annotation')){
+    const identity=mark.dataset.annotationId;
+    const concern=review.concerns.find(item=>item.id===identity);
+    if(!concern)continue;
+    attached.add(identity);
+    const drawer=concernDrawer(concern,review,selected);
+    const pane=node('div',undefined,'annotation-pane workbench-drawer');pane.id=identity;pane.dataset.open=String(selected===identity);pane.hidden=selected!==identity;
+    const header=node('div',undefined,'annotation-pane-header');
+    header.append(drawer.querySelector('.drawer-heading'),drawer.querySelector('.response-metrics'));
+    pane.append(header,drawer.querySelector('.workbench-body'));
+    const anchor=mark.closest('p,li')||mark;anchor.after(pane);
+    mark.dataset.annotationLabel=identity.includes('-C')?'C'+identity.split('-C').pop():identity;
+    mark.classList.add('annotation-link');mark.setAttribute('role','link');mark.tabIndex=0;mark.setAttribute('aria-expanded',pane.dataset.open);mark.setAttribute('aria-controls',identity);
+    function toggle(event){
+      if(event.target.closest('a'))return;
+      event.preventDefault();const open=pane.dataset.open!=='true';pane.dataset.open=String(open);pane.hidden=!open;mark.setAttribute('aria-expanded',String(open));
+    }
+    mark.addEventListener('click',toggle);
+    mark.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' ')toggle(event);});
+  }
+  return attached;
 }
 function renderConversation(review,article,initialCard){
   const initialId=review.document_id||review.id;
@@ -160,9 +187,13 @@ function render() {
   const heading=node('div',undefined,'heading');heading.append(node('h4',`Official Review by ${review.label}`), originalToggle);
   const subheading=node('div',undefined,'subheading');subheading.append(node('span','Official Review','invitation highlight'),node('span',`by ${review.label}`,'signatures'));
   const container=node('div',undefined,'note-content-container');const body=node('div',undefined,'note-content');
-  const reviewText=prose(review.document.html,'note-content-value markdown-rendered');
+  const hasAnnotations=Boolean(review.document.annotated_html?.includes('data-annotation-id'));
+  const reviewText=prose(hasAnnotations?review.document.annotated_html:review.document.html,'note-content-value markdown-rendered'+(hasAnnotations?' annotated-review':''));
+  if(hasAnnotations){const original=prose(review.document.html,'note-content-value markdown-rendered original-review');original.hidden=true;body.append(original);}
   body.append(reviewText);
+  const markedIds=hasAnnotations?attachAnnotations(reviewText,review,concernId):new Set();
   for (const concern of review.concerns) {
+    if(markedIds.has(concern.id))continue;
     const normalized=concern.question.replace(/\s+/g,' ').trim();
     const candidates=Array.from(reviewText.querySelectorAll('p, li'));
     const anchor=candidates.find(item=>item.textContent.replace(/\s+/g,' ').trim()===normalized);

@@ -105,3 +105,53 @@ Use the project-specific `<science-skills-annotation>` wrapper inside `annotated
 ## Saved visual example
 
 The reviewed link/pane interaction is retained in `tools/rebuttal-desk/examples/annotation-preview.html`, using a minimal synthetic passage and the package stylesheet. It includes the agreed highlight, link-controlled expansion, Response/Analysis tabs, slightly pink background, counts at the top right, and Hide drafts behavior. It is a standalone visual example, not the production annotation renderer or the completed agent skill. Captured review content remains in ignored local files.
+
+### Step 11 — Annotate the selected review completely
+
+- Annotated Reviewer GruC only; the other reviewer files remain unchanged.
+- Retained `GruC-C1` for the already reviewed code request.
+- Added four `response` passages: numerical discrepancies (`C2`), hardware compatibility conclusion (`C3`), novelty/significance (`C4`), and the related-work comparison (`C7`).
+- Added four more `change_request` passages: alternative pruning criteria (`C5`), attention-block extension (`C6`), reconciling reported numbers (`C8`), and hardware-usable sparsity (`C9`). There are nine annotations total: four response and five change request.
+- Kept the mixed “fix or explain” directive as a change request because it explicitly requests correction; classification does not commit the authors to a particular resolution.
+- Left the contribution summary, strength, quoted method excerpt, and categorical “No”/“None” fields unannotated. These provide context or verdicts rather than additional independent requests.
+- Original text and checksum remain unchanged. Removing all wrappers exactly recovers every original section.
+- Linked the annotation IDs to empty analysis/response files and concise topics for inspection; no substantive analyses or replies were generated.
+
+### Step 12 — Distinct action colors, then underlines
+
+- User requested separate colors for questions/explanations (`response`) and change requests.
+- Response passages use blue and change requests use yellow/gold.
+- User then requested colored underlines instead of filled highlights. The underlined passage remains the pane trigger; no visible type label or chevron.
+
+## Browser definition of done
+
+For every visual change, open the latest version in the user's browser, verify that the intended change is present, and only then report completion. A source edit, screenshot alone, or background build does not meet this requirement. Do not announce a browser refresh before it has actually happened.
+
+### Step 13 — Connect the real viewer
+
+- The UVX viewer now reads the actual annotated YAML, validates that removing wrappers exactly recovers source content, and renders nine linked passages for GruC.
+- Verified in a newly opened visible browser tab that response underlines are blue, change-request underlines are gold, all backgrounds are transparent, and clicking a passage expands its linked pane.
+- The pane uses the agreed pink-tinted background and counts at top right; analysis/response files remain empty.
+- Closed the obsolete full-review static preview tab after opening the real viewer, avoiding confusion between versions.
+
+### Step 14 — Show annotation boundaries
+
+- User found adjacent same-type underlines visually ambiguous (especially concerns 5 and 6).
+- Requested visible start/end brackets with an ID.
+- Added UI-only opening markers such as `[C5` and a closing `]`, retaining type colors and the existing click target. These markers do not change original or annotated source text.
+
+### Step 15 — Remove blue tab-strip background
+
+- User approved the start/end bracket presentation.
+- Removed the light blue background behind Response/Analysis tabs within annotation panes. The strip now inherits the pane's agreed background.
+
+### Step 16 — Cream-white pane
+
+- User requested replacing the pink pane with cream-white.
+- Chose `#fffdf5`, a near-white with a subtle yellow tint rather than pink. Tab-strip background remains transparent.
+
+### Step 17 — Always show the response box
+
+- User requested a visible response text box even when a draft is empty.
+- Response tabs now display the Markdown source in a text box with a minimum visible height; blank drafts show a blank box.
+- The tool remains read-only at this stage; saving/editor controls are not introduced by this display change.
