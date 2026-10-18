@@ -27,7 +27,41 @@ function node(tag, text, className) {
 function prose(html, className = 'markdown-rendered') {
   const item = node('div', undefined, className);
   item.innerHTML = html; // Sanitized by the local server.
+  item.addEventListener('click', event => {
+    const link = event.target.closest('a');
+    if (link && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey && followWorkspaceLink(link.getAttribute('href'))) event.preventDefault();
+  });
   return item;
+}
+function followWorkspaceLink(href) {
+  if (!href?.startsWith('#')) return false;
+  const target = href.slice(1);
+  const theme = workspace.analysis.themes.find(item => target === `theme-${item.id}`);
+  if (theme) {
+    setView('analysis');
+    const section = document.getElementById(target);
+    section.open = true;
+    section.scrollIntoView({block:'start'});
+    return true;
+  }
+  if (workspace.tasks.some(item => target === `task-${item.id}`)) {
+    taskReviewer = 'all';
+    renderTasks();
+    setView('tasks');
+    document.getElementById(target).scrollIntoView({block:'center'});
+    return true;
+  }
+  const [reviewId, concernId, extra] = target.split('/');
+  const review = workspace.reviews.find(item => item.id === reviewId);
+  if (!review || extra !== undefined || (concernId && !review.concerns.some(item => item.id === concernId))) return false;
+  showOriginal = false;
+  originalToggle.setAttribute('aria-checked', 'true');
+  setView('reviews');
+  // Re-render even when revisiting the currently selected concern from another tab.
+  history.pushState(null, '', href);
+  render();
+  if (!concernId) document.getElementById('reviews-panel').scrollIntoView({block:'start'});
+  return true;
 }
 function drafted(source) { return Boolean(source.trim()) && !/^\[?\s*tbd\s*\]?$/i.test(source.trim()); }
 function count(source) { return {words: source.trim() ? source.trim().split(/\s+/u).length : 0, characters: Array.from(source).length}; }
@@ -221,7 +255,8 @@ function renderTasks(){
 function renderAnalysis(){
   const panel=document.getElementById('analysis-panel');panel.replaceChildren();
   if(workspace.analysis.overview){const overview=node('section',undefined,'analysis-overview');overview.append(node('h2','Overview'),prose(workspace.analysis.overview.html));panel.append(overview);}
-  for(const theme of workspace.analysis.themes){
+  const themes = [...workspace.analysis.themes].sort((a,b)=>new Set(b.reviewers).size-new Set(a.reviewers).size || a.number-b.number);
+  for(const theme of themes){
     const section=node('details',undefined,'analysis-theme');section.id=`theme-${theme.id}`;const header=node('summary',undefined,'theme-header');const identity=node('div',undefined,'theme-identity');identity.append(node('h2',`Theme ${theme.number}: ${theme.title}`));
     identity.append(node('p',`${theme.reviewers.length} ${theme.reviewers.length===1?'reviewer':'reviewers'} · ${theme.reviewers.join(', ')}`,'theme-reviewers'));
     const annotations=node('div',undefined,'theme-links');annotations.append(node('strong','Related reviews'));

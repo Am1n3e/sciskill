@@ -1435,3 +1435,11 @@ body{background:#fffdfa}
 .theme-header{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px 24px}.theme-identity{grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;gap:20px}.theme-header .theme-reviewers{text-align:right;flex-shrink:0}.theme-header h2{margin:0}.theme-header .theme-links{grid-row:2}@media(max-width:600px){.theme-identity{align-items:flex-start;gap:12px}.theme-header .theme-reviewers{max-width:35%;flex-shrink:1}.theme-header{gap:16px}}
 
 .analysis-overview{padding:8px 0 24px;border-bottom:1px solid #ddd;margin-bottom:8px}.analysis-overview h2{font-size:20px;margin:0 0 12px}
+
+.analysis-overview .markdown-rendered {line-height:1.6}
+.analysis-overview .markdown-rendered code {overflow-wrap:anywhere}
+.analysis-overview .markdown-rendered h3 {margin:24px 0 10px;font-size:17px}
+.analysis-overview .markdown-rendered table {width:100%;border-collapse:collapse;font-size:13px;margin:12px 0 20px}
+.analysis-overview .markdown-rendered th,.analysis-overview .markdown-rendered td {text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid #ddd}
+.analysis-overview .markdown-rendered th {font-weight:600}
+.analysis-overview .markdown-rendered li {margin-bottom:10px}
