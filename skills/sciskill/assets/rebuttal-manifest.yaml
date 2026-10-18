@@ -1,4 +1,4 @@
-# Rebuttal project manifest template. The viewer reads this as workspace.yaml.
+# Rebuttal manifest template. The viewer reads this as workspace.yaml.
 # Replace example IDs, titles, and paths with the imported review's actual values.
 # Paths resolve inside the project folder; referenced files must exist.
 version: 1

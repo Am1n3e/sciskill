@@ -1,6 +1,6 @@
 # Plan a rebuttal
 
-Turn initial reviews and the manuscript into an evidence-grounded response plan. Use the Rebuttal project format below when saving the analysis. Use the Rebuttal Desk importer and validator through UVX.
+Turn initial reviews and the manuscript into an evidence-grounded response plan. Use the Rebuttal manifest format below when saving the analysis. Use the Rebuttal Desk importer and validator through UVX.
 
 The manuscript and its available appendix or supplement are required. Preserve existing human decisions and drafts on reruns. Do not generate response drafts, run experiments, modify the manuscript, or mark tasks accepted or done unless requested. Distinguish the reviewer's stated request from your interpretation; describe evidence that would resolve it rather than predicting the reviewer's vote.
 
@@ -56,9 +56,9 @@ Validate all files and links, unique IDs/numbers, annotation-to-concern correspo
 
 If independent reviewers are requested, ask for concrete omissions, mismatched evidence, and misprioritized work with source references; unsupported suggestions do not become tasks. Reconcile their findings and record the decisions. Open the resulting workspace through the UVX viewer, refresh the actual user-facing tab, and verify the displayed title, themes, annotations, and tasks before reporting completion.
 
-## Rebuttal project
+## Rebuttal manifest
 
-A rebuttal project is the folder containing one paper's reviews, analysis, tasks, and response drafts. Use the published tools to import, validate, and view it:
+The rebuttal manifest links one paper's reviews, analysis, tasks, and response drafts. Use the published tools to import, validate, and view it:
 
 ```sh
 uvx sciskill rebuttal import-openreview initial-reviews.html my-rebuttal
@@ -76,9 +76,9 @@ annotated_content: <science-skills-annotation id="a1-C1" type="clarification">Pl
 
 Allowed tag attributes: `id`, `type`, optional `subtype`. Types: `clarification`, `change_request`. Subtypes for change requests: `manuscript_change`, `additional_experiments`. No nested/overlapping tags; all IDs must be globally unique and have matching manifest concerns. Original Markdown remains inside the wrappers.
 
-Use the [Rebuttal project template](../assets/rebuttal-project.yaml) for the manifest structure. The viewer reads this file as `workspace.yaml` inside the rebuttal project folder. Adapt the template to the imported review IDs and paths; preserve imported source data and existing decisions.
+Use the [Rebuttal manifest template](../assets/rebuttal-manifest.yaml) for the manifest structure. The viewer reads this file as `workspace.yaml` inside the rebuttal folder. Adapt the template to the imported review IDs and paths; preserve imported source data and existing decisions.
 
-Statuses: `proposed`, `pending`, `in_progress`, `done`, `not_doing`. Theme task links use the same numeric IDs. Document paths are relative to the rebuttal project and cannot escape its folder. The loader expects the analysis and response files to exist, even when a response is empty. It renders theme and overview Markdown, while concern panes link to themes.
+Statuses: `proposed`, `pending`, `in_progress`, `done`, `not_doing`. Theme task links use the same numeric IDs. Document paths are relative to the rebuttal folder and cannot escape its folder. The loader expects the analysis and response files to exist, even when a response is empty. It renders theme and overview Markdown, while concern panes link to themes.
 
 Overview and theme Markdown can link directly to `#REVIEWER/CONCERN-ID`, `#theme-THEME-ID`, or `#task-NUMBER`; `#REVIEWER` opens the full review. Use the exact persisted IDs. The viewer opens the corresponding tab and expands a linked theme. Theme display order is descending unique reviewer count, then stable theme number.
 
