@@ -1,47 +1,43 @@
 ---
 layout: ../layouts/DocLayout.astro
 title: Getting started
-description: Start with the tools that exist today. Add agent skills as they become available.
+description: Run the tools locally or add the rebuttal-analysis skill to your agent.
 ---
 
-## What you can use today
+## Run from source
 
-Science Skills is a collection in development. **bib-lint has public source and can run locally. Rebuttal Desk is a local prototype. The reusable agent skills have not been released yet.** There is no collection-wide installer or supported slash-command set at this stage.
-
-The website is a catalog and field guide. Your bibliography, manuscripts, and reviews are processed by the local tools, not by this website.
-
-## Set up bib-lint
-
-You need Git, Python 3.12 or later, and [uv](https://docs.astral.sh/uv/). The current tool supports macOS and Linux.
+Install [uv](https://docs.astral.sh/uv/), then clone the repository. Python 3.12 or newer is required.
 
 ```sh
-git clone https://github.com/Am1n3e/bib-lint.git
-cd bib-lint
-uv sync --locked
-uv run bib-lint --help
+git clone https://github.com/Am1n3e/sciskill.git
+cd sciskill
+uvx --from . sciskill --help
 ```
 
-The help output is the source of truth for the commands supported by the checked-out version. The [public repository](https://github.com/Am1n3e/bib-lint) contains the implementation, tests, and benchmark harness.
-
-## Run an audit
-
-Verify a bibliography against scholarly sources, then open its report:
+## Check references
 
 ```sh
-uv run bib-lint verify references.bib
-uv run bib-lint view references.bib-lint
+uvx --from . sciskill bib-lint verify references.bib
+uvx --from . sciskill bib-lint view references.bib-lint
 ```
 
-Source bibliographies and compiled AUX files are not edited. An audit can contact external scholarly providers; their availability affects coverage.
+Add `--aux paper.aux` to verify only cited references. Without it, all entries are checked. Sources are never edited. Failed lookups require review and do not establish that a citation is wrong.
 
-## Review the result
+## Open a rebuttal workspace
 
-Inspect the finding, the retrieved record, and the comparison. Distinguish a demonstrated mismatch from an unresolved lookup. A source outage does not establish that a citation is wrong.
+Save the rendered OpenReview discussion after its reviews and replies have loaded, then import it:
 
-## Rebuttal Desk
+```sh
+uvx --from . sciskill rebuttal import-openreview discussion.html my-rebuttal
+uvx --from . sciskill rebuttal view my-rebuttal
+```
 
-The viewer currently lives in a paper-specific local workspace. A reusable package and public installation instructions are not available yet. Its planned agent skills will help extract concerns, plan responses, and assess response coverage, with the author reviewing decisions.
+The importer preserves review content and conversations in YAML. It does not generate analysis or drafts. Workspace files remain local; Reload rereads changes made in your editor.
 
-## What comes next
+## Add the agent skill
 
-Each released skill should include its trigger, inputs, procedure, expected outputs, and limitations. It should also declare what has actually been evaluated. Compatibility and performance claims will follow testing, rather than precede it.
+```sh
+npx skills add Am1n3e/sciskill
+```
+
+Use the `plan-rebuttal` workflow with the initial reviews and submitted manuscript, including its appendix. It produces annotated concerns, cross-review themes, and proposed tasks. Authors review the proposed work and retain control of response drafts and manuscript changes.

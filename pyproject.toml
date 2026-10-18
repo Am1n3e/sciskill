@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sciskill"
+version = "0.1.0a1"
+description = "Bibliography audits and local rebuttal workspaces for scientists"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "GPL-3.0-only"
+classifiers = ["Development Status :: 3 - Alpha"]
+dependencies = [
+  "beautifulsoup4>=4.13,<5", "defusedxml>=0.7,<1", "httpx>=0.28,<0.29",
+  "pybtex>=0.26,<0.27", "Markdown>=3.7,<4", "bleach>=6.2,<7",
+  "PyYAML>=6,<7", "markdownify>=1,<2",
+]
+
+[project.urls]
+Repository = "https://github.com/Am1n3e/sciskill"
+
+[project.scripts]
+sciskill = "sciskill.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tools/sciskill/src/sciskill", "tools/bib-lint/src/bib_lint", "tools/rebuttal-desk/src/rebuttal_desk"]
+
+[tool.hatch.build.targets.sdist]
+include = ["tools/sciskill/src", "tools/bib-lint/src", "tools/rebuttal-desk/src", "README.md", "LICENSE", "pyproject.toml"]

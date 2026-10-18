@@ -5,8 +5,6 @@ description: Audit local BibTeX metadata against scholarly sources, then inspect
 eyebrow: Skills / Reference auditing
 ---
 
-**Availability: public tool. Reusable agent skill: planned.**
-
 ## When to use it
 
 Use bib-lint when you want to check whether citation metadata matches an independently retrieved scholarly record. It checks core fields such as title, authors, year, venue, DOI, and arXiv identifiers against applicable built-in providers.
@@ -35,7 +33,7 @@ A report can distinguish a confirmed match, a demonstrated discrepancy, and a re
 
 The repository includes a harness for HALLMARK, a manually verified Zenodo citation dataset, and the GPTZero and HalluCitation reported-positive collections. These protocols measure different things. Positive-only detection coverage cannot establish false-positive performance.
 
-Current and previous benchmark runs must be interpreted alongside evaluated coverage, definitive answers, source errors, and the recorded code and input identities. This preview does not publish an aggregate performance claim.
+Current and previous benchmark runs must be interpreted alongside evaluated coverage, definitive answers, source errors, and the recorded code and input identities. No aggregate performance claim is made.
 
 ## Boundaries
 
@@ -43,4 +41,11 @@ The audit concerns core citation metadata. It does not establish whether a paper
 
 ## Use the tool
 
-See the [bib-lint repository](https://github.com/Am1n3e/bib-lint) for source and run `uv run bib-lint --help` from its checkout for the supported commands. Install the tool from that repository; Science Skills does not yet provide a bundled installer.
+From the [SciSkill repository](https://github.com/Am1n3e/sciskill):
+
+```sh
+uvx --from . sciskill bib-lint verify references.bib
+uvx --from . sciskill bib-lint view references.bib-lint
+```
+
+The viewer is bundled HTML, CSS, and JavaScript served locally by Python. It can start audits, open saved reports, inspect evidence, and stop or resume runs. Source bibliographies are not modified.

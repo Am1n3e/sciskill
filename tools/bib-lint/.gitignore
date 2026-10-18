@@ -1,0 +1,60 @@
+# Python bytecode and packaging
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+wheels/
+*.egg-info/
+.eggs/
+*.egg
+
+# Virtual environments (keep uv.lock and .python-version tracked)
+.venv/
+venv/
+env/
+ENV/
+
+# Test, lint, type-check, and coverage artifacts
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.pytype/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+junit.xml
+
+# Local credentials and configuration
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Generated reference reports, checkpoints, and provider responses
+/references.json
+/references.tmp.json
+*.json.lock
+.bib-lint-cache/
+evaluation/.artifacts/
+
+# Editor and OS artifacts
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Local OpenSpec planning and generated Codex skills
+/openspec/
+/.agents/skills/openspec-*/
+/.agents/skills/.openspec-target
+
+# Local development reports
+/tests/COVERAGE.md

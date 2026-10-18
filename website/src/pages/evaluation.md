@@ -10,13 +10,11 @@ A deterministic test can establish that parsing, checkpointing, or a report cont
 
 None of these is interchangeable with the others.
 
-## Current state
+## What is checked
 
-| Component | What exists | What remains |
-| --- | --- | --- |
-| bib-lint | Tests, a benchmark harness, saved evidence, and per-reference comparisons | Report current-run coverage and review errors before drawing performance conclusions |
-| Rebuttal Desk | A local viewer and paper-specific concern workbenches | A reusable release and evaluated concern-analysis and response-coverage skills |
-| Collection-wide agent skills | A proposed packaging and evaluation direction | Implementation, routing tests, and task-level comparisons |
+bib-lint includes parsing, verification, cache-integrity, job, CLI, and viewer tests plus a citation benchmark harness. Rebuttal Desk tests workspace validation, source integrity, imports, and rendering. The shared package has isolated installation and browser-server tests.
+
+These checks establish software behavior. They do not establish the correctness of an agent's scientific analysis or guarantee that a response resolves a reviewer's concern.
 
 ## Read citation benchmarks with their denominator
 

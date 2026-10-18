@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdfa">
+  <title>bib-lint · Science Skills</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#workspace-content">Skip to content</a>
+<main class="main">
+  <header class="workspace-header">
+    <div class="brand"><span class="eyebrow">Science Skills</span><h1>bib-lint</h1><p id="workspace-title">Bibliography verification and source evidence</p></div>
+    <button id="reload-workspace" type="button">Reload</button>
+  </header>
+  <nav class="workspace-tabs" role="tablist" aria-label="Workspace views">
+    <button id="overview-tab" role="tab" aria-selected="true" aria-controls="overview-panel">Overview</button>
+    <button id="references-tab" role="tab" aria-selected="false" aria-controls="references-panel" tabindex="-1">References</button>
+  </nav>
+  <div id="messages" aria-live="polite"></div>
+  <details id="setup" class="setup">
+    <summary>Audit setup</summary>
+    <form id="audit-form" autocomplete="off">
+      <fieldset id="audit-fields">
+        <div class="form-grid">
+          <label>Bibliography or report path<input id="bibliography" name="bibliography" spellcheck="false" placeholder="/path/to/references.bib"></label>
+          <label>Compiled AUX path (optional)<input id="aux" name="aux" spellcheck="false" placeholder="/path/to/paper.aux"></label>
+          <label>Output directory (optional)<input id="output" name="output" spellcheck="false" placeholder="Defaults to references.bib-lint beside the input"></label>
+          <label>Citation key (optional)<input id="citation-key" name="key" spellcheck="false" placeholder="Example citation key"></label>
+        </div>
+        <div class="actions">
+          <button type="submit" class="primary">Verify</button><button type="button" data-action="parse">Parse only</button>
+          <button type="button" data-action="refresh">Recheck sources</button>
+          <button type="button" data-action="verify_key" class="key-action">Verify selected key</button>
+          <button type="button" data-action="refresh_key" class="key-action">Recheck selected key</button>
+        </div>
+        <p class="muted small">Verify reuses current evidence. Recheck sources fetches it again. Source bibliographies and AUX files are never modified.</p>
+      </fieldset>
+    </form>
+    <form id="open-form" autocomplete="off">
+      <div class="form-grid">
+        <label>Existing audit directory or report file<input id="report" name="report" spellcheck="false" placeholder="/path/to/references.bib-lint"></label>
+        <div class="open-action"><button type="submit">Open audit</button></div>
+      </div>
+      <details class="advanced"><summary>Evidence paths</summary><div class="form-grid">
+        <label>Cache directory<input id="cache-dir" name="cache_dir" spellcheck="false" placeholder="Use the audit’s cache directory"></label>
+        <label>Agent evidence file<input id="agent-path" name="agent_path" spellcheck="false" placeholder="Use the audit’s agent evidence file"></label>
+      </div></details>
+    </form>
+  </details>
+  <section id="job-status" class="job-status" aria-live="polite" hidden></section>
+  <div id="workspace-content" tabindex="-1">
+    <section id="overview-panel" role="tabpanel" aria-labelledby="overview-tab"><p class="muted">Loading audit…</p></section>
+    <section id="references-panel" role="tabpanel" aria-labelledby="references-tab" hidden>
+      <div id="reference-list">
+        <div class="filters">
+          <label class="search-label">Search references<input type="search" id="search" name="search" autocomplete="off" placeholder="Citation key, title, or finding…"></label>
+          <label class="toggle"><input type="checkbox" id="hide-unused">Hide unused/skipped</label>
+          <label class="toggle"><input type="checkbox" id="attention" title="Includes uncertain findings and failed source requests">Needs attention</label>
+        </div>
+        <p id="visible-count" class="muted small" aria-live="polite"></p>
+        <div id="references-table" class="table-scroll"></div>
+      </div>
+      <article id="reference-detail" hidden></article>
+    </section>
+  </div>
+</main>
+</body>
+</html>

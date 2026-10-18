@@ -1,0 +1,4 @@
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
+<opensearch:totalResults>1</opensearch:totalResults>
+<entry><id>http://arxiv.org/abs/2501.12345v1</id><title>An Example Paper</title>
+<author><name>Jane Smith</name></author><published>2025-01-01T00:00:00Z</published></entry></feed>

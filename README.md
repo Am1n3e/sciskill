@@ -1,54 +1,69 @@
-# Science Skills
+# SciSkill
 
-Agent tools and skills for scientists.
+Agent tools and skills for scientists: bibliography audits with bib-lint and review-response workspaces with Rebuttal Desk.
 
-This is the local catalog-site preview for bib-lint and Rebuttal Desk. It uses Astro, Markdown pages, and a static GitHub Pages deployment workflow. Existing tool availability and planned agent skills are identified separately.
+## Run the tools
+
+Requires [uv](https://docs.astral.sh/uv/) and Python 3.12 or newer. From this checkout:
+
+```sh
+uvx --from . sciskill --help
+uvx --from . sciskill bib-lint verify /path/to/references.bib
+uvx --from . sciskill bib-lint view /path/to/references.bib-lint
+uvx --from . sciskill rebuttal import-openreview /path/to/discussion.html /path/to/my-rebuttal
+uvx --from . sciskill rebuttal view /path/to/my-rebuttal
+```
+
+Both tools and their browser assets are bundled. Dependencies stay outside your paper's environment. After an alpha is published to PyPI, use `uvx --prerelease allow sciskill` in place of `uvx --from . sciskill`.
+
+See [bib-lint](tools/bib-lint/README.md) and [Rebuttal Desk](tools/rebuttal-desk/README.md) for inputs, outputs, and limitations.
+
+## Agent skill
+
+```sh
+npx skills add Am1n3e/sciskill
+```
+
+The [SciSkill instructions](skills/sciskill/SKILL.md) define the `plan-rebuttal` workflow: analyze initial reviews against the manuscript, annotate actionable passages, and produce linked themes and proposed tasks. The author reviews decisions and writes the response drafts.
 
 ## Repository structure
 
-- `website/`: Astro website source, assets, configuration, and local build dependencies.
-- `tools/`: runnable tools, including Rebuttal Desk.
+- `website/`: Astro site, static assets, and configuration.
+- `tools/bib-lint/`: bibliography audit engine and local browser viewer.
+- `tools/rebuttal-desk/`: OpenReview importer and local review workspace viewer.
+- `tools/sciskill/`: shared command launcher and package integration tests.
 - `skills/`: agent instructions and supporting references.
 
-## Local development
+Research workspaces, captured reviews, audit reports, screenshots, and generated build files are excluded from Git.
 
-Requires Node.js 22.22.0 or newer.
+## Checks
+
+```sh
+python3 -m unittest discover -s tools/sciskill/tests -v
+uv run --project tools/rebuttal-desk python -m unittest discover -s tools/rebuttal-desk/tests -v
+cd tools/bib-lint
+uv run --group dev pytest -q -m 'not package'
+```
+
+## Website
+
+Requires Node.js 22.22.0 or newer:
 
 ```sh
 cd website
 npm ci
 npm run dev
-```
-
-The site uses the `/science-skills/` base path in local development and production. Open the local URL printed by Astro with that path.
-
-```sh
 npm run check
 npm run build
-npm run preview
 ```
 
-## GitHub Pages
+The site uses `/sciskill/` as its base path. The Pages workflow builds pull requests and deploys `main` when GitHub Pages is configured to use GitHub Actions.
 
-The included workflow checks and builds pull requests. Pushes to `main` and manual runs on `main` also deploy the build to the `github-pages` environment.
+## Publishing
 
-To publish, create the intended collection repository and choose **GitHub Actions** under **Settings → Pages → Build and deployment → Source**. Confirm the owner and repository name match `site` and `base` in `website/astro.config.mjs` before enabling deployment. No live repository or deployment is created by this local preview.
+Publish a GitHub release with a tag matching `v<version>` from `pyproject.toml`, currently `v0.1.0a1`. The [publish workflow](.github/workflows/publish.yml) tests the installed tools and both viewers, builds and validates the distributions, and uploads them to PyPI with Trusted Publishing.
 
-The current proposed target is `Am1n3e/science-skills`. If the repository name or domain changes, update the Astro configuration. All internal navigation and local assets derive their URLs from Astro's base URL.
-
-## Content
-
-- `website/src/pages/index.astro`: catalog homepage and illustrative interactive examples.
-- `website/src/pages/*.md`: general documentation.
-- `website/src/pages/tools/*.md`: capability pages.
-- `website/src/layouts/`: shared navigation and documentation layout.
-- `website/src/styles/global.css`: responsive visual system.
-
-All demo citations and review passages on the homepage are illustrative. No real manuscript or reviewer content is included.
-
-## Local tools
-
-[Rebuttal Desk](tools/rebuttal-desk/README.md) provides a standalone, read-only review workspace viewer with local manifest-linked files and OpenReview-style presentation and a configurable response length limit.
+The PyPI publisher must match owner `Am1n3e`, repository `sciskill`, workflow `publish.yml`, and environment `pypi`. No API token is needed.
 
 ## License
 

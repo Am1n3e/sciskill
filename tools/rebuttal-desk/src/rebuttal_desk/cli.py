@@ -8,8 +8,8 @@ from .server import make_server
 from .workspace import init_workspace, load_workspace
 
 
-def main():
-    parser = argparse.ArgumentParser(prog="rebuttal-desk")
+def main(argv=None, *, prog="rebuttal-desk"):
+    parser = argparse.ArgumentParser(prog=prog)
     parser.add_argument("--version", action="version", version="rebuttal-desk 0.1.0")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser(
@@ -27,7 +27,7 @@ def main():
     )
     importer.add_argument("html")
     importer.add_argument("workspace")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     try:
         run(args)
     except (ValueError, OSError) as exc:

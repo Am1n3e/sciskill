@@ -1,0 +1,63 @@
+[project]
+name = "bib-lint"
+version = "0.1.0"
+description = "Read-only BibTeX parsing for reproducible reference audits"
+readme = "README.md"
+authors = [
+    { name = "Amine ElHattami", email = "amine.elhattami@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.13,<5",
+    "defusedxml>=0.7,<1",
+    "httpx>=0.28,<0.29",
+    "pybtex>=0.26,<0.27",
+]
+
+[project.scripts]
+bib-lint = "bib_lint.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.1,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+benchmark = [
+    "hallmark @ git+https://github.com/rpatrik96/hallmark@f774fa40675daa83eca6201637a94c4536b7bb3e",
+]
+dev = [
+    "pytest>=9.1.1",
+    "coverage>=7.10,<8",
+    "ruff>=0.16.9",
+    "invoke>=2.2,<3",
+    "lefthook==2.2.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = ["unit: isolated parsing and metadata decisions", "workflow: filesystem and CLI contracts", "ui: local viewer interactions and jobs", "package: isolated installed distribution checks"]
+
+[tool.coverage.run]
+branch = true
+source = ["bib_lint"]
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+required-version = "==0.16.9"
+force-exclude = true
+extend-exclude = ["openspec", ".agents", "evaluation/.artifacts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C901"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

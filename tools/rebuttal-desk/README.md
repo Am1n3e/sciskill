@@ -1,6 +1,6 @@
 # Rebuttal Desk
 
-A standalone, read-only local viewer for reviews, concern-level analysis, response drafts, related concerns, and an assembled response. It does not analyze reviews or generate responses. Edit the workspace files in your editor, then click Refresh.
+A standalone, read-only local viewer for reviews, concern-level analysis, response drafts, related concerns, and an assembled response. It does not analyze reviews or generate responses. Edit the workspace files in your editor, then click Reload.
 
 ```sh
 uvx --from ./tools/rebuttal-desk rebuttal-desk init ./my-rebuttal
@@ -26,6 +26,10 @@ The importer refuses to overwrite an existing directory. It writes `workspace.ya
 Conversations are sorted by creation time, with the ID breaking equal-time ties. The displayed timestamp and its original text are retained; captures without timezone information do not acquire an invented timezone. Reply targets are resolved from explicit “Replying to” headings when present, otherwise from HTML nesting. Ambiguous reply targets, missing timestamps, and threads that cannot be associated with a review cause an import error instead of silently losing content. Separate threads started by the same reviewer or editor are included in that review's conversation; their root has no reply target.
 
 No concerns, analysis, or response drafts are inferred by import. Action editor labels use the role and exported ID without a personal name. The import is offline and does not execute scripts or fetch links from the HTML. An initial HTML shell without loaded comments is rejected; the importer cannot recover content missing from the capture.
+
+## Shared command
+
+From the repository root, use `uvx --from . sciskill rebuttal` followed by the same action and arguments shown above. The standalone package remains buildable from this directory.
 
 ## Workspace format
 
@@ -77,7 +81,7 @@ conversation:
           Original author response.
 ```
 
-Original `content` remains the source of truth. Each initial section has a separate `annotated_content` attribute, initially identical. The viewer renders validated annotation passages as colored underlined links: blue for clarification and purple for change request. Clicking a passage toggles its linked analysis/response pane. Hide drafts shows the original review. On every load, the original headings and content must match `content_checksum`, or loading fails. YAML formatting, annotations, and conversation entries are excluded from this checksum. This detects accidental source edits; it is not protection against someone rewriting both the source and checksum.
+Original `content` remains the source of truth. Each initial section has a separate `annotated_content` attribute, initially identical. The viewer renders validated annotation passages as colored underlined links: blue for clarification and purple for change request. Clicking a passage toggles its response pane; theme chips link to shared analysis. Turning Annotations off shows the original review. On every load, the original headings and content must match `content_checksum`, or loading fails. YAML formatting, annotations, and conversation entries are excluded from this checksum. This detects accidental source edits; it is not protection against someone rewriting both the source and checksum.
 
 Concerns can later be added to a review with `id`, a concise `title`, the original `question`, `analysis` and `response` Markdown file paths, and `related` concern IDs. Original review content remains separate from those drafts. Existing JSON workspaces remain readable.
 
@@ -89,7 +93,7 @@ Only explicit UI assets and validated, rendered workspace data are served. Raw w
 
 ## Response semantics
 
-Response drawers open on the Response view, with an Analysis toggle. Related links select the corresponding reviewer and expand the concern. The assembled response concatenates nonempty response drafts in manifest order, separated by two newlines. Blank or `TBD` / `[TBD]` responses are excluded. “Drafted” records the presence of text, **not** whether a concern is resolved. Word counts split on whitespace; characters count Unicode code points including whitespace, not bytes or grapheme clusters. Limits apply separately to each review's assembled response. A limit indicator does not change files.
+Response panes show the draft directly, with links to related themes in Analysis. Related links select the corresponding reviewer and expand the concern. The assembled response concatenates nonempty response drafts in manifest order, separated by two newlines. Blank or `TBD` / `[TBD]` responses are excluded. “Drafted” records the presence of text, **not** whether a concern is resolved. Word counts split on whitespace; characters count Unicode code points including whitespace, not bytes or grapheme clusters. Limits apply separately to each review's assembled response. A limit indicator does not change files.
 
 ## Development
 
@@ -106,7 +110,7 @@ The viewer always uses its OpenReview-style review cards and threaded comment gr
 
 Rendering currently uses sanitized Markdown/HTML; OpenReview-style layout does **not** imply exact OpenReview Markdown/math renderer parity. Exact parity requires further work and fixtures. No external parser is loaded in the browser.
 
-Reviews optionally include `comments`: a list of `{ "id": "comment-1", "label": "Author clarification", "document": "comments/clarification.md" }`. Comments use the same file containment and rendering rules as reviews. Editor/save support and agent skills remain later work.
+Reviews optionally include `comments`: a list of `{ "id": "comment-1", "label": "Author clarification", "document": "comments/clarification.md" }`. Comments use the same file containment and rendering rules as reviews. Drafts are edited in workspace files; the agent analysis workflow is documented in `skills/sciskill` at the repository root.
 
 ## Annotations
 
@@ -116,6 +120,6 @@ Annotations use `<science-skills-annotation id="..." type="clarification|change_
 
 ## Reviews and Tasks views
 
-The title sits above Reviews and Tasks tabs. Reviews keeps its reviewer picker inside the view. Tasks has an independent reviewer filter that defaults to All reviewers; switching views preserves each selection without carrying it into the other view. Tasks linked to multiple reviewers appear once and match any associated reviewer.
+The title sits above Analysis, Reviews, and Tasks tabs. Analysis opens by default and renders a Markdown overview followed by numbered themes with related reviews and tasks. Reviews keeps its reviewer picker inside the view. Tasks has an independent reviewer filter that defaults to All reviewers; switching views preserves each selection without carrying it into the other view. Tasks linked to multiple reviewers appear once and match any associated reviewer.
 
-The manifest may contain a `tasks` list using the agreed fields (`id`, `title`, `annotations`, `status`, `priority`, `effort`, `note`, `external_link`). Task IDs are unique; annotation references must exist. Status is proposed, pending, in_progress, done, or not_doing. Priority and effort are low, medium, or high. External links are optional HTTP(S) URLs. The task view sorts high priority first and preserves file order for ties. Like the rest of this phase's viewer, task data is read-only; edit YAML externally. No agent-generated tasks are created automatically.
+The manifest may contain a `tasks` list using the agreed fields (`id`, `title`, `annotations`, `status`, `priority`, `effort`, `note`, `external_link`). Task IDs are unique; annotation references must exist. Status is proposed, pending, in_progress, done, or not_doing. Priority and effort are low, medium, or high. External links are optional HTTP(S) URLs. The task view sorts high priority first and preserves file order for ties. Task data is read-only; edit YAML externally. No agent-generated tasks are created automatically.

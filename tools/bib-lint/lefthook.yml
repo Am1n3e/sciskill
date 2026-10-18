@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://lefthook.dev/schema.json
+# Older branches may not contain this configuration yet; Git hooks are shared by worktrees.
+lefthook: test ! -f lefthook.yml || uv run --locked lefthook
+
+pre-push:
+  parallel: false
+  commands:
+    formatting:
+      run: uv run --locked invoke format_check
+    lint:
+      run: uv run --locked invoke lint
+    complexity:
+      run: uv run --locked invoke complexity

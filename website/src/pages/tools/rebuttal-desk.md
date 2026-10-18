@@ -1,41 +1,29 @@
 ---
 layout: ../../layouts/DocLayout.astro
 title: Rebuttal Desk
-description: A local workbench for reviewer concerns, analysis, and response drafts—with the author making the decisions.
+description: Review feedback, linked themes, proposed tasks, and response drafts in a local workspace.
 eyebrow: Skills / Review & response planning
 ---
 
-**Availability: paper-specific local prototype. Reusable agent skills: planned.**
+## Import and inspect reviews
 
-## What already works
+Rebuttal Desk imports a rendered OpenReview HTML capture into YAML. It preserves reviewer IDs, section headings, original content, timestamps, and nested conversations. Its bundled browser viewer runs on a local Python server.
 
-The existing HTML viewer preserves original review text and links concern-level workbenches to analysis and response drafts. It connects related concerns, renders Markdown and mathematics, and assembles a response with word and character counts.
+```sh
+uvx --from . sciskill rebuttal import-openreview discussion.html my-rebuttal
+uvx --from . sciskill rebuttal view my-rebuttal
+```
 
-The current viewer is customized to one research workspace. It has not yet been packaged as a general-purpose public release.
+Run these from the [repository checkout](https://github.com/Am1n3e/sciskill).
 
-## What the skill layer would add
+## Analyze and plan
 
-The proposed workflow takes reviewer feedback, the paper, available evidence, and an optional response draft. It would help:
+The SciSkill `plan-rebuttal` workflow compares initial reviews with the manuscript and appendix. It annotates exact passages as clarifications or change requests, identifies existing evidence, clusters related concerns into themes, and proposes tasks for author approval.
 
-1. Extract explicit questions and substantive concerns, preserving their source passages.
-2. Connect overlapping requests across reviewers without losing their original context.
-3. Propose a response action: clarify, provide evidence, run an experiment, acknowledge a limitation, or combine duplicates.
-4. Map draft responses back to concerns and identify missing evidence or unanswered parts.
+Analysis opens with an overview and numbered themes. Reviews preserve the source text alongside annotated passages and draft panes. Tasks link proposed work to the concerns it addresses.
 
-Each proposed action should carry a rationale. The author reviews decisions to combine, defer, or omit a concern.
+## Drafts and limits
 
-## Example: a concern becomes a plan
+Edit drafts in workspace Markdown files and use Reload to update the viewer. The final response combines nonempty drafts for each reviewer and shows word and character counts. A draft's presence does not prove that it answers the concern.
 
-This is illustrative, not an analysis from a real submitted paper.
-
-> “The ablation does not isolate the contribution of retrieval quality.”
-
-A useful plan would identify the requested comparison, locate any existing evidence, and mark a new ablation as a decision for the author. It would not invent an experiment or report a result that was never measured.
-
-## What “addressed” currently means
-
-The viewer's addressed counter detects a filled response rather than a blank or placeholder. **It does not assess whether the answer resolves the concern.** Semantic coverage checking is a proposed capability that still needs implementation and evaluation.
-
-## Availability and evaluation
-
-There is no public installation package or hosted review-processing service yet. This catalog does not publish private manuscript or review content. The analysis skills have no task-level evaluation results at this stage.
+The tool does not generate experiments or results. OpenReview-style presentation does not guarantee exact OpenReview Markdown or mathematics rendering. Review the final response before submission.
