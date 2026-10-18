@@ -4,6 +4,8 @@ Agent skills and tools for scientists.
 
 Keep your focus on the science. Let your agent handle the grunt work.
 
+![A scientist writes Transformer equations while a small robot sweeps up chalk dust](website/public/images/scientist-robot-transformer.png)
+
 ## Run the tools
 
 Requires [uv](https://docs.astral.sh/uv/) and Python 3.12 or newer. Run the published [SciSkill package from PyPI](https://pypi.org/project/sciskill/):
