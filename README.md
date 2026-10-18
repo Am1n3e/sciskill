@@ -1,6 +1,6 @@
 # SciSkill
 
-Agent skills and tools for scientists.
+**Agent skills and tools for scientists.**
 
 Keep your focus on the science. Let your agent handle the grunt work.
 
