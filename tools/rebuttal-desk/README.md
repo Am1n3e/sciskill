@@ -113,3 +113,9 @@ Reviews optionally include `comments`: a list of `{ "id": "comment-1", "label": 
 Open `examples/annotation-preview.html` in a browser to inspect the reviewed highlight/link and expandable pane layout using synthetic content. It is a standalone visual example. The viewer now supports the agreed annotation rendering; the reusable skill remains to be written after workflow approval.
 
 Annotations use `<science-skills-annotation id="..." type="clarification|change_request">...</science-skills-annotation>` within `annotated_content`. They may include an optional nonempty `subtype` attribute for a finer work category; supported values are `manuscript_change` and `additional_experiments`.
+
+## Reviews and Tasks views
+
+The title sits above Reviews and Tasks tabs. Reviews keeps its reviewer picker inside the view. Tasks has an independent reviewer filter that defaults to All reviewers; switching views preserves each selection without carrying it into the other view. Tasks linked to multiple reviewers appear once and match any associated reviewer.
+
+The manifest may contain a `tasks` list using the agreed fields (`id`, `title`, `annotations`, `status`, `priority`, `effort`, `note`, `external_link`). Task IDs are unique; annotation references must exist. Status is proposed, pending, in_progress, done, or not_doing. Priority and effort are low, medium, or high. External links are optional HTTP(S) URLs. The task view sorts high priority first and preserves file order for ties. Like the rest of this phase's viewer, task data is read-only; edit YAML externally. No agent-generated tasks are created automatically.

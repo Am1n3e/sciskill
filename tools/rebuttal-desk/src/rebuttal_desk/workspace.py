@@ -4,6 +4,7 @@ import re
 from datetime import datetime
 from html import escape
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import bleach
 import markdown
@@ -284,6 +285,129 @@ def validate_links(reviews):
             )
 
 
+def load_task(raw, annotation_ids):
+    require(isinstance(raw, dict), "Task must be an object")
+    task_id = raw.get("id")
+    require(type(task_id) is int and task_id > 0, "Task ID must be a positive integer")
+    links = raw.get("annotations")
+    require(
+        isinstance(links, list) and bool(links),
+        "Task annotations must be a nonempty list",
+    )
+    require(
+        all(isinstance(link, str) and link in annotation_ids for link in links),
+        "Unknown task annotation",
+    )
+    status = raw.get("status")
+    require(
+        isinstance(status, str)
+        and status in {"proposed", "pending", "in_progress", "done", "not_doing"},
+        "Invalid task status",
+    )
+    for field in ("priority", "effort"):
+        require(
+            isinstance(raw.get(field), str)
+            and raw.get(field) in {"low", "medium", "high"},
+            f"Invalid task {field}",
+        )
+    note = raw.get("note", "")
+    require(isinstance(note, str), "Task note must be text")
+    external = raw.get("external_link")
+    require(
+        external is None or isinstance(external, str),
+        "External link must be a URL or null",
+    )
+    if external is not None:
+        parsed = urlsplit(external)
+        require(
+            parsed.scheme in {"https", "http"} and bool(parsed.netloc),
+            "External link must be an HTTP(S) URL",
+        )
+    return {
+        "id": task_id,
+        "title": text(raw.get("title"), "task title"),
+        "annotations": links,
+        "status": status,
+        "priority": raw["priority"],
+        "effort": raw["effort"],
+        "note": note,
+        "external_link": external,
+    }
+
+
+def load_tasks(raw, reviews):
+    require(isinstance(raw, list), "tasks must be a list")
+    annotation_ids = {c["id"] for r in reviews for c in r["concerns"]}
+    tasks = [load_task(task, annotation_ids) for task in raw]
+    require(
+        len({task["id"] for task in tasks}) == len(tasks), "Task IDs must be unique"
+    )
+    return tasks
+
+
+def theme_links(raw, field, known):
+    values = raw.get(field)
+    require(isinstance(values, list), f"Theme {field} must be a list")
+    require(
+        all(
+            type(x) is (int if field == "tasks" else str) and x in known for x in values
+        ),
+        f"Unknown theme {field}",
+    )
+    require(len(set(values)) == len(values), f"Duplicate theme {field}")
+    return values
+
+
+def load_analysis(root, raw, reviews, tasks):
+    require(isinstance(raw, dict), "analysis must be an object")
+    themes = raw.get("themes", [])
+    require(isinstance(themes, list), "themes must be a list")
+    owners = {c["id"]: r["id"] for r in reviews for c in r["concerns"]}
+    result = []
+    for theme in themes:
+        require(isinstance(theme, dict), "Theme must be an object")
+        number = theme.get("number")
+        require(
+            type(number) is int and number > 0,
+            "Theme number must be a positive integer",
+        )
+        annotations = theme_links(theme, "annotations", owners)
+        reviewers = theme_links(theme, "reviewers", {r["id"] for r in reviews})
+        require(
+            set(reviewers) == {owners[x] for x in annotations},
+            "Theme reviewers must match annotations",
+        )
+        filename = text(theme.get("content"), "theme content")
+        require(filename.endswith(".md"), "Theme content must be Markdown")
+        result.append(
+            {
+                "id": identifier(theme.get("id")),
+                "title": text(theme.get("title"), "theme title"),
+                "number": number,
+                "content": load_content(root, filename),
+                "reviewers": reviewers,
+                "annotations": annotations,
+                "tasks": theme_links(theme, "tasks", {t["id"] for t in tasks}),
+            }
+        )
+    require(len({t["id"] for t in result}) == len(result), "Theme IDs must be unique")
+    require(
+        len({t["number"] for t in result}) == len(result),
+        "Theme numbers must be unique",
+    )
+    overview = raw.get("overview")
+    require(
+        overview is None or isinstance(overview, str),
+        "Overview must be a Markdown path",
+    )
+    if overview is not None:
+        require(overview.endswith(".md"), "Overview must be Markdown")
+    return {
+        "themes": result,
+        "overview": load_content(root, overview) if overview is not None else None,
+    }
+
+
 def load_workspace(directory):
     root = Path(directory).resolve()
     manifest = root / "workspace.yaml"
@@ -308,10 +432,13 @@ def load_workspace(directory):
     )
     reviews = [load_review(root, r) for r in raw["reviews"]]
     validate_links(reviews)
+    tasks = load_tasks(raw.get("tasks", []), reviews)
     return {
         "title": text(raw.get("title"), "title"),
         "presentation": display,
         "reviews": reviews,
+        "tasks": tasks,
+        "analysis": load_analysis(root, raw.get("analysis", {}), reviews, tasks),
     }
 
 

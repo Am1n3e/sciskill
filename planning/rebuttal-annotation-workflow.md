@@ -198,3 +198,5 @@ For every visual change, open the latest version in the user's browser, verify t
 
 - Added an icon-only close button at the expanded pane's top right, as requested.
 - Closing hides the pane, synchronizes the passage's expanded state, and returns keyboard focus to that passage. Clicking the passage still toggles it.
+
+- Rename the review toggle to “Annotations”: on shows annotation links and panes, off shows original review text. Final response remains visible.

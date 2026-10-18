@@ -1,1 +1,35 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Rebuttal Review Desk</title><link rel="stylesheet" href="/styles.css?v=annotation-close-button-8"></head><body><div class="app-shell"><main class="main"><header class="workspace-header"><div class="brand"><span class="eyebrow">Science Skills</span><h1>Rebuttal desk</h1><p id="workspace-title"></p></div><div class="reviewer-picker"><span class="eyebrow">Choose reviewer</span><nav id="reviewer-nav" class="reviewer-nav" aria-label="Reviewer navigation"></nav></div></header><section id="content" class="content" aria-live="polite"></section></main></div><script src="/app.js?v=annotation-close-button-8"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rebuttal Review Desk</title>
+  <link rel="stylesheet" href="/styles.css?v=analysis-overview-28">
+</head>
+<body>
+<div class="app-shell"><main class="main">
+  <header class="workspace-header"><div class="brand">
+    <span class="eyebrow">Science Skills</span><h1>Rebuttal desk</h1><p id="workspace-title"></p>
+  </div><button id="reload-workspace" type="button">Reload</button></header>
+  <nav class="workspace-tabs" role="tablist" aria-label="Workspace views">
+    <button id="analysis-tab" role="tab" aria-selected="true" aria-controls="analysis-panel">Analysis</button>
+    <button id="reviews-tab" role="tab" aria-controls="reviews-panel" aria-selected="false" tabindex="-1">Reviews</button>
+    <button id="tasks-tab" role="tab" aria-controls="tasks-panel" aria-selected="false" tabindex="-1">Tasks</button>
+  </nav>
+  <section id="reviews-panel" role="tabpanel" aria-labelledby="reviews-tab" hidden>
+    <div class="reviewer-picker"><span class="eyebrow">Choose reviewer</span>
+      <nav id="reviewer-nav" class="reviewer-nav" aria-label="Reviewer navigation"></nav>
+    </div>
+    <section id="content" class="content" aria-live="polite"></section>
+  </section>
+  <section id="tasks-panel" role="tabpanel" aria-labelledby="tasks-tab" hidden>
+    <div class="task-filter"><label for="task-reviewer">Reviewer</label>
+      <select id="task-reviewer"><option value="all">All reviewers</option></select>
+      <span id="task-count"></span>
+    </div>
+    <div id="task-list" aria-live="polite"></div>
+  </section>
+<section id="analysis-panel" role="tabpanel" aria-labelledby="analysis-tab"></section>
+</main></div>
+<script src="/app.js?v=analysis-overview-28"></script>
+</body></html>

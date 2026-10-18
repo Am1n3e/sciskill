@@ -1,19 +1,21 @@
 /* Original Rebuttal Desk layout, driven by workspace data. */
 let workspace;
+let activeView="analysis";
+let taskReviewer="all";
 const originalToggle = document.createElement('button');
 originalToggle.type = 'button';
 originalToggle.className = 'original-switch';
 originalToggle.setAttribute('role', 'switch');
-originalToggle.setAttribute('aria-checked', 'false');
-originalToggle.setAttribute('aria-label', 'Hide drafts');
-originalToggle.innerHTML = '<span>Hide drafts</span><span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>';
+originalToggle.setAttribute('aria-checked', 'true');
+originalToggle.setAttribute('aria-label', 'Annotations');
+originalToggle.innerHTML = '<span>Annotations</span><span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>';
 let showOriginal = false;
 function applyOriginalView() {
   content.querySelectorAll('.workbench-drawer').forEach(item => { item.hidden = showOriginal || (item.classList.contains('annotation-pane') && item.dataset.open!=='true'); });
   content.querySelectorAll('.original-review').forEach(item=>{item.hidden=!showOriginal;});
   content.querySelectorAll('.annotated-review').forEach(item=>{item.hidden=showOriginal;});
 }
-originalToggle.addEventListener('click', () => { showOriginal = !showOriginal; originalToggle.setAttribute('aria-checked', String(showOriginal)); applyOriginalView(); });
+originalToggle.addEventListener('click', () => { showOriginal = !showOriginal; originalToggle.setAttribute('aria-checked', String(!showOriginal)); applyOriginalView(); });
 const content = document.querySelector('#content');
 const nav = document.querySelector('#reviewer-nav');
 function node(tag, text, className) {
@@ -55,7 +57,7 @@ function concernDrawer(concern, review, selected) {
   drawer.append(summary);
   const body = node('div', undefined, 'workbench-body');
   const tabs = node('div', undefined, 'workbench-tabs');
-  tabs.setAttribute('role','tablist'); tabs.setAttribute('aria-label',`${concern.id} workbench`);
+
   const panels = node('div');
   function show(mode) {
     for (const panel of panels.children) panel.hidden = panel.dataset.mode !== mode;
@@ -65,13 +67,13 @@ function concernDrawer(concern, review, selected) {
       button.setAttribute('aria-selected', String(active));
     }
   }
-  for (const mode of ['response','analysis']) {
+  for (const mode of ['response']) {
     const button = node('button', mode === 'response' ? 'Response' : 'Analysis', 'workbench-tab');
     button.type='button'; button.dataset.mode=mode; button.id=`${concern.id}-${mode}-tab`;
     button.setAttribute('role','tab'); button.setAttribute('aria-controls',`${concern.id}-${mode}`);
-    button.addEventListener('click',()=>show(mode)); tabs.append(button);
+    button.addEventListener('click',()=>show(mode));
     const panel = node('div', undefined, 'workbench-panel'); panel.dataset.mode=mode; panel.id=`${concern.id}-${mode}`;
-    panel.setAttribute('role','tabpanel'); panel.setAttribute('aria-labelledby',button.id);
+    panel.setAttribute('aria-label','Response');
     if (mode==='response') {
       const section=node('section',undefined,'section-block');
       const response=node('div',undefined,'response-markdown response-main');
@@ -85,7 +87,7 @@ function concernDrawer(concern, review, selected) {
     } else panel.append(prose(concern.analysis.html,'external-markdown analysis-markdown markdown-rendered'));
     panels.append(panel);
   }
-  const refresh=node('button','Refresh','drawer-refresh'); refresh.type='button';refresh.addEventListener('click',()=>load());tabs.append(refresh);
+  for(const theme of workspace.analysis.themes.filter(item=>item.annotations.includes(concern.id))){const link=node('a',`Theme ${theme.number}: ${theme.title}`,'concern-theme-link');link.href=`#theme-${theme.id}`;link.addEventListener('click',event=>{event.preventDefault();setView('analysis');document.getElementById(`theme-${theme.id}`).scrollIntoView({block:'start'});});tabs.append(link);}
   body.append(tabs,panels);drawer.append(body);show('response');
   drawer.addEventListener('toggle',()=>{if(drawer.open) history.replaceState(null,'',`#${review.id}/${concern.id}`);});
   return drawer;
@@ -132,7 +134,9 @@ function attachAnnotations(reviewText,review,selected){
     const close=node('button',undefined,'annotation-close');close.type='button';close.setAttribute('aria-label',`Close ${identity} pane`);close.title='Close';
     close.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>';
     close.addEventListener('click',()=>{pane.dataset.open='false';pane.hidden=true;mark.setAttribute('aria-expanded','false');mark.focus();});
+    const chips=node('div',undefined,'annotation-chips');chips.append(headingBlock.querySelector('.annotation-kind-label'));drawer.querySelectorAll('.concern-theme-link').forEach(link=>chips.append(link));headingBlock.append(chips);
     header.append(headingBlock,drawer.querySelector('.response-metrics'),close);
+    drawer.querySelector('.workbench-tabs').remove();
     pane.append(header,drawer.querySelector('.workbench-body'));
     const anchor=mark.closest('p,li')||mark;anchor.after(pane);
     mark.dataset.annotationLabel=identity.includes('-C')?'C'+identity.split('-C').pop():identity;
@@ -180,6 +184,54 @@ function renderConversation(review,article,initialCard){
     group.append(cards.get(comment.id));
   }
 }
+function setView(view){
+  activeView=view;
+  for(const name of ['analysis','reviews','tasks']){
+    document.getElementById(`${name}-panel`).hidden=name!==view;
+    document.getElementById(`${name}-tab`).setAttribute('aria-selected',String(name===view));
+    document.getElementById(`${name}-tab`).tabIndex=name===view?0:-1;
+  }
+}
+function renderTasks(){
+  const selector=document.getElementById('task-reviewer');selector.replaceChildren();
+  const all=node('option','All reviewers');all.value='all';selector.append(all);
+  for(const review of workspace.reviews){const option=node('option',review.label);option.value=review.id;selector.append(option);}
+  selector.value=taskReviewer;
+  const selected=workspace.reviews.find(review=>review.id===taskReviewer);
+  const ids=new Set(selected?.concerns.map(concern=>concern.id)||[]);
+  const priority={high:0,medium:1,low:2};
+  const tasks=(workspace.tasks||[]).filter(task=>!selected||task.annotations.some(id=>ids.has(id))).slice().sort((a,b)=>priority[a.priority]-priority[b.priority]);
+  document.getElementById('task-count').textContent=`${tasks.length} ${tasks.length===1?'task':'tasks'}`;
+  const list=document.getElementById('task-list');list.replaceChildren();
+  const table=node('table',undefined,'task-table');const head=node('thead');const row=node('tr');
+  for(const label of ['Task','Status','Priority','Effort']){const cell=node('th',label);cell.scope='col';row.append(cell);}head.append(row);table.append(head);
+  const body=node('tbody');
+  for(const task of tasks){
+    const row=node('tr');row.id=`task-${task.id}`;const main=node('td');main.append(node('strong',`Task ${task.id}: ${task.title}`,'task-title'));
+    const links=node('div',undefined,'task-sources');
+    for(const identity of task.annotations){const link=relatedLink(identity);link.addEventListener('click',()=>setView('reviews'));links.append(link);}main.append(links);
+    if(task.note)main.append(node('p',task.note,'task-note'));
+    if(task.external_link){const external=node('a','External link','task-external');external.href=task.external_link;external.target='_blank';external.rel='noopener noreferrer';main.append(external);}
+    const status={proposed:'Proposed',pending:'Pending',in_progress:'In progress',done:'Done',not_doing:'Not doing'}[task.status];
+    row.append(main,node('td',status,'task-status'),node('td',task.priority,'task-priority'),node('td',task.effort,'task-effort'));body.append(row);
+  }
+  if(!tasks.length){const row=node('tr');const cell=node('td',workspace.tasks?.length?'No tasks match this reviewer.':'No tasks yet.');cell.colSpan=4;cell.className='task-empty';row.append(cell);body.append(row);}
+  table.append(body);list.append(table);
+}
+function renderAnalysis(){
+  const panel=document.getElementById('analysis-panel');panel.replaceChildren();
+  if(workspace.analysis.overview){const overview=node('section',undefined,'analysis-overview');overview.append(node('h2','Overview'),prose(workspace.analysis.overview.html));panel.append(overview);}
+  for(const theme of workspace.analysis.themes){
+    const section=node('details',undefined,'analysis-theme');section.id=`theme-${theme.id}`;const header=node('summary',undefined,'theme-header');const identity=node('div',undefined,'theme-identity');identity.append(node('h2',`Theme ${theme.number}: ${theme.title}`));
+    identity.append(node('p',`${theme.reviewers.length} ${theme.reviewers.length===1?'reviewer':'reviewers'} · ${theme.reviewers.join(', ')}`,'theme-reviewers'));
+    const annotations=node('div',undefined,'theme-links');annotations.append(node('strong','Related reviews'));
+    for(const id of theme.annotations){const link=relatedLink(id);link.addEventListener('click',()=>{showOriginal=false;originalToggle.setAttribute('aria-checked','true');setView('reviews');});annotations.append(link);}
+    const tasks=node('div',undefined,'theme-links');tasks.append(node('strong','Related tasks'));
+    for(const id of theme.tasks){const task=workspace.tasks.find(item=>item.id===id);const link=node('a',`Task ${task.id}: ${task.title}`);link.href=`#task-${id}`;link.addEventListener('click',event=>{event.preventDefault();taskReviewer='all';renderTasks();setView('tasks');document.getElementById(`task-${id}`).scrollIntoView({block:'center'});});tasks.append(link);}
+    header.append(identity,annotations,tasks);section.append(header,prose(theme.content.html,'markdown-rendered theme-body'));panel.append(section);
+  }
+  if(!workspace.analysis.themes.length)panel.append(node('p','No analysis yet.'));
+}
 function render() {
   const [reviewId,concernId]=location.hash.slice(1).split('/');
   const review=workspace.reviews.find(r=>r.id===reviewId)||workspace.reviews[0];nav.replaceChildren();
@@ -211,8 +263,15 @@ function render() {
   container.append(body);note.append(heading,subheading,container);article.append(note);
   renderConversation(review,article,note);
   content.replaceChildren(article,aggregate(review));
-  applyOriginalView();
+  applyOriginalView();renderTasks();renderAnalysis();setView(activeView);
   if(concernId && !showOriginal)document.getElementById(concernId)?.scrollIntoView({block:'center'});
 }
 async function load(){try{const response=await fetch('/workspace.json');if(!response.ok)throw new Error('Workspace could not be loaded.');workspace=await response.json();document.querySelector('#workspace-title').textContent=workspace.title;render();}catch(error){content.replaceChildren(node('p',error.message));}}
+for(const [index,name] of ['analysis','reviews','tasks'].entries()){
+  const button=document.getElementById(`${name}-tab`);button.addEventListener('click',()=>setView(name));
+  button.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const names=['analysis','reviews','tasks'];const next=names[event.key==='Home'?0:event.key==='End'?2:(index+(event.key==='ArrowRight'?1:2))%3];setView(next);document.getElementById(`${next}-tab`).focus();}});
+}
+document.getElementById('task-reviewer').addEventListener('change',event=>{taskReviewer=event.target.value;if(workspace)renderTasks();});
 window.addEventListener('hashchange',()=>{if(workspace)render();});load();
+
+document.getElementById('reload-workspace').addEventListener('click',()=>load());

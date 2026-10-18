@@ -1408,3 +1408,30 @@ body{background:#fffdfa}
 .annotation-link[data-annotation-type=change_request],.annotation-link[data-annotation-type=change_request]:hover{--annotation-boundary:#8a64ae;text-decoration-color:#b29bcd}
 
 .annotation-close{display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;flex-shrink:0;width:24px;height:24px;padding:4px;border:0;background:transparent;color:#777;cursor:pointer;border-radius:3px}.annotation-close:hover{background:#eeeae0;color:#333}.annotation-close:focus-visible{outline:2px solid #94aed6;outline-offset:1px}
+
+/* Workspace views keep their own reviewer selection. */
+.workspace-header{display:block;margin-bottom:18px;padding-bottom:0;border-bottom:0}
+.workspace-tabs{display:flex;gap:24px;max-width:1120px;margin:0 auto 26px;border-bottom:1px solid #ddd}
+.workspace-tabs button{padding:10px 0;border:0;border-bottom:2px solid transparent;background:transparent;color:#666;font:inherit;cursor:pointer}
+.workspace-tabs button[aria-selected=true]{color:#202124;border-bottom-color:#303236;font-weight:600}
+.workspace-tabs button:focus-visible{outline:2px solid #94aed6;outline-offset:3px}
+#reviews-panel>.reviewer-picker{max-width:1120px;margin:0 auto 26px}
+#tasks-panel{max-width:1120px;margin:0 auto}.task-filter{display:flex;align-items:center;gap:12px;margin-bottom:22px;font-size:13px}.task-filter select{padding:7px 10px;border:1px solid #ccc;border-radius:3px;background:#fff;color:#333;font:inherit}.task-filter #task-count{margin-left:auto;color:#777}
+.task-table{width:100%;border-collapse:collapse;font-size:13px}.task-table th{padding:12px;text-align:left;border-bottom:1px solid #ccc;color:#666;font-weight:500}.task-table td{padding:16px 12px;border-bottom:1px solid #e5e5e5;vertical-align:top}.task-table th:first-child{width:64%}.task-title{font-size:14px;font-weight:600}.task-sources{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.task-note{color:#666;line-height:1.5;margin:9px 0}.task-external{display:inline-block;margin-top:8px}.task-priority,.task-effort{text-transform:capitalize}.task-empty{color:#777;padding:30px 12px!important}
+
+/* Original text shares the review surface when drafts are hidden. */
+.note-content-value.original-review{background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible}
+
+#analysis-panel{max-width:1120px;margin:0 auto}.analysis-theme{padding:12px 0 28px;border-bottom:1px solid #ddd;margin-bottom:24px}.analysis-theme h2{margin-bottom:8px}.theme-reviewers{color:#666;font-size:13px}.theme-links{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:16px;font-size:13px}.theme-links strong{width:100%}
+
+.theme-content{margin-top:20px}.theme-content>summary{cursor:pointer;font-weight:600;font-size:14px}.theme-content>.markdown-rendered{margin-top:16px}
+
+.annotation-chips{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}.annotation-chips .annotation-kind-label{margin:0}.concern-theme-link{display:inline-flex;padding:3px 8px;border-radius:12px;background:#eeece7;color:#555;font-size:11px;text-decoration:none}.concern-theme-link:hover{text-decoration:underline;background:#e5e2db}
+
+.workspace-header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}#reload-workspace{margin-top:8px;padding:6px 12px;border:1px solid #ccc;border-radius:4px;background:transparent;color:#555;font:inherit;font-size:13px;cursor:pointer}#reload-workspace:hover{background:#f0efec}
+
+.analysis-theme{padding:0;margin-bottom:0}.theme-header{display:grid;grid-template-columns:minmax(200px,1.1fr) minmax(180px,1fr) minmax(200px,1fr);gap:24px;padding:20px 0;cursor:pointer;list-style:none}.theme-header::-webkit-details-marker{display:none}.theme-header h2{font-size:18px;margin:0 0 8px}.theme-header h2::before{content:'▸';display:inline-block;margin-right:8px;color:#777}.analysis-theme[open]>.theme-header h2::before{content:'▾'}.theme-header .theme-links{margin:0;align-content:start}.theme-header .theme-reviewers{margin:0}.theme-body{padding:0 0 24px}.theme-header:focus-visible{outline:2px solid #94aed6;outline-offset:3px}@media(max-width:800px){.theme-header{grid-template-columns:1fr;gap:14px}}
+
+.theme-header{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px 24px}.theme-identity{grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;gap:20px}.theme-header .theme-reviewers{text-align:right;flex-shrink:0}.theme-header h2{margin:0}.theme-header .theme-links{grid-row:2}@media(max-width:600px){.theme-identity{align-items:flex-start;gap:12px}.theme-header .theme-reviewers{max-width:35%;flex-shrink:1}.theme-header{gap:16px}}
+
+.analysis-overview{padding:8px 0 24px;border-bottom:1px solid #ddd;margin-bottom:8px}.analysis-overview h2{font-size:20px;margin:0 0 12px}

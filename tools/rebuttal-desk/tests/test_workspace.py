@@ -30,6 +30,33 @@ class WorkspaceTests(unittest.TestCase):
         change(raw)
         path.write_text(yaml.safe_dump(raw))
 
+    def test_analysis_links_and_content(self):
+        theme = {
+            "id": "theme-1",
+            "number": 1,
+            "title": "Measurements",
+            "content": "analysis.md",
+            "reviewers": ["reviewer-1"],
+            "annotations": ["concern-1"],
+            "tasks": [],
+        }
+        self.mutate(lambda raw: raw.update(analysis={"themes": [theme]}))
+        result = load_workspace(self.root)["analysis"]["themes"][0]
+        self.assertIn("Evidence to gather", result["content"]["html"])
+        for field, value in [
+            ("number", 0),
+            ("reviewers", []),
+            ("annotations", ["missing"]),
+            ("tasks", ["missing"]),
+            ("content", "../outside.md"),
+        ]:
+            changed = dict(theme, **{field: value})
+            self.mutate(
+                lambda raw, changed=changed: raw.update(analysis={"themes": [changed]})
+            )
+            with self.assertRaises(WorkspaceError):
+                load_workspace(self.root)
+
     def test_template_and_non_overwriting_init(self):
         self.assertEqual(
             load_workspace(self.root)["reviews"][0]["concerns"][0]["response"][
@@ -127,6 +154,39 @@ class WorkspaceTests(unittest.TestCase):
         content["conversation"][0]["reply_to"] = "reply"
         (self.root / "review.yaml").write_text(yaml.safe_dump(content))
         with self.assertRaises(WorkspaceError):
+            load_workspace(self.root)
+
+    def test_tasks_unique_ids_links_status_and_external_urls(self):
+        task = {
+            "id": 1,
+            "title": "Check comparison",
+            "annotations": ["concern-1"],
+            "status": "pending",
+            "priority": "high",
+            "effort": "medium",
+            "note": "Accepted",
+            "external_link": "https://github.com/example/project/issues/1",
+        }
+        self.mutate(lambda x: x.update(tasks=[task]))
+        loaded = load_workspace(self.root)["tasks"]
+        self.assertEqual(loaded[0]["status"], "pending")
+        for field, value in [
+            ("annotations", ["unknown"]),
+            ("status", "deferred"),
+            ("status", []),
+            ("priority", "urgent"),
+            ("external_link", "javascript:alert(1)"),
+        ]:
+            with self.subTest(field=field, value=value):
+                self.mutate(
+                    lambda x, field=field, value=value: x.update(
+                        tasks=[{**task, field: value}]
+                    )
+                )
+                with self.assertRaises(WorkspaceError):
+                    load_workspace(self.root)
+        self.mutate(lambda x: x.update(tasks=[task, task]))
+        with self.assertRaisesRegex(WorkspaceError, "Task IDs must be unique"):
             load_workspace(self.root)
 
     def test_unrelated_workspaces_are_independent(self):

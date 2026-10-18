@@ -15,6 +15,8 @@ Status: discussion and planning only. Implementation is on hold until the releva
 | [Evaluation and evidence](evaluation.md) | Evaluation reporting, limitations, availability claims | To discuss |
 | [Publishing](publishing.md) | GitHub Pages, deployment, release readiness | To discuss |
 | [Rebuttal annotation working log](rebuttal-annotation-workflow.md) | Develop annotations on an example, record decisions, then write the skill after approval | Iterating with user |
+| [Cross-review analysis](rebuttal-analysis.md) | Themes across reviewers, linked annotations and tasks | Discussing data |
+| [Rebuttal task list](rebuttal-task-list.md) | Define paper-wide researcher-maintained tasks, then presentation | Discussing data |
 
 ## How we work
 
