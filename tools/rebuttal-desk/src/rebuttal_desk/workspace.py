@@ -1,12 +1,13 @@
 """Manifest validation and safe, explicit document loading."""
 
-import json
 import re
+from datetime import datetime
 from html import escape
 from pathlib import Path
 
 import bleach
 import markdown
+import yaml
 
 
 class WorkspaceError(ValueError):
@@ -39,8 +40,8 @@ def document(root, relative):
     path = (root / relative).resolve()
     require(path.is_relative_to(root), "Document path escapes workspace")
     require(
-        path.suffix.lower() in {".md", ".txt", ".html", ".json"},
-        "Documents must be .md, .txt, .html or .json",
+        path.suffix.lower() in {".md", ".txt", ".html", ".json", ".yaml", ".yml"},
+        "Documents must be .md, .txt, .html, .json or .yaml",
     )
     require(path.is_file(), f"Missing document: {relative}")
     require(path.stat().st_size <= 2_000_000, f"Document too large: {relative}")
@@ -52,9 +53,9 @@ def document(root, relative):
 
 def structured_html(source):
     try:
-        raw = json.loads(source)
-    except json.JSONDecodeError as exc:
-        raise WorkspaceError("Structured document must be valid JSON") from exc
+        raw = yaml.safe_load(source)
+    except yaml.YAMLError as exc:
+        raise WorkspaceError("Structured document must be valid YAML") from exc
     require(isinstance(raw, dict), "Structured document must be an object")
     sections = raw.get("sections")
     require(isinstance(sections, list), "Structured document sections must be a list")
@@ -62,8 +63,8 @@ def structured_html(source):
     for section in sections:
         require(isinstance(section, dict), "Section must be an object")
         heading = text(section.get("heading"), "section heading")
-        content = section.get("markdown")
-        require(isinstance(content, str), "Section markdown must be text")
+        content = section.get("content")
+        require(isinstance(content, str), "Section content must be text")
         body = markdown.markdown(content, extensions=["tables", "fenced_code"])
         blocks.append(
             '<div><strong class="note-content-field">'
@@ -76,7 +77,7 @@ def structured_html(source):
 
 
 def rendered(source, filename):
-    if filename.endswith(".json"):
+    if filename.endswith((".json", ".yaml", ".yml")):
         html = structured_html(source)
     elif filename.endswith(".html"):
         html = source
@@ -167,17 +168,75 @@ def presentation(raw):
     return {"character_limit": limit}
 
 
+def validate_conversation(entries, review_id):
+    by_id = {entry["id"]: entry for entry in entries}
+    require(len(by_id) == len(entries), "Duplicate conversation IDs")
+    for entry in entries:
+        parent = entry["reply_to"]
+        seen = {entry["id"]}
+        while parent is not None and parent != review_id:
+            require(parent in by_id, "Unknown conversation reply target")
+            require(parent not in seen, "Cyclic conversation replies")
+            seen.add(parent)
+            parent = by_id[parent]["reply_to"]
+
+
+def load_conversation(content):
+    raw = yaml.safe_load(content["source"])
+    entries = raw.get("conversation", []) if isinstance(raw, dict) else []
+    require(isinstance(entries, list), "conversation must be a list")
+    result = []
+    for entry in entries:
+        require(isinstance(entry, dict), "Conversation entry must be an object")
+        kind = entry.get("type")
+        require(
+            kind in {"author_response", "reviewer_comment"}, "Invalid conversation type"
+        )
+        timestamp = text(entry.get("created_at"), "conversation timestamp")
+        try:
+            datetime.fromisoformat(timestamp)
+        except ValueError as exc:
+            raise WorkspaceError("Invalid conversation timestamp") from exc
+        result.append(
+            {
+                "id": identifier(entry.get("id")),
+                "label": text(entry.get("title"), "conversation title"),
+                "author": text(entry.get("author"), "conversation author"),
+                "type": kind,
+                "created_at": timestamp,
+                "reply_to": entry.get("reply_to"),
+                "document": {"html": rendered(yaml.safe_dump(entry), "entry.yaml")},
+            }
+        )
+    validate_conversation(result, raw.get("id") if isinstance(raw, dict) else None)
+    result.sort(key=lambda entry: (entry["created_at"], entry["id"]))
+    return result
+
+
 def load_review(root, raw):
     require(isinstance(raw, dict), "Review must be an object")
     concerns = raw.get("concerns")
     require(isinstance(concerns, list), "concerns must be a list")
     comments = raw.get("comments", [])
     require(isinstance(comments, list), "comments must be a list")
+    content = load_content(root, raw.get("document"))
+    conversation = (
+        load_conversation(content)
+        if raw.get("document", "").endswith((".yaml", ".yml"))
+        else []
+    )
+    structured = (
+        yaml.safe_load(content["source"])
+        if raw.get("document", "").endswith((".yaml", ".yml"))
+        else {}
+    )
     return {
-        "comments": [load_comment(root, comment) for comment in comments],
+        "document_id": structured.get("id", raw.get("id")),
+        "comments": [load_comment(root, comment) for comment in comments]
+        + conversation,
         "id": identifier(raw.get("id")),
         "label": text(raw.get("label"), "review label"),
-        "document": load_content(root, raw.get("document")),
+        "document": content,
         "concerns": [load_concern(root, c) for c in concerns],
     }
 
@@ -197,14 +256,16 @@ def validate_links(reviews):
 
 def load_workspace(directory):
     root = Path(directory).resolve()
-    manifest = root / "workspace.json"
+    manifest = root / "workspace.yaml"
+    if not manifest.exists():
+        manifest = root / "workspace.json"
     require(manifest.resolve().is_relative_to(root), "Manifest escapes workspace")
-    require(manifest.is_file(), "Missing workspace.json")
+    require(manifest.is_file(), "Missing workspace.yaml")
     require(manifest.stat().st_size <= 2_000_000, "Manifest too large")
     try:
-        raw = json.loads(manifest.read_text(encoding="utf-8"))
-    except (UnicodeError, json.JSONDecodeError) as exc:
-        raise WorkspaceError("workspace.json must be UTF-8 JSON") from exc
+        raw = yaml.safe_load(manifest.read_text(encoding="utf-8"))
+    except (UnicodeError, yaml.YAMLError) as exc:
+        raise WorkspaceError("Workspace manifest must be UTF-8 YAML") from exc
     require(isinstance(raw, dict), "Manifest must be an object")
     require(
         type(raw.get("version")) is int and raw.get("version") == 1,
@@ -256,6 +317,6 @@ def init_workspace(directory):
             }
         ],
     }
-    (root / "workspace.json").write_text(
-        json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+    (root / "workspace.yaml").write_text(
+        yaml.safe_dump(manifest, allow_unicode=True, sort_keys=False), encoding="utf-8"
     )

@@ -6,6 +6,8 @@ from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
+import yaml
+
 from rebuttal_desk.server import make_server
 from rebuttal_desk.workspace import (
     WorkspaceError,
@@ -23,10 +25,10 @@ class WorkspaceTests(unittest.TestCase):
         init_workspace(self.root)
 
     def mutate(self, change):
-        path = self.root / "workspace.json"
-        raw = json.loads(path.read_text())
+        path = self.root / "workspace.yaml"
+        raw = yaml.safe_load(path.read_text())
         change(raw)
-        path.write_text(json.dumps(raw))
+        path.write_text(yaml.safe_dump(raw))
 
     def test_template_and_non_overwriting_init(self):
         self.assertEqual(
@@ -83,11 +85,11 @@ class WorkspaceTests(unittest.TestCase):
             "sections": [
                 {
                     "heading": "Claims And Evidence:",
-                    "markdown": "Yes\n\n- First point\n- Second point",
+                    "content": "Yes\n\n- First point\n- Second point",
                 },
                 {
                     "heading": "Requested Changes:",
-                    "markdown": "Keep $x^2$ and **emphasis**.",
+                    "content": "Keep $x^2$ and **emphasis**.",
                 },
             ]
         }
@@ -102,10 +104,30 @@ class WorkspaceTests(unittest.TestCase):
             "{",
             "[]",
             '{"sections": [null]}',
-            '{"sections": [{"heading": "Title", "markdown": 3}]}',
+            '{"sections": [{"heading": "Title", "content": 3}]}',
         ]:
             with self.subTest(invalid=invalid), self.assertRaises(WorkspaceError):
                 rendered(invalid, "review.json")
+
+    def test_conversation_reply_targets_are_validated(self):
+        entry = {
+            "id": "reply",
+            "title": "Reply",
+            "type": "author_response",
+            "author": "Authors",
+            "created_at": "2025-01-02T10:00",
+            "reply_to": "missing",
+            "sections": [],
+        }
+        content = {"id": "review", "sections": [], "conversation": [entry]}
+        (self.root / "review.yaml").write_text(yaml.safe_dump(content))
+        self.mutate(lambda x: x["reviews"][0].update(document="review.yaml"))
+        with self.assertRaises(WorkspaceError):
+            load_workspace(self.root)
+        content["conversation"][0]["reply_to"] = "reply"
+        (self.root / "review.yaml").write_text(yaml.safe_dump(content))
+        with self.assertRaises(WorkspaceError):
+            load_workspace(self.root)
 
     def test_unrelated_workspaces_are_independent(self):
         other = Path(self.temp.name) / "another"

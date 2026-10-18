@@ -12,35 +12,71 @@ uvx --from ./tools/rebuttal-desk rebuttal-desk view ./my-rebuttal --no-browser -
 
 `init` creates a small, entirely synthetic template and refuses to overwrite an existing path. You can create multiple independent workspaces outside this repository. `view` binds only to 127.0.0.1, prints the URL, and opens your browser unless disabled. Stop with Ctrl-C. The default port is chosen automatically. No write endpoint exists.
 
-## Workspace format
+## Import OpenReview
 
-`workspace.json` is UTF-8 JSON:
+Capture the **rendered** OpenReview forum page after all reviews and replies load, then pass the saved HTML to the importer:
 
-```json
-{
-  "version": 1,
-  "title": "My rebuttal",
-  "presentation": {"character_limit": 10000},
-  "reviews": [
-    {
-      "id": "reviewer-1",
-      "label": "Reviewer 1",
-      "document": "reviews/reviewer-1.md",
-      "concerns": [
-        {
-          "id": "concern-1",
-          "title": "Clarify the comparison",
-          "analysis": "concerns/concern-1-analysis.md",
-          "response": "concerns/concern-1-response.md",
-          "related": []
-        }
-      ]
-    }
-  ]
-}
+```sh
+uvx --from ./tools/rebuttal-desk rebuttal-desk import-openreview ./openreview-discussion.html ./my-rebuttal
+uvx --from ./tools/rebuttal-desk rebuttal-desk view ./my-rebuttal
 ```
 
-All document files must exist and use `.md`, `.txt`, or `.html`. Paths are relative to the workspace and must resolve within it, including symlinks. IDs use letters, digits, hyphens, and underscores; concern IDs are globally unique. Related IDs must exist anywhere in the workspace. `presentation.character_limit` is a positive integer or null (no limit). The manifest and each file are limited to 2 MB. Review lists must be nonempty; a review can have no concerns.
+The importer refuses to overwrite an existing directory. It writes `workspace.yaml` and one `reviews/<review-id>.yaml` per initial review or decision. Each review file contains its original sections and a `conversation` of `author_response` and `reviewer_comment` entries. Every entry preserves its ID, author, title, source type, timestamp, reply target, and ordered field headings with content converted to Markdown. Formula TeX is recovered from KaTeX annotations when available.
+
+Conversations are sorted by creation time, with the ID breaking equal-time ties. The displayed timestamp and its original text are retained; captures without timezone information do not acquire an invented timezone. Reply targets are resolved from explicit “Replying to” headings when present, otherwise from HTML nesting. Ambiguous reply targets, missing timestamps, and threads that cannot be associated with a review cause an import error instead of silently losing content. Separate threads started by the same reviewer or editor are included in that review's conversation; their root has no reply target.
+
+No concerns, analysis, or response drafts are inferred by import. Action editor labels use the role and exported ID without a personal name. The import is offline and does not execute scripts or fetch links from the HTML. An initial HTML shell without loaded comments is rejected; the importer cannot recover content missing from the capture.
+
+## Workspace format
+
+`workspace.yaml` is UTF-8 YAML:
+
+```yaml
+version: 1
+title: My rebuttal
+source: openreview
+presentation:
+  character_limit: 10000
+reviews:
+  - id: aB12
+    label: Reviewer aB12
+    document: reviews/review-id.yaml
+    concerns: []
+```
+
+Each review file stores the original review and its conversation together:
+
+```yaml
+id: review-id
+reviewer_id: aB12
+title: Original review title
+author: Reviewer aB12
+source_type: Review
+created_at: '2025-01-01T10:00'
+timestamp_text: '01 Jan 2025, 10:00'
+reply_to: null
+sections:
+  - heading: 'Claims And Evidence:'
+    content: |
+      Original review text.
+conversation:
+  - id: response-id
+    type: author_response
+    author: Authors
+    title: Clarification
+    source_type: Official Comment
+    created_at: '2025-01-02T09:00'
+    timestamp_text: '02 Jan 2025, 09:00'
+    reply_to: review-id
+    sections:
+      - heading: 'Comment:'
+        content: |
+          Original author response.
+```
+
+Concerns can later be added to a review with `id`, a concise `title`, the original `question`, `analysis` and `response` Markdown file paths, and `related` concern IDs. Original review content remains separate from those drafts. Existing JSON workspaces remain readable.
+
+All document files must exist and use `.md`, `.txt`, `.html`, or structured `.yaml`. Paths are relative to the workspace and must resolve within it, including symlinks. IDs use letters, digits, hyphens, and underscores; concern IDs are globally unique. Related IDs must exist anywhere in the workspace. `presentation.character_limit` is a positive integer or null (no limit). The manifest and each file are limited to 2 MB. Review lists must be nonempty; a review can have no concerns.
 
 Markdown supports headings, lists, fenced code and tables. HTML is sanitized using an allowlist; scripts, active attributes, remote images and styles are removed. Formula source remains readable text; this extraction deliberately has no math typesetting runtime. Browser assets are packaged locally; no CDN, network font, or browser dependency download is required. Python dependencies are resolved by uv on first installation; subsequent viewer use works offline with its environment already available.
 

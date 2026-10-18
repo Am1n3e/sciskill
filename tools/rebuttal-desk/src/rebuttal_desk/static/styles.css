@@ -1366,3 +1366,14 @@ body{background:#fffdfa}
 .response-main{border:0;border-radius:0;background:transparent;overflow:visible}
 .response-metrics{display:flex;justify-content:flex-end;padding:12px 0 9px;border-bottom:1px solid #ddd;background:transparent;color:#666}
 .response-rendered{padding:14px 0 0}
+
+/* Separate OpenReview reply cards, nested under their actual reply targets. */
+.review-document > .openreview-note + .openreview-note{margin-top:12px}
+.openreview-note .note-replies{margin:12px 0 0;padding:0 0 0 40px}
+.note-replies > .openreview-note + .openreview-note{margin-top:12px}
+.openreview-note.note.depth-even{background:#fffdfa}
+.openreview-note.note.depth-odd{background:#f7f6f4}
+
+.comment-kind{display:inline-block;flex-shrink:0;align-self:flex-start;padding:4px 8px;border-radius:2px;color:#2c3a4a;font-size:12px;font-weight:700;line-height:18px;white-space:nowrap}
+.comment-kind.author_response{background:#bbf}
+.comment-kind.reviewer_comment{background:#fbb}

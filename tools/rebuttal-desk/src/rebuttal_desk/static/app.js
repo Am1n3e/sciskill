@@ -112,6 +112,40 @@ function aggregate(review) {
   else body.append(node('p','No response drafts yet.','aggregate-empty'));
   card.append(body);return card;
 }
+function renderConversation(review,article,initialCard){
+  const initialId=review.document_id||review.id;
+  const cards=new Map([[initialId,initialCard]]);
+  const replies=new Map(review.comments.map(comment=>[comment.id,comment]));
+  function depth(comment){
+    let level=0,current=comment;
+    while(current.reply_to){
+      level++;
+      current=replies.get(current.reply_to);
+      if(!current)break;
+    }
+    return level;
+  }
+  for(const comment of review.comments){
+    const card=node('div',undefined,`openreview-note note depth-${depth(comment)%2?'even':'odd'}`);
+    card.dataset.commentId=comment.id;
+    const heading=node('div',undefined,'heading');heading.append(node('h4',comment.label));
+    const meta=node('div',undefined,'subheading');
+    if(comment.type){
+      const kind=comment.type==='author_response'?'Author response':'Reviewer comment';
+      heading.append(node('span',kind,`comment-kind ${comment.type}`));
+      meta.append(node('span',`by ${comment.author}`,'signatures'),node('span',comment.created_at.replace('T',' '),'created-date'));
+    }
+    const body=node('div',undefined,'note-content');body.append(prose(comment.document.html));
+    card.append(heading,meta,body);cards.set(comment.id,card);
+  }
+  for(const comment of review.comments){
+    const parent=cards.get(comment.reply_to);
+    if(!parent){article.append(cards.get(comment.id));continue;}
+    let group=Array.from(parent.children).find(child=>child.classList.contains('note-replies'));
+    if(!group){group=node('div',undefined,'note-replies');parent.append(group);}
+    group.append(cards.get(comment.id));
+  }
+}
 function render() {
   const [reviewId,concernId]=location.hash.slice(1).split('/');
   const review=workspace.reviews.find(r=>r.id===reviewId)||workspace.reviews[0];nav.replaceChildren();
@@ -136,8 +170,9 @@ function render() {
     if(anchor) anchor.append(drawer);
     else body.append(node('p',concern.question),drawer);
   }
-  if(review.comments.length){body.append(node('strong','Comments:','note-content-field'));review.comments.forEach(c=>body.append(node('h4',c.label),prose(c.document.html)));}
-  container.append(body);note.append(heading,subheading,container);article.append(note);content.replaceChildren(article,aggregate(review));
+  container.append(body);note.append(heading,subheading,container);article.append(note);
+  renderConversation(review,article,note);
+  content.replaceChildren(article,aggregate(review));
   applyOriginalView();
   if(concernId && !showOriginal)document.getElementById(concernId)?.scrollIntoView({block:'center'});
 }

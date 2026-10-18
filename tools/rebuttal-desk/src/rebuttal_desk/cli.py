@@ -3,6 +3,7 @@
 import argparse
 import webbrowser
 
+from .openreview import import_openreview
 from .server import make_server
 from .workspace import init_workspace, load_workspace
 
@@ -21,6 +22,11 @@ def main():
     view.add_argument("workspace")
     view.add_argument("--port", type=int, default=0)
     view.add_argument("--no-browser", action="store_true")
+    importer = commands.add_parser(
+        "import-openreview", help="Import a rendered OpenReview HTML capture into YAML"
+    )
+    importer.add_argument("html")
+    importer.add_argument("workspace")
     args = parser.parse_args()
     try:
         run(args)
@@ -29,7 +35,10 @@ def main():
 
 
 def run(args):
-    if args.command == "init":
+    if args.command == "import-openreview":
+        comments, reviews = import_openreview(args.html, args.workspace)
+        print(f"Imported {comments} comments and {reviews} reviews into YAML.")
+    elif args.command == "init":
         init_workspace(args.workspace)
         print("Created synthetic workspace template.")
     elif args.command == "validate":

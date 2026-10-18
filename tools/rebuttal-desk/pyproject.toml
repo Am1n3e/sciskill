@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Local review, analysis, and rebuttal response workspace"
 requires-python = ">=3.11"
 license = "GPL-3.0-only"
-dependencies = ["Markdown>=3.7,<4", "bleach>=6.2,<7"]
+dependencies = ["Markdown>=3.7,<4", "bleach>=6.2,<7", "PyYAML>=6,<7", "beautifulsoup4>=4.12,<5", "markdownify>=1,<2"]
 
 [project.scripts]
 rebuttal-desk = "rebuttal_desk.cli:main"
