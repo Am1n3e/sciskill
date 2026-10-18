@@ -1,70 +1,41 @@
 # SciSkill
 
-Agent tools and skills for scientists: bibliography audits with bib-lint and review-response workspaces with Rebuttal Desk.
+**Agent skills and tools for scientists.**
 
-## Run the tools
+Keep your focus on the science. Let your agent handle the grunt work.
 
-Requires [uv](https://docs.astral.sh/uv/) and Python 3.12 or newer. From this checkout:
+![A scientist writes Transformer equations while a small robot sweeps up chalk dust](website/public/images/scientist-robot-transformer.png)
 
-```sh
-uvx --from . sciskill --help
-uvx --from . sciskill bib-lint verify /path/to/references.bib
-uvx --from . sciskill bib-lint view /path/to/references.bib-lint
-uvx --from . sciskill rebuttal import-openreview /path/to/discussion.html /path/to/my-rebuttal
-uvx --from . sciskill rebuttal view /path/to/my-rebuttal
-```
-
-Both tools and their browser assets are bundled. Dependencies stay outside your paper's environment. After an alpha is published to PyPI, use `uvx --prerelease allow sciskill` in place of `uvx --from . sciskill`.
-
-See [bib-lint](tools/bib-lint/README.md) and [Rebuttal Desk](tools/rebuttal-desk/README.md) for inputs, outputs, and limitations.
-
-## Agent skill
+## Setup
 
 ```sh
 npx skills add Am1n3e/sciskill
 ```
 
-The [SciSkill instructions](skills/sciskill/SKILL.md) define the `plan-rebuttal` workflow: analyze initial reviews against the manuscript, annotate actionable passages, and produce linked themes and proposed tasks. The author reviews decisions and writes the response drafts.
+## Usage
 
-## Repository structure
-
-- `website/`: Astro site, static assets, and configuration.
-- `tools/bib-lint/`: bibliography audit engine and local browser viewer.
-- `tools/rebuttal-desk/`: OpenReview importer and local review workspace viewer.
-- `tools/sciskill/`: shared command launcher and package integration tests.
-- `skills/`: agent instructions and supporting references.
-
-Research workspaces, captured reviews, audit reports, screenshots, and generated build files are excluded from Git.
-
-## Checks
-
-```sh
-python3 -m unittest discover -s tools/sciskill/tests -v
-uv run --project tools/rebuttal-desk python -m unittest discover -s tools/rebuttal-desk/tests -v
-cd tools/bib-lint
-uv run --group dev pytest -q -m 'not package'
+```text
+/sciskill plan-rebuttal
 ```
 
-## Website
+Analyze initial reviews against your submitted manuscript and appendix. Annotate actionable passages, group related concerns into themes, and propose tasks for your review. You retain control of response drafts and manuscript changes.
 
-Requires Node.js 22.22.0 or newer:
+## Tools
+
+SciSkill pairs agent instructions with tools that carry out the work and make the results easy to inspect. Agents can use these tools as part of a skill, and you can also run them directly.
+
+### bib-lint
+
+Check bibliography metadata against scholarly sources and inspect findings alongside their evidence in a local viewer. See [bib-lint](tools/bib-lint/README.md).
 
 ```sh
-cd website
-npm ci
-npm run dev
-npm run check
-npm run build
+uvx --prerelease allow sciskill bib-lint --help
 ```
 
-The site uses `/sciskill/` as its base path. The Pages workflow builds pull requests and deploys `main` when GitHub Pages is configured to use GitHub Actions.
+### Rebuttal Desk
 
-## Publishing
+Import OpenReview discussions and view reviews, linked themes, tasks, and response drafts in a local workspace. See [Rebuttal Desk](tools/rebuttal-desk/README.md).
 
-Publish a GitHub release with a tag matching `v<version>` from `pyproject.toml`, currently `v0.1.0a1`. The [publish workflow](.github/workflows/publish.yml) tests the installed tools and both viewers, builds and validates the distributions, and uploads them to PyPI with Trusted Publishing.
-
-The PyPI publisher must match owner `Am1n3e`, repository `sciskill`, workflow `publish.yml`, and environment `pypi`. No API token is needed.
-
-## License
-
-The site template was modified on 18 October 2026. Licensed under [GPL-3.0](LICENSE).
+```sh
+uvx --prerelease allow sciskill rebuttal --help
+```
