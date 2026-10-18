@@ -16,22 +16,22 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
   </section>
 
   <section id="skills" class="skill-action wrap section-anchor" aria-labelledby="init-heading">
-    <div class="action-copy"><p class="eyebrow">01 / Setup</p><h2 id="init-heading">Initialize</h2><p>Run the standalone command to see the available tools and actions.</p></div>
-    <div class="agent-terminal" aria-label="Initialization usage"><div class="agent-terminal-command"><span class="agent-prompt" aria-hidden="true">›</span><code>uvx sciskill init</code></div><pre class="agent-terminal-output">Project configuration is ready.</pre></div>
+    <div class="action-copy"><p class="eyebrow">01 / Setup</p><h2 id="init-heading">Initialize</h2><p>Set up your research project with your agent. Save the manuscript and bibliography paths and optional venue for later tasks.</p></div>
+    <div class="agent-terminal" aria-label="Initialization usage"><div class="agent-terminal-command"><span class="agent-prompt" aria-hidden="true">›</span><code>/sciskill init</code></div></div>
   </section>
 
   <section class="skill-action wrap section-anchor" aria-labelledby="references-heading">
-    <div class="action-copy"><p class="eyebrow">02 / Reference checking</p><h2 id="references-heading">bib-lint</h2><p>Check your bibliography against scholarly records. Inspect metadata differences alongside the source evidence, without changing your bibliography.</p>
-    <a class="text-link" href={`${base}tools/bib-lint/`}>Explore reference checking <span aria-hidden="true">↗</span></a></div>
-    <div class="agent-terminal" aria-label="bib-lint usage"><div class="agent-terminal-command"><span class="agent-prompt" aria-hidden="true">›</span><code>uvx sciskill bib-lint verify paper.bib</code></div><pre class="agent-terminal-output">Audit complete.
-Open the report to review findings and source evidence.</pre></div>
+    <div class="action-copy"><p class="eyebrow">02 / Reference checking</p><h2 id="references-heading">bib-lint</h2><p>Check your bibliography against scholarly records. Inspect metadata differences alongside the source evidence, without changing your bibliography.</p></div>
+    <div class="action-usage"><div class="agent-terminal" aria-label="bib-lint usage"><div class="agent-terminal-command"><span class="agent-prompt" aria-hidden="true">›</span><code>/sciskill bib-lint paper.bib</code></div></div>
+      <a class="text-link" href={`${base}tools/bib-lint/`}>Explore reference checking <span aria-hidden="true">↗</span></a>
+    </div>
   </section>
 
   <section class="skill-action wrap section-anchor" aria-labelledby="rebuttal-heading">
-    <div class="action-copy"><p class="eyebrow">03 / Review & response planning</p><h2 id="rebuttal-heading">Plan your rebuttal.</h2><p>Turn reviewer feedback into a response plan. Bring related concerns together, identify the evidence each answer needs, and keep every response connected to the original review.</p>
-    <a class="text-link" href={`${base}tools/rebuttal-desk/`}>Explore rebuttal planning <span aria-hidden="true">↗</span></a></div>
-    <div class="agent-terminal" aria-label="Rebuttal planning usage"><div class="agent-terminal-command"><span class="agent-prompt" aria-hidden="true">›</span><code>/sciskill plan-rebuttal reviews.md</code></div><pre class="agent-terminal-output">Response plan ready.
-Review concerns, supporting evidence, and proposed responses.</pre></div>
+    <div class="action-copy"><p class="eyebrow">03 / Review & response planning</p><h2 id="rebuttal-heading">Plan your rebuttal.</h2><p>Turn reviewer feedback into a response plan. Bring related concerns together, identify the evidence each answer needs, and keep every response connected to the original review.</p></div>
+    <div class="action-usage"><div class="agent-terminal" aria-label="Rebuttal planning usage"><div class="agent-terminal-command"><span class="agent-prompt" aria-hidden="true">›</span><code>/sciskill plan-rebuttal</code></div></div>
+      <a class="text-link" href={`${base}tools/rebuttal-desk/`}>Explore rebuttal planning <span aria-hidden="true">↗</span></a>
+    </div>
   </section>
 
   <p id="copy-status" class="sr-only" role="status" aria-live="polite"></p>

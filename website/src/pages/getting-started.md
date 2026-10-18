@@ -1,41 +1,37 @@
 ---
 layout: ../layouts/DocLayout.astro
 title: Getting started
-description: Run the tools locally or add the rebuttal-analysis skill to your agent.
+description: Add SciSkill to your agent, initialize your project, and choose a research task.
 ---
 
-## Run the tools
-
-Install [uv](https://docs.astral.sh/uv/). The tools require Python 3.12 or newer and run in an isolated environment.
-
-```sh
-uvx sciskill --help
-```
-
-## Check references
-
-```sh
-uvx sciskill bib-lint verify references.bib
-uvx sciskill bib-lint view references.bib-lint
-```
-
-Add `--aux paper.aux` to verify only cited references. Without it, all entries are checked. Sources are never edited. Failed lookups require review and do not establish that a citation is wrong.
-
-## Open a rebuttal workspace
-
-Save the rendered OpenReview discussion after its reviews and replies have loaded, then import it:
-
-```sh
-uvx sciskill rebuttal import-openreview discussion.html my-rebuttal
-uvx sciskill rebuttal view my-rebuttal
-```
-
-The importer preserves review content and conversations in YAML. It does not generate analysis or drafts. Workspace files remain local; Reload rereads changes made in your editor.
-
-## Add the agent skill
+## Setup
 
 ```sh
 npx skills add Am1n3e/sciskill
 ```
 
-Use the `plan-rebuttal` workflow with the initial reviews and submitted manuscript, including its appendix. It produces annotated concerns, cross-review themes, and proposed tasks. Authors review the proposed work and retain control of response drafts and manuscript changes.
+## Initialize your project
+
+In your agent, run:
+
+```text
+/sciskill init
+```
+
+Provide your LaTeX and bibliography paths and an optional venue. Your agent initializes local configuration and storage. Your `.gitignore` stays unchanged unless you opt in.
+
+## Check references
+
+```text
+/sciskill bib-lint references.bib
+```
+
+Your agent checks bibliography metadata against scholarly records, reviews the source evidence, and opens the report. Provide a corresponding compiled AUX file to check only cited references; otherwise the audit checks all entries. Bibliography files remain unchanged.
+
+## Plan your rebuttal
+
+```text
+/sciskill plan-rebuttal
+```
+
+Provide the initial reviews and submitted manuscript, including its appendix. Your agent identifies actionable passages, checks existing evidence, groups related concerns into themes, and proposes tasks in Rebuttal Desk. You review the proposed work and retain control of response drafts and manuscript changes.
