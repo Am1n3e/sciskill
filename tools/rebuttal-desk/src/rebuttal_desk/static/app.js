@@ -1,5 +1,17 @@
 /* Original Rebuttal Desk layout, driven by workspace data. */
 let workspace;
+const originalToggle = document.createElement('button');
+originalToggle.type = 'button';
+originalToggle.className = 'original-switch';
+originalToggle.setAttribute('role', 'switch');
+originalToggle.setAttribute('aria-checked', 'false');
+originalToggle.setAttribute('aria-label', 'Hide drafts');
+originalToggle.innerHTML = '<span>Hide drafts</span><span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>';
+let showOriginal = false;
+function applyOriginalView() {
+  content.querySelectorAll('.workbench-drawer').forEach(item => { item.hidden = showOriginal; });
+}
+originalToggle.addEventListener('click', () => { showOriginal = !showOriginal; originalToggle.setAttribute('aria-checked', String(showOriginal)); applyOriginalView(); });
 const content = document.querySelector('#content');
 const nav = document.querySelector('#reviewer-nav');
 function node(tag, text, className) {
@@ -17,7 +29,8 @@ function drafted(source) { return Boolean(source.trim()) && !/^\[?\s*tbd\s*\]?$/
 function count(source) { return {words: source.trim() ? source.trim().split(/\s+/u).length : 0, characters: Array.from(source).length}; }
 function relatedLink(id) {
   const review = workspace.reviews.find(r => r.concerns.some(c => c.id === id));
-  const link = node('a', id, 'related-chip');
+  const index = review.concerns.findIndex(c => c.id === id) + 1;
+  const link = node('a', `${review.label} · Concern ${index}`, 'related-chip');
   link.href = `#${review.id}/${id}`;
   link.addEventListener('click', event => event.stopPropagation());
   return link;
@@ -28,7 +41,8 @@ function concernDrawer(concern, review, selected) {
   drawer.open = selected === concern.id;
   const summary = node('summary');
   const heading = node('span', undefined, 'drawer-heading');
-  heading.append(node('span', concern.id, 'drawer-kicker'), node('span', concern.title, 'drawer-title'));
+  const concernNumber = review.concerns.findIndex(c => c.id === concern.id) + 1;
+  heading.append(node('span', `${review.label} · Concern ${concernNumber}: ${concern.title}`, 'drawer-kicker'));
   summary.append(heading);
   if (concern.related.length) {
     const links = node('span', undefined, 'related-links');
@@ -60,7 +74,10 @@ function concernDrawer(concern, review, selected) {
       const section=node('section',undefined,'section-block');
       const response=node('div',undefined,'response-markdown response-main');
       const stats=count(concern.response.source);
-      response.append(node('div',`${stats.words} words · ${stats.characters} characters`,'response-metrics'),prose(concern.response.html,'response-rendered markdown-rendered'));
+      const overall = count(review.concerns.map(c => c.response.source).filter(drafted).map(source => source.trim()).join('\n\n'));
+      const limit = workspace.presentation.character_limit;
+      const total = `Overall: ${overall.characters.toLocaleString()}${limit ? ` / ${limit.toLocaleString()}` : ''} characters`;
+      response.append(node('div',`${stats.words} words · ${stats.characters} characters · ${total}`,'response-metrics'),prose(concern.response.html,'response-rendered markdown-rendered'));
       section.append(response); panel.append(section);
     } else panel.append(prose(concern.analysis.html,'external-markdown analysis-markdown markdown-rendered'));
     panels.append(panel);
@@ -74,12 +91,22 @@ function aggregate(review) {
   const responses=review.concerns.map(c=>c.response).filter(c=>drafted(c.source));
   const source=responses.map(c=>c.source.trim()).join('\n\n');const stats=count(source);
   const card=node('section',undefined,'aggregate-response');
-  const header=node('header',undefined,'aggregate-response-header');header.append(node('h2','Final response'));
+  const header=node('header',undefined,'aggregate-response-header');const titleBlock=node('div',undefined,'aggregate-title');
+  titleBlock.append(node('h2','Final response'),node('p','Combined from the drafts above. Read-only—edit the individual drafts.','aggregate-description'));
+  header.append(titleBlock);
   const metrics=node('p',undefined,'aggregate-response-metrics');
   metrics.append(node('span',`${responses.length} / ${review.concerns.length} responses drafted`,'aggregate-addressed'));
   const limit=workspace.presentation.character_limit;
   metrics.append(node('span',`${stats.characters.toLocaleString()}${limit ? ` / ${limit.toLocaleString()}` : ''} characters`,limit && stats.characters>limit?'aggregate-limit is-over-limit':'aggregate-limit'),node('span',`${stats.words} words`));
-  header.append(metrics);card.append(header);
+  const copy = node('button', undefined, 'copy-final-response');
+  copy.type = 'button'; copy.setAttribute('aria-label', 'Copy final response'); copy.title = 'Copy final response';
+  copy.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>';
+  const status = node('span', '', 'sr-only'); status.setAttribute('role', 'status');
+  copy.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(source); status.textContent = 'Final response copied.'; copy.title = 'Copied'; const icon = copy.innerHTML; copy.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>'; window.setTimeout(() => { copy.innerHTML = icon; copy.title = 'Copy final response'; }, 1500); }
+    catch { status.textContent = 'Unable to copy. Select the response text to copy it.'; copy.title = 'Unable to copy'; }
+  });
+  header.append(metrics, copy, status);card.append(header);
   const body=node('div',undefined,'aggregate-response-body markdown-rendered');
   if(responses.length) responses.forEach(c=>body.append(prose(c.html)));
   else body.append(node('p','No response drafts yet.','aggregate-empty'));
@@ -96,15 +123,16 @@ function render() {
   }
   const article=node('article',undefined,'review-document');
   const note=node('div',undefined,'openreview-note note depth-odd');
-  const heading=node('div',undefined,'heading');heading.append(node('h4',`Official Review by ${review.label}`));
+  const heading=node('div',undefined,'heading');heading.append(node('h4',`Official Review by ${review.label}`), originalToggle);
   const subheading=node('div',undefined,'subheading');subheading.append(node('span','Official Review','invitation highlight'),node('span',`by ${review.label}`,'signatures'));
   const container=node('div',undefined,'note-content-container');const body=node('div',undefined,'note-content');
   body.append(node('strong','Review:','note-content-field disable-tex-rendering'),prose(review.document.html,'note-content-value markdown-rendered'));
   body.append(node('strong','Concerns / questions:','note-content-field disable-tex-rendering'));
-  const list=node('ol',undefined,'note-content-value');review.concerns.forEach(c=>{const item=node('li');item.append(node('p',c.title),concernDrawer(c,review,concernId));list.append(item);});body.append(list);
+  const list=node('ol',undefined,'note-content-value');review.concerns.forEach(c=>{const item=node('li');item.append(node('p',c.question),concernDrawer(c,review,concernId));list.append(item);});body.append(list);
   if(review.comments.length){body.append(node('strong','Comments:','note-content-field'));review.comments.forEach(c=>body.append(node('h4',c.label),prose(c.document.html)));}
   container.append(body);note.append(heading,subheading,container);article.append(note);content.replaceChildren(article,aggregate(review));
-  if(concernId)document.getElementById(concernId)?.scrollIntoView({block:'center'});
+  applyOriginalView();
+  if(concernId && !showOriginal)document.getElementById(concernId)?.scrollIntoView({block:'center'});
 }
 async function load(){try{const response=await fetch('/workspace.json');if(!response.ok)throw new Error('Workspace could not be loaded.');workspace=await response.json();document.querySelector('#workspace-title').textContent=workspace.title;render();}catch(error){content.replaceChildren(node('p',error.message));}}
 window.addEventListener('hashchange',()=>{if(workspace)render();});load();

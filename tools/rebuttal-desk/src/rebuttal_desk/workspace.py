@@ -102,6 +102,7 @@ def load_concern(root, raw):
     return {
         "id": identifier(raw.get("id")),
         "title": text(raw.get("title"), "concern title"),
+        "question": text(raw.get("question", raw.get("title")), "concern question"),
         "related": related,
         "analysis": load_content(root, raw.get("analysis")),
         "response": load_content(root, raw.get("response")),

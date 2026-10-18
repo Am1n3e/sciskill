@@ -1335,3 +1335,31 @@ select {
     width: 100%;
   }
 }
+
+/* Neutral app chrome; review surface retains its original OpenReview palette. */
+:root{--ink:#202124;--muted:#63666b;--line:#e2e2e2;--line-strong:#c9c9c9;--paper:#fff;--canvas:#fff;--accent:#303236;--accent-strong:#151618;--accent-soft:#f1f1f1;--shadow:0 12px 32px rgb(0 0 0 / 5%)}
+.openreview-note{--ink:#1f2d3d;--muted:#5e6d80;--line:#d7e1ee;--line-strong:#bccbdd;--paper:#fff;--canvas:#f4f7fb;--accent:#2869b0;--accent-strong:#174f8c;--accent-soft:#e8f1fb;--shadow:0 12px 32px rgb(31 57 91 / 9%)}
+[hidden]{display:none!important}
+.openreview-note>.heading{display:flex;align-items:center;justify-content:space-between;gap:16px}.original-switch{display:inline-flex;align-items:center;gap:10px;flex-shrink:0;padding:5px 0;border:0;background:transparent;color:var(--muted);font-size:.85rem;cursor:pointer}.switch-track{display:block;width:36px;height:21px;border-radius:20px;background:#aeb8c5;padding:3px;transition:background .15s}.switch-thumb{display:block;width:15px;height:15px;border-radius:50%;background:white;transition:transform .15s}.original-switch[aria-checked=true] .switch-track{background:var(--accent)}.original-switch[aria-checked=true] .switch-thumb{transform:translateX(15px)}.original-switch:focus-visible{outline:2px solid var(--accent);outline-offset:4px}@media(max-width:600px){.openreview-note>.heading{flex-wrap:wrap}}
+
+
+/* Colors measured from the live OpenReview forum and reply surfaces. */
+body{background:#fffdfa}
+.openreview-note.note{background:#f7f6f4;color:#333;border-color:#eee}
+.openreview-note .heading h4{color:#2c3a4a}
+.openreview-note .note-content{color:#333}
+.aggregate-response,.aggregate-response-body{background:#fffdfa;color:#333;border-color:#eee}
+.aggregate-response,.aggregate-response-header,.aggregate-response-body{background:#f7f6f4}
+
+.copy-final-response{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:32px;height:32px;padding:6px;border:0;background:transparent;color:inherit;cursor:pointer;margin-left:12px}.copy-final-response:hover{background:#e8e7e5;border-radius:4px}.copy-final-response:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.aggregate-response-header h2{margin-right:auto}.aggregate-response-header .aggregate-response-metrics{margin-left:auto}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+.aggregate-title{margin-right:auto}.aggregate-description{font-size:.82rem;color:#666;margin:5px 0 0;line-height:1.5;font-weight:400}.aggregate-title h2{margin:0}.aggregate-response-header{align-items:center}
+.drawer-kicker{text-transform:none}
+
+.drawer-kicker{color:#2869b0;font-size:.82rem;text-transform:none;line-height:1.5}
+/* Flat draft presentation: metrics divider and text, without an inner card. */
+.workbench-panel .section-block{padding-top:0}
+.response-main{border:0;border-radius:0;background:transparent;overflow:visible}
+.response-metrics{display:flex;justify-content:flex-end;padding:12px 0 9px;border-bottom:1px solid #ddd;background:transparent;color:#666}
+.response-rendered{padding:14px 0 0}

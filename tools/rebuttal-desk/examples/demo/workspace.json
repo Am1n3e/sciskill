@@ -1,49 +1,53 @@
 {
   "version": 1,
-  "title": "Science Skills \u00b7 Demo submission",
+  "title": "Science Skills: Agent Tools for Reference Checking and Rebuttal Planning",
   "reviews": [
     {
-      "id": "reviewer-1",
-      "label": "Reviewer 1",
+      "id": "k7Mx",
+      "label": "Reviewer k7Mx",
       "document": "reviewer-1.md",
       "concerns": [
         {
           "id": "r1-c1",
-          "title": "Clarify how the reference checker distinguishes missing records from metadata mismatches.",
+          "title": "Lookup failures",
           "analysis": "r1-c1-analysis.md",
           "response": "r1-c1-response.md",
-          "related": []
+          "related": [],
+          "question": "Clarify how the reference checker distinguishes missing records from metadata mismatches."
         },
         {
           "id": "r1-c2",
-          "title": "Report source coverage separately from correctness.",
+          "title": "Source coverage",
           "analysis": "r1-c2-analysis.md",
           "response": "r1-c2-response.md",
           "related": [
             "m-c1"
-          ]
+          ],
+          "question": "Report source coverage separately from correctness."
         }
       ],
       "comments": []
     },
     {
-      "id": "reviewer-2",
-      "label": "Reviewer 2",
+      "id": "p2Vn",
+      "label": "Reviewer p2Vn",
       "document": "reviewer-2.md",
       "concerns": [
         {
           "id": "r2-c1",
-          "title": "Explain whether reviewer comments stay linked to the original review text.",
+          "title": "Review traceability",
           "analysis": "r2-c1-analysis.md",
           "response": "r2-c1-response.md",
-          "related": []
+          "related": [],
+          "question": "Explain whether reviewer comments stay linked to the original review text."
         },
         {
           "id": "r2-c2",
-          "title": "Describe how authors inspect and revise a proposed response.",
+          "title": "Author revisions",
           "analysis": "r2-c2-analysis.md",
           "response": "r2-c2-response.md",
-          "related": []
+          "related": [],
+          "question": "Describe how authors inspect and revise a proposed response."
         }
       ],
       "comments": []
@@ -55,13 +59,14 @@
       "concerns": [
         {
           "id": "m-c1",
-          "title": "Summarize the limits of automated checks and preserve author judgment.",
+          "title": "Automation limits",
           "analysis": "m-c1-analysis.md",
           "response": "m-c1-response.md",
           "related": [
             "r1-c2",
             "r2-c2"
-          ]
+          ],
+          "question": "Summarize the limits of automated checks and preserve author judgment."
         }
       ],
       "comments": []
