@@ -17,6 +17,7 @@ Status: discussion and planning only. Implementation is on hold until the releva
 | [Rebuttal annotation working log](rebuttal-annotation-workflow.md) | Develop annotations on an example, record decisions, then write the skill after approval | Iterating with user |
 | [Cross-review analysis](rebuttal-analysis.md) | Themes across reviewers, linked annotations and tasks | Discussing data |
 | [Rebuttal task list](rebuttal-task-list.md) | Define paper-wide researcher-maintained tasks, then presentation | Discussing data |
+| [Rebuttal analysis skill](rebuttal-skill.md) | Evidence-grounded initial-review analysis, skill workflow and independent checks | Implemented and exercised locally |
 
 ## How we work
 
