@@ -3,11 +3,11 @@
 A standalone, read-only local viewer for reviews, concern-level analysis, response drafts, related concerns, and an assembled response. It does not analyze reviews or generate responses. Edit the workspace files in your editor, then click Reload.
 
 ```sh
-uvx --from ./tools/rebuttal-desk rebuttal-desk init ./my-rebuttal
-uvx --from ./tools/rebuttal-desk rebuttal-desk validate ./my-rebuttal
-uvx --from ./tools/rebuttal-desk rebuttal-desk view ./my-rebuttal
+uvx sciskill rebuttal init ./my-rebuttal
+uvx sciskill rebuttal validate ./my-rebuttal
+uvx sciskill rebuttal view ./my-rebuttal
 # automation / headless use:
-uvx --from ./tools/rebuttal-desk rebuttal-desk view ./my-rebuttal --no-browser --port 8765
+uvx sciskill rebuttal view ./my-rebuttal --no-browser --port 8765
 ```
 
 `init` creates a small, entirely synthetic template and refuses to overwrite an existing path. You can create multiple independent workspaces outside this repository. `view` binds only to 127.0.0.1, prints the URL, and opens your browser unless disabled. Stop with Ctrl-C. The default port is chosen automatically. No write endpoint exists.
@@ -17,8 +17,8 @@ uvx --from ./tools/rebuttal-desk rebuttal-desk view ./my-rebuttal --no-browser -
 Capture the **rendered** OpenReview forum page after all reviews and replies load, then pass the saved HTML to the importer:
 
 ```sh
-uvx --from ./tools/rebuttal-desk rebuttal-desk import-openreview ./openreview-discussion.html ./my-rebuttal
-uvx --from ./tools/rebuttal-desk rebuttal-desk view ./my-rebuttal
+uvx sciskill rebuttal import-openreview ./openreview-discussion.html ./my-rebuttal
+uvx sciskill rebuttal view ./my-rebuttal
 ```
 
 The importer refuses to overwrite an existing directory. It writes `workspace.yaml` and one `reviews/<review-id>.yaml` per initial review or decision. Each review file contains its original sections and a `conversation` of `author_response` and `reviewer_comment` entries. Every entry preserves its ID, author, title, source type, timestamp, reply target, and ordered field headings with content converted to Markdown. Formula TeX is recovered from KaTeX annotations when available.
@@ -26,10 +26,6 @@ The importer refuses to overwrite an existing directory. It writes `workspace.ya
 Conversations are sorted by creation time, with the ID breaking equal-time ties. The displayed timestamp and its original text are retained; captures without timezone information do not acquire an invented timezone. Reply targets are resolved from explicit “Replying to” headings when present, otherwise from HTML nesting. Ambiguous reply targets, missing timestamps, and threads that cannot be associated with a review cause an import error instead of silently losing content. Separate threads started by the same reviewer or editor are included in that review's conversation; their root has no reply target.
 
 No concerns, analysis, or response drafts are inferred by import. Action editor labels use the role and exported ID without a personal name. The import is offline and does not execute scripts or fetch links from the HTML. An initial HTML shell without loaded comments is rejected; the importer cannot recover content missing from the capture.
-
-## Shared command
-
-From the repository root, use `uvx --from . sciskill rebuttal` followed by the same action and arguments shown above. The standalone package remains buildable from this directory.
 
 ## Workspace format
 

@@ -41,11 +41,11 @@ The audit concerns core citation metadata. It does not establish whether a paper
 
 ## Use the tool
 
-From the [SciSkill repository](https://github.com/Am1n3e/sciskill):
+Run the SciSkill bibliography tool:
 
 ```sh
-uvx --from . sciskill bib-lint verify references.bib
-uvx --from . sciskill bib-lint view references.bib-lint
+uvx sciskill bib-lint verify references.bib
+uvx sciskill bib-lint view references.bib-lint
 ```
 
 The viewer is bundled HTML, CSS, and JavaScript served locally by Python. It can start audits, open saved reports, inspect evidence, and stop or resume runs. Source bibliographies are not modified.
