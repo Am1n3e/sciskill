@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "science-skills-rebuttal-desk"
+version = "0.1.0"
+description = "Local review, analysis, and rebuttal response workspace"
+requires-python = ">=3.11"
+license = "GPL-3.0-only"
+dependencies = []
+
+[project.scripts]
+rebuttal-desk = "rebuttal_desk.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rebuttal_desk"]
+
+[tool.ruff.lint]
+extend-select = ["C90"]
+[tool.ruff.lint.mccabe]
+max-complexity = 10

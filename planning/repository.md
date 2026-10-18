@@ -25,3 +25,7 @@ To define after review.
 ## Related plan
 
 [Skill installation](skill-installation.md) records the requested skills.sh compatibility.
+
+## Agreed tool execution requirement
+
+All collection tools must be runnable with uvx (uv tool run), using isolated tool environments rather than installing dependencies into the researcher’s project environment. Package each Python tool with appropriate console entry points. Apply this to the extracted Rebuttal Desk and bib-lint. Users need uv available; uvx manages tool dependencies and may cache environments. Final distribution names and pinned release versions remain to decide.

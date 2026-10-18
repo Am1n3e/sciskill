@@ -38,3 +38,7 @@ The current proposed target is `Am1n3e/science-skills`. If the repository name o
 - `src/styles/global.css`: responsive visual system.
 
 All demo citations and review passages on the homepage are illustrative. No real manuscript or reviewer content is included.
+
+## Local tools
+
+[Rebuttal Desk](tools/rebuttal-desk/README.md) currently provides the standalone Python packaging and local-launch checkpoint. Workspace loading and the review viewer follow in a separate reviewed phase.

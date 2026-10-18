@@ -41,3 +41,7 @@ Pending discussion and review. This document records a proposed journey, not an 
 ## Approved setup and page refinements
 
 The intended interface includes `/sciskill init`: check required tools, install missing dependencies, and reuse existing installations. A compact copyable setup step follows the centered installation command and precedes the two action sections. Backend dependency handling remains to implement before publication.
+
+## Agreed execution model
+
+Use uvx for every underlying tool. Do not require a clone plus uv sync or installation into the user project environment. Init should check uv availability and prepare or verify required tool versions through uvx. Exact setup policy remains to define.
