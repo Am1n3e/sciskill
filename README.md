@@ -14,7 +14,9 @@ npx skills add Am1n3e/sciskill
 
 ## Usage
 
-### `/sciskill plan-rebuttal`
+```text
+/sciskill plan-rebuttal
+```
 
 Analyze initial reviews against your submitted manuscript and appendix. Annotate actionable passages, group related concerns into themes, and propose tasks for your review. You retain control of response drafts and manuscript changes.
 
