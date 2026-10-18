@@ -1,53 +1,103 @@
 # Plan a rebuttal
 
-## Establish the inputs
+Analyze initial reviewer feedback against the submitted manuscript and appendix. Produce annotated concerns, evidence-based analysis, shared themes, and proposed tasks for the author to review.
 
-Record manuscript path/version/hash, source review paths/hashes, extraction tool, and review scope. Read the complete manuscript and appendix relevant to the claims, plus all initial reviews. Use the initial version of the paper when available. A later PDF can be examined only with its provenance stated; answers found there are not automatically evidence of what the reviewer received. Never use existing author responses or prior analyses in an initial-review run.
+The rebuttal manifest links these outputs. Use [the manifest template](../assets/rebuttal-manifest.yaml), replacing placeholders with actual values. Save it as `workspace.yaml` in the rebuttal folder; document paths are relative to that folder. Preserve existing drafts and author decisions when updating an analysis.
 
-Import a complete saved OpenReview HTML with `rebuttal-desk import-openreview`. For isolated initial-review fragments, assemble only the selected original review elements under the importer containers; retain the originals and log the assembly. Create a new workspace for a fresh analysis instead of overwriting an existing rebuttal. Keep personal captures and generated analysis in the repository's ignored workspace area.
+## 1. Establish the inputs
 
-## Understand and annotate
+Identify the submitted manuscript, its appendix or supplement, the initial reviews, and the destination folder. Ask for missing inputs or an ambiguous manuscript version. Record the paths, hashes, versions, and source review dates in a local provenance file. Distinguish review dates from capture dates; mark unavailable information as unknown.
 
-Read every substantive field, including weaknesses, questions, and limitations. Mark the smallest complete passage that expresses an independently answerable issue. Include necessary qualifiers; do not annotate praise, administrative acknowledgements, or a repeated 'see above' pointer. Repeated substantive mentions may have separate span IDs linked to one resolution so none of the original text disappears. Record why unannotated passages need no action.
+For a saved OpenReview discussion, import it into a new rebuttal folder:
 
-Use one main type per span:
-- `clarification`: explain, justify, or answer a criticism/question without an explicit requested modification.
-- `change_request`: a requested modification or new evidence. Optional subtype: `manuscript_change` or `additional_experiments`. Leave it unset when neither fits.
+```sh
+uvx sciskill rebuttal import-openreview initial-reviews.html my-rebuttal
+```
 
-The type reflects what the reviewer asks, not the work the author later chooses. A clarification can lead to a proposed manuscript edit. An explicit request for measurement is a change request even when phrased as a question. When a passage combines tightly coupled asks, retain the full span and enumerate its distinct obligations in its analysis. Split independent asks when their evidence or completion criteria differ. IDs are stable; titles are short topics, not copied questions.
+Read the manuscript and all initial reviewer/editor feedback. Keep author responses, subsequent exchanges, and previous rebuttal analyses outside the analysis inputs. Preserve the original capture. Record uncertainty if the manuscript or a captured review was edited after submission.
 
-## Build an evidence-grounded assessment
+**Output:** an identified manuscript and review set, provenance, and imported review YAML files linked from the manifest. Each review retains its ID, reviewer ID, ordered headings and content, timestamps, and source checksum. An initial-only working copy has empty conversation lists.
 
-For every concern, record in its analysis:
-- **What is asked:** explicit questions/assertions, including every material subquestion.
-- **Underlying issue:** the interpretation and why it matters; label uncertainty instead of mind-reading.
-- **What would resolve it:** observable evidence or explanation that addresses this concern. Distinguish the requested evidence from a sufficient narrower response that admits a limitation.
-- **Manuscript evidence:** precise section/page/table/algorithm/line references, a short supporting excerpt when useful, and what the passage actually establishes.
-- **Coverage:** answered, partially answered, or not answered by the provided manuscript. 'Acknowledged as a limitation' is not 'empirically answered'. Separate reported evidence from claims, formal descriptions, and unverified implementation behavior.
-- **Remaining work:** clarify using existing evidence, verify an implementation/log fact, propose a manuscript change, or propose additional measurement/experiments. Do not invent results or assume a hypothetical control exists.
+## 2. Annotate actionable passages
 
-For already answerable questions, explain the answer and cite the location; do not merely say 'see Appendix'. A reviewer may have identified unclear presentation even when the fact exists. When quoting comparative results, retain relevant denominators, conditioning populations, native update paths and uncertainty; a shared headline metric need not mean a matched comparison. For claimed absences, inspect relevant appendices/tables before declaring evidence missing. For concerns about budget, leakage, safety, or causality, check the exact boundary of the existing measurement.
+Mark every passage that needs an answer or requested change in `annotated_content`, leaving original headings and `content` intact. Use the smallest complete span that preserves the request and its qualifiers. Split independent asks; keep tightly coupled asks together and account for each part in the assessment.
 
-## Synthesize across reviewers
+Wrap each span in `science-skills-annotation` with a stable, globally unique `id` and one `type`:
 
-Group by shared underlying issue or shared resolving evidence, not shared keywords. Link each theme to exact concern IDs and explicit reviewer IDs. A one-reviewer material issue still deserves a theme. State which reviewer asks what and where their needs differ; shared membership is not consensus on every claim. Preserve conflicting requests. For a compound or repeated concern, verify each material clause has a concrete resolution criterion; pointing to a related theme is insufficient if it addresses a different mechanism. Short-horizon or static sensitivity evidence does not automatically resolve a longitudinal deployment concern.
+- `clarification`: an explanation, justification, or answer without an explicit requested modification.
+- `change_request`: a requested modification or new evidence. Set `subtype` to `manuscript_change` or `additional_experiments` when applicable; otherwise omit it.
 
-Each theme's Markdown contains the analysis and concern-level resolution details. Keep detailed per-concern assessments in their existing analysis files, while making all material conclusions available through the theme content shown by the viewer. Cross-references may save space in a later response, but every reviewer still needs a direct answer and any indispensable evidence locally.
+Classify the reviewer's request, not the work the author later chooses. Preserve Markdown inside each tag and keep spans non-overlapping. Repeated substantive mentions can link to one resolution; praise, administrative text, and bare cross-references need no annotation.
 
-Maintain one continuously updated overview, not separate initial/subsequent reports. The viewer already labels it **Overview**; do not add another title inside its Markdown. Write for a researcher deciding where to start:
+**Output:** annotated review sections and matching manifest concerns with concise topic titles. Original content and checksums are unchanged. Each concern has analysis and response file paths; create empty response files for this analysis-only workflow.
 
-1. Begin with the manuscript path/version, overview update timestamp, and source review dates. Distinguish creation/modification dates from a capture or receipt date; never invent a missing date. State a material manuscript-version uncertainty briefly.
-2. State the number of unique themes, reviewers, concerns, and tasks, with current task status counts. Compute these from the workspace rather than assuming previous counts still hold.
-3. List all themes with links, unique reviewer counts/IDs, and related task links. Order by descending unique reviewer count, breaking ties by stable theme number. Apply this order to the theme data too; never renumber IDs to match a new order.
-4. Give a short **Where to start** list of concrete actions and why they matter. Distinguish what the paper already establishes from what still needs verification or measurement. Link every substantive issue to its exact concern, theme, or task; do not leave unexplained topics such as “cold start” floating in the overview.
-5. Show useful answers already available in the paper: the reviewer question, the existing answer with precise paper references, and the linked follow-up. Avoid vague labels such as “supported with boundaries”; say exactly what is established and what remains unknown.
+## 3. Assess each concern against the paper
 
-Keep extraction procedures, input exclusions, validation details, agent coordination, and workflow explanations in provenance/audit files, not the overview. The overview is a navigation and decision aid, not a development log. Do not imply acceptance is assured. Verify that overview links actually open the intended concern, theme or task in the browser.
+Write the following in each concern's analysis file:
 
-## Propose work and verify
+| Item | Expected content |
+| --- | --- |
+| Request | What the reviewer asks, including material subquestions. |
+| Underlying issue | Why the concern matters, distinguishing interpretation from the reviewer's words. |
+| Resolution criterion | The evidence or explanation that would answer the concern. |
+| Existing evidence | Precise manuscript section, page, table, or algorithm references and what they establish. |
+| Coverage | Answered, partially answered, or unanswered by the supplied paper. |
+| Remaining work | A clarification, verification, manuscript change, or proposed experiment, with its reason. |
 
-Create tasks for concrete deliverables, linking all concerns they resolve. All newly generated tasks start `proposed`; only user agreement moves them to `pending`. Use high/medium/low priority and effort independently. Explain the priority in `note`, including dependencies or experiment lead time when relevant. Separate checking whether evidence already exists from committing to new experiments. Keep low-impact wording corrections below central validity/evidence issues.
+For an existing answer, explain it and cite its location rather than merely pointing to an appendix. Check the relevant supplementary material before declaring evidence missing. Keep reported results distinct from claims or unverified implementation behavior. Preserve comparison conditions, denominators, and uncertainty; acknowledging a limitation does not supply empirical evidence. State uncertainty without inventing results or predicting acceptance.
 
-Validate all files and links, unique IDs/numbers, annotation-to-concern correspondence, original checksums, exact text preservation, and empty drafts for an analysis-only run. Review coverage against the full initial reviews, including compound requests and repeated limitations. Check no theme claims more reviewers than its links support.
+**Output:** one evidence-grounded assessment per concern, with a resolution criterion for every material ask and explicit gaps where the paper does not answer it.
 
-If independent reviewers are requested, ask for concrete omissions, mismatched evidence, and misprioritized work with source references; unsupported suggestions do not become tasks. Reconcile their findings and record the decisions. Open the resulting workspace through the UVX viewer, refresh the actual user-facing tab, and verify the displayed title, themes, annotations, and tasks before reporting completion.
+## 4. Group concerns into themes
+
+Group concerns by the underlying issue or evidence needed to resolve them. Retain material issues raised by a single reviewer. Explain each reviewer's request within the shared analysis, including differences or conflicting expectations.
+
+Give each theme a stable ID and number, title, Markdown content file, explicit reviewer IDs, and linked concern IDs. Keep the detailed assessments in concern files; the theme content should make the shared findings and reviewer-specific needs accessible in the viewer.
+
+**Output:** linked themes covering the assessed concerns. A theme's reviewer list contains exactly the distinct owners of its linked concerns; shared membership does not imply agreement on every point.
+
+## 5. Propose and prioritize tasks
+
+Create tasks for concrete deliverables and link every concern each task addresses. Combine duplicate work while preserving separate resolution criteria. Distinguish verifying existing evidence from performing new experiments.
+
+New tasks start `proposed`; user agreement moves them to `pending`. Keep existing decisions and progress. Set priority by impact on the central claims, validity, fairness, and reproducibility; track effort separately. Explain priority and dependencies in `note`. Small wording fixes should not displace material evidence gaps.
+
+**Output:** uniquely numbered tasks linked to concerns and themes, with status, priority, effort, note, and an external link when supplied. Response drafts and manuscript changes remain for the author's next action.
+
+## 6. Write the overview
+
+Update one overview Markdown file, linked from the manifest. Begin directly with the content; the viewer supplies the “Overview” heading.
+
+Include:
+
+- Manuscript path/version, update time, source review dates, and material version uncertainty.
+- Counts of themes, reviewers, concerns, and tasks, including current task status counts, computed from the manifest.
+- All themes with reviewer counts/IDs and related task links. Sort by descending unique reviewer count, then stable theme number; use that order in the manifest without renumbering themes.
+- A short “Where to start” list of concrete actions and why they matter.
+- Useful answers already in the paper, with precise paper references and linked concerns or follow-up tasks.
+
+Link substantive issues to their concerns, themes, or tasks. Keep extraction procedures and validation logs in local provenance files so the overview helps the researcher decide what to do next.
+
+**Output:** a single overview connecting the review findings, available evidence, and proposed work.
+
+## 7. Validate and show the result
+
+Run:
+
+```sh
+uvx sciskill rebuttal validate my-rebuttal
+```
+
+Check complete review coverage, original checksums and exact text preservation, matching annotation/concern IDs, unique task/theme numbers, existing linked files, and empty response drafts. Use the tool's checksum verification; source changes are errors, not a reason to replace the checksum. Theme numbers and task IDs in the populated template must be YAML integers.
+
+Use these viewer links with persisted IDs: `#REVIEWER/CONCERN-ID`, `#theme-THEME-ID`, and `#task-NUMBER`. A reviewer-only link opens the full review.
+
+If independent review is requested, have reviewers check omissions, evidence, and priorities against the allowed inputs. Reconcile supported findings and retain unresolved disagreements.
+
+Open the viewer and refresh the user's actual browser tab:
+
+```sh
+uvx sciskill rebuttal view my-rebuttal
+```
+
+**Output:** a validated rebuttal manifest with the overview, themes, annotations, tasks, and links verified in the browser. Report unresolved evidence gaps to the author.

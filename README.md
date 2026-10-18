@@ -15,6 +15,18 @@ npx skills add Am1n3e/sciskill
 ## Usage
 
 ```text
+/sciskill init
+```
+
+Initialize `.sciskill/` with your LaTeX and bibliography paths, optional venue, and local cache storage. Your `.gitignore` stays unchanged unless you opt in.
+
+```text
+/sciskill bib-lint
+```
+
+Check bibliography metadata against scholarly records and inspect the findings and source evidence.
+
+```text
 /sciskill plan-rebuttal
 ```
 
@@ -29,7 +41,7 @@ SciSkill pairs agent instructions with tools that carry out the work and make th
 Check bibliography metadata against scholarly sources and inspect findings alongside their evidence in a local viewer. See [bib-lint](tools/bib-lint/README.md).
 
 ```sh
-uvx --prerelease allow sciskill bib-lint --help
+uvx sciskill bib-lint --help
 ```
 
 ### Rebuttal Desk
@@ -37,5 +49,5 @@ uvx --prerelease allow sciskill bib-lint --help
 Import OpenReview discussions and view reviews, linked themes, tasks, and response drafts in a local workspace. See [Rebuttal Desk](tools/rebuttal-desk/README.md).
 
 ```sh
-uvx --prerelease allow sciskill rebuttal --help
+uvx sciskill rebuttal --help
 ```

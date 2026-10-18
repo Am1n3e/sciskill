@@ -17,13 +17,13 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 
   <section id="skills" class="skill-action wrap section-anchor" aria-labelledby="init-heading">
     <div class="action-copy"><p class="eyebrow">01 / Setup</p><h2 id="init-heading">Initialize</h2><p>Run the standalone command to see the available tools and actions.</p></div>
-    <div class="agent-terminal" aria-label="Initialization usage"><div class="agent-terminal-command"><span class="agent-prompt" aria-hidden="true">›</span><code>uvx --prerelease allow sciskill --help</code></div><pre class="agent-terminal-output">Choose bib-lint or rebuttal.</pre></div>
+    <div class="agent-terminal" aria-label="Initialization usage"><div class="agent-terminal-command"><span class="agent-prompt" aria-hidden="true">›</span><code>uvx sciskill init</code></div><pre class="agent-terminal-output">Project configuration is ready.</pre></div>
   </section>
 
   <section class="skill-action wrap section-anchor" aria-labelledby="references-heading">
     <div class="action-copy"><p class="eyebrow">02 / Reference checking</p><h2 id="references-heading">bib-lint</h2><p>Check your bibliography against scholarly records. Inspect metadata differences alongside the source evidence, without changing your bibliography.</p>
     <a class="text-link" href={`${base}tools/bib-lint/`}>Explore reference checking <span aria-hidden="true">↗</span></a></div>
-    <div class="agent-terminal" aria-label="bib-lint usage"><div class="agent-terminal-command"><span class="agent-prompt" aria-hidden="true">›</span><code>uvx --prerelease allow sciskill bib-lint verify paper.bib</code></div><pre class="agent-terminal-output">Audit complete.
+    <div class="agent-terminal" aria-label="bib-lint usage"><div class="agent-terminal-command"><span class="agent-prompt" aria-hidden="true">›</span><code>uvx sciskill bib-lint verify paper.bib</code></div><pre class="agent-terminal-output">Audit complete.
 Open the report to review findings and source evidence.</pre></div>
   </section>
 

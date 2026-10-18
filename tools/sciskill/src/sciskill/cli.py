@@ -11,11 +11,17 @@ def main():
     parser.add_argument(
         "--version", action="version", version=f"sciskill {version('sciskill')}"
     )
-    parser.add_argument("tool", choices=["bib-lint", "rebuttal"], help="Tool to run")
+    parser.add_argument(
+        "tool", choices=["init", "bib-lint", "rebuttal"], help="Tool to run"
+    )
     parser.add_argument(
         "arguments", nargs=argparse.REMAINDER, help="Tool action and options"
     )
     args = parser.parse_args()
+    if args.tool == "init":
+        from sciskill.project import main as run
+
+        return run(args.arguments)
     if args.tool == "bib-lint":
         from bib_lint.cli import main as run
 

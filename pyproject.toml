@@ -4,12 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sciskill"
-version = "0.1.0a1"
+version = "0.1.0"
 description = "Bibliography audits and local rebuttal workspaces for scientists"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
-classifiers = ["Development Status :: 3 - Alpha"]
 dependencies = [
   "beautifulsoup4>=4.13,<5", "defusedxml>=0.7,<1", "httpx>=0.28,<0.29",
   "pybtex>=0.26,<0.27", "Markdown>=3.7,<4", "bleach>=6.2,<7",

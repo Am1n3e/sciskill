@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 
 
-class AlphaPackageTests(unittest.TestCase):
+class PackageTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.temp = tempfile.TemporaryDirectory()
@@ -46,7 +46,9 @@ class AlphaPackageTests(unittest.TestCase):
         ).stdout
 
     def test_version_help_and_assets(self):
-        version = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"]
+        version = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"][
+            "version"
+        ]
         self.assertEqual(self.run_cli("--version").strip(), f"sciskill {version}")
         self.assertIn("sciskill bib-lint", self.run_cli("bib-lint", "--help"))
         self.assertIn("sciskill rebuttal", self.run_cli("rebuttal", "--help"))
@@ -57,6 +59,25 @@ class AlphaPackageTests(unittest.TestCase):
             self.assertFalse(
                 any(".local/" in name or "references.json" in name for name in names)
             )
+
+    def test_installed_init_command(self):
+        import yaml
+
+        paper = self.directory / "paper.tex"
+        bib = self.directory / "references.bib"
+        paper.write_text("Original manuscript")
+        bib.write_text("Original bibliography")
+        self.run_cli("init", "--latex", paper, "--bib", bib, "--venue", "ICLR")
+        config = self.directory / ".sciskill/config.yaml"
+        data = yaml.safe_load(config.read_text())
+        self.assertEqual(data["latex"], "paper.tex")
+        self.assertEqual(data["bib"], "references.bib")
+        self.assertEqual(data["venue"], "ICLR")
+        self.assertFalse((self.directory / ".gitignore").exists())
+        self.run_cli("init", "--update-gitignore")
+        self.run_cli("init", "--update-gitignore")
+        self.assertEqual((self.directory / ".gitignore").read_text(), ".sciskill/\n")
+        self.assertEqual(yaml.safe_load(config.read_text()), data)
 
     def test_workflows_and_both_viewers(self):
         bib = self.directory / "empty.bib"

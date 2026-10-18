@@ -1,0 +1,38 @@
+# Rebuttal manifest template. The viewer reads the populated file as workspace.yaml.
+# Replace {{placeholders}} with actual values before validation.
+# theme_number and task_id must become YAML integers, not quoted strings.
+# Paths resolve inside the rebuttal folder; referenced files must exist.
+version: 1
+source: openreview
+title: "{{paper_title}}"
+presentation:
+  character_limit: null # set the confirmed venue limit, or leave null if unknown
+reviews:
+  - id: "{{reviewer_id}}"
+    label: "Reviewer {{reviewer_id}}"
+    document: "reviews/{{review_id}}.yaml"
+    concerns:
+      - id: "{{concern_id}}"
+        title: "{{concern_title}}"
+        related: [] # IDs of other concerns sharing this issue
+        analysis: "concerns/{{concern_id}}/analysis.md"
+        response: "concerns/{{concern_id}}/response.md" # empty for analysis-only runs
+analysis:
+  overview: analysis/overview.md
+  themes:
+    - id: "{{theme_id}}"
+      number: "{{theme_number}}" # stable positive integer
+      title: "{{theme_title}}"
+      content: "analysis/{{theme_id}}.md"
+      reviewers: ["{{reviewer_id}}"] # owners of linked annotations
+      annotations: ["{{concern_id}}"]
+      tasks: ["{{task_id}}"]
+tasks:
+  - id: "{{task_id}}" # stable unique positive integer
+    title: "{{task_title}}"
+    annotations: ["{{concern_id}}"]
+    status: proposed # new tasks await the author's decision
+    priority: "{{priority}}" # low, medium, or high
+    effort: "{{effort}}" # low, medium, or high
+    note: "{{task_note}}"
+    external_link: null

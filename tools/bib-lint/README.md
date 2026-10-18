@@ -4,14 +4,11 @@ Audit local BibTeX metadata against independent scholarly sources, then inspect
 comparisons and raw evidence in a local UI. Source bibliographies and compiled AUX
 files are never edited. Requires Python 3.12+ and macOS/Linux.
 
-From the collection repository root, run `uvx --from . sciskill bib-lint` followed by the action and arguments. The commands below also work from this tool directory.
-
-Run from this tool directory with UVX, which keeps tool dependencies outside your
-paper's environment:
+Run with UVX, which keeps tool dependencies outside your paper's environment:
 
 ```sh
-uvx --from . bib-lint verify /path/to/references.bib --aux /path/to/paper.aux
-uvx --from . bib-lint view /path/to/references.bib-lint
+uvx sciskill bib-lint verify /path/to/references.bib --aux /path/to/paper.aux
+uvx sciskill bib-lint view /path/to/references.bib-lint
 ```
 
 Without `--aux`, verification checks all entries and leaves citation usage unknown.
@@ -35,6 +32,4 @@ in Audit setup. The browser displays comparisons, proposed corrections, primary
 source links, and checksum-verified cached responses; it does not edit the
 bibliography.
 
-For an installed command, use `uv tool install .` (or `uv tool install --editable .`
-for development), or install a built wheel from `uv build`. This is separate from
-development dependency setup with `uv sync --group dev`.
+For source development and checks, see [Contributing](../../CONTRIBUTING.md).

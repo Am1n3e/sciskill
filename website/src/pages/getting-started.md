@@ -4,21 +4,19 @@ title: Getting started
 description: Run the tools locally or add the rebuttal-analysis skill to your agent.
 ---
 
-## Run from source
+## Run the tools
 
-Install [uv](https://docs.astral.sh/uv/), then clone the repository. Python 3.12 or newer is required.
+Install [uv](https://docs.astral.sh/uv/). The tools require Python 3.12 or newer and run in an isolated environment.
 
 ```sh
-git clone https://github.com/Am1n3e/sciskill.git
-cd sciskill
-uvx --from . sciskill --help
+uvx sciskill --help
 ```
 
 ## Check references
 
 ```sh
-uvx --from . sciskill bib-lint verify references.bib
-uvx --from . sciskill bib-lint view references.bib-lint
+uvx sciskill bib-lint verify references.bib
+uvx sciskill bib-lint view references.bib-lint
 ```
 
 Add `--aux paper.aux` to verify only cited references. Without it, all entries are checked. Sources are never edited. Failed lookups require review and do not establish that a citation is wrong.
@@ -28,8 +26,8 @@ Add `--aux paper.aux` to verify only cited references. Without it, all entries a
 Save the rendered OpenReview discussion after its reviews and replies have loaded, then import it:
 
 ```sh
-uvx --from . sciskill rebuttal import-openreview discussion.html my-rebuttal
-uvx --from . sciskill rebuttal view my-rebuttal
+uvx sciskill rebuttal import-openreview discussion.html my-rebuttal
+uvx sciskill rebuttal view my-rebuttal
 ```
 
 The importer preserves review content and conversations in YAML. It does not generate analysis or drafts. Workspace files remain local; Reload rereads changes made in your editor.
