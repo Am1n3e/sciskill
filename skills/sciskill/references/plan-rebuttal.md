@@ -1,8 +1,12 @@
 # Plan a rebuttal
 
+Turn initial reviews and the manuscript into an evidence-grounded response plan. Read the [workspace contract](workspace.md) before writing workspace data. Use the Rebuttal Desk importer and validator through UVX.
+
+The manuscript and its available appendix or supplement are required. Preserve existing human decisions and drafts on reruns. Do not generate response drafts, run experiments, modify the manuscript, or mark tasks accepted or done unless requested. Distinguish the reviewer's stated request from your interpretation; describe evidence that would resolve it rather than predicting the reviewer's vote.
+
 ## Establish the inputs
 
-Record manuscript path/version/hash, source review paths/hashes, extraction tool, and review scope. Read the complete manuscript and appendix relevant to the claims, plus all initial reviews. Use the initial version of the paper when available. A later PDF can be examined only with its provenance stated; answers found there are not automatically evidence of what the reviewer received. Never use existing author responses or prior analyses in an initial-review run.
+Record manuscript path/version/hash, source review paths/hashes, extraction tool, and review scope. Read the complete manuscript and appendix relevant to the claims, plus all initial reviews. Use the initial version of the paper when available. A later PDF can be examined only with its provenance stated; answers found there are not automatically evidence of what the reviewer received. Use only initial review entries: exclude author responses, later exchanges, decisions informed by them, and prior rebuttal analyses. Record uncertainty if a captured initial review was subsequently edited.
 
 Import a complete saved OpenReview HTML with `rebuttal-desk import-openreview`. For isolated initial-review fragments, assemble only the selected original review elements under the importer containers; retain the originals and log the assembly. Create a new workspace for a fresh analysis instead of overwriting an existing rebuttal. Keep personal captures and generated analysis in the repository's ignored workspace area.
 
