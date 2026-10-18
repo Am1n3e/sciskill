@@ -8,10 +8,6 @@ Keep your focus on the science. Let your agent handle the grunt work.
 
 ## Setup
 
-Use an agent that supports skills. Install [uv](https://docs.astral.sh/uv/) for the tools and Node.js with npm for the skill installer. The tools require Python 3.12 or newer.
-
-Add SciSkill to your agent:
-
 ```sh
 npx skills add Am1n3e/sciskill
 ```
