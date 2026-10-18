@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "title": "Example review workspace",
+  "reviews": [
+    {
+      "id": "reviewer-1",
+      "label": "Reviewer 1",
+      "document": "review.md",
+      "concerns": [
+        {
+          "id": "concern-1",
+          "title": "Explain the measurements",
+          "analysis": "analysis.md",
+          "response": "response.md",
+          "related": []
+        }
+      ],
+      "comments": [
+        {
+          "id": "comment-1",
+          "label": "Follow-up clarification",
+          "document": "comment.md"
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "profile": "openreview",
+    "character_limit": 10000
+  }
+}

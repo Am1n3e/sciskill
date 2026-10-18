@@ -13,3 +13,9 @@ Preserve the existing Rebuttal Desk layout and workflow. Review input manifest/l
 Discuss limited Markdown editing/save after viewer review. Do not implement editor or CodeMirror now.
 
 Stop after each phase for user review. Underlying implementation precedes site publication. Readiness notes remain in planning, not the public landing page.
+
+## Phase 2 implemented
+
+Restored generalized read-only viewer with a versioned local manifest, explicit document paths, reviewer navigation, response-first drawers/analysis toggle, related concern links, Refresh, aggregate drafts and length counts. Added optional review comments and a separate `presentation` object. Profiles `generic` and `openreview` configure grouping/layout and default limits while loaded review data stays identical. Both currently use sanitized Markdown/HTML rendering; OpenReview exact Markdown/math parity remains unimplemented, with formula source displayed as text. No editor or save endpoint.
+
+Validated profile data invariance/defaults/override/unknown rejection, comment path containment, manifest/files, sanitization, restricted server and independent workspaces. Synthetic fixture only; no private input data. Parent should visually review demo after package launch. Phase 3 remains deferred.

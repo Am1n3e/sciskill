@@ -41,4 +41,4 @@ All demo citations and review passages on the homepage are illustrative. No real
 
 ## Local tools
 
-[Rebuttal Desk](tools/rebuttal-desk/README.md) currently provides the standalone Python packaging and local-launch checkpoint. Workspace loading and the review viewer follow in a separate reviewed phase.
+[Rebuttal Desk](tools/rebuttal-desk/README.md) provides a standalone, read-only review workspace viewer with local manifest-linked files and configurable generic/OpenReview-style presentation.
