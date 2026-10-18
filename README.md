@@ -4,11 +4,18 @@ Agent tools and skills for scientists.
 
 This is the local catalog-site preview for bib-lint and Rebuttal Desk. It uses Astro, Markdown pages, and a static GitHub Pages deployment workflow. Existing tool availability and planned agent skills are identified separately.
 
+## Repository structure
+
+- `website/`: Astro website source, assets, configuration, and local build dependencies.
+- `tools/`: runnable tools, including Rebuttal Desk.
+- `skills/`: agent instructions and supporting references.
+
 ## Local development
 
 Requires Node.js 22.22.0 or newer.
 
 ```sh
+cd website
 npm ci
 npm run dev
 ```
@@ -25,17 +32,17 @@ npm run preview
 
 The included workflow checks and builds pull requests. Pushes to `main` and manual runs on `main` also deploy the build to the `github-pages` environment.
 
-To publish, create the intended collection repository and choose **GitHub Actions** under **Settings → Pages → Build and deployment → Source**. Confirm the owner and repository name match `site` and `base` in `astro.config.mjs` before enabling deployment. No live repository or deployment is created by this local preview.
+To publish, create the intended collection repository and choose **GitHub Actions** under **Settings → Pages → Build and deployment → Source**. Confirm the owner and repository name match `site` and `base` in `website/astro.config.mjs` before enabling deployment. No live repository or deployment is created by this local preview.
 
 The current proposed target is `Am1n3e/science-skills`. If the repository name or domain changes, update the Astro configuration. All internal navigation and local assets derive their URLs from Astro's base URL.
 
 ## Content
 
-- `src/pages/index.astro`: catalog homepage and illustrative interactive examples.
-- `src/pages/*.md`: general documentation.
-- `src/pages/tools/*.md`: capability pages.
-- `src/layouts/`: shared navigation and documentation layout.
-- `src/styles/global.css`: responsive visual system.
+- `website/src/pages/index.astro`: catalog homepage and illustrative interactive examples.
+- `website/src/pages/*.md`: general documentation.
+- `website/src/pages/tools/*.md`: capability pages.
+- `website/src/layouts/`: shared navigation and documentation layout.
+- `website/src/styles/global.css`: responsive visual system.
 
 All demo citations and review passages on the homepage are illustrative. No real manuscript or reviewer content is included.
 
