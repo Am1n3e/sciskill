@@ -35,7 +35,7 @@ The site uses `/sciskill/` as its base path. The Pages workflow builds pull requ
 
 ## Publishing
 
-Publish a GitHub release with a tag matching `v<version>` from `pyproject.toml`, currently `v0.1.0a2`. The [publish workflow](.github/workflows/publish.yml) tests the installed tools and both viewers, builds and validates the distributions, and uploads them to PyPI with Trusted Publishing.
+Publish a GitHub release with a tag matching `v<version>` from `pyproject.toml`, currently `v0.1.0`. The [publish workflow](.github/workflows/publish.yml) tests the installed tools and both viewers, builds and validates the distributions, and uploads them to PyPI with Trusted Publishing.
 
 The PyPI publisher must match owner `Am1n3e`, repository `sciskill`, workflow `publish.yml`, and environment `pypi`. No API token is needed.
 

@@ -37,7 +37,7 @@ jobs:
           if tag != f'v{version}':
               raise SystemExit(f'Release tag {tag!r} must match v{version}')
           PY
-      - name: Test installed alpha and both viewers
+      - name: Test installed package and both viewers
         run: uv run --no-project --with 'PyYAML>=6,<7' python -m unittest discover -s tools/sciskill/tests -v
       - name: Build distributions
         run: uv build --out-dir dist
