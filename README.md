@@ -20,20 +20,24 @@ npx skills add Am1n3e/sciskill
 
 Analyze initial reviews against your submitted manuscript and appendix. Annotate actionable passages, group related concerns into themes, and propose tasks for your review. You retain control of response drafts and manuscript changes.
 
-## Run tools directly
+## Tools
 
-To run without an agent, use the published [SciSkill package from PyPI](https://pypi.org/project/sciskill/):
+SciSkill pairs agent instructions with tools that carry out the work and make the results easy to inspect. Agents can use these tools as part of a skill, and you can also run them directly.
+
+### bib-lint
+
+Check bibliography metadata against scholarly sources and inspect findings alongside their evidence in a local viewer. See [bib-lint](tools/bib-lint/README.md).
 
 ```sh
-uvx --prerelease allow sciskill --help
-uvx --prerelease allow sciskill bib-lint verify /path/to/references.bib
-uvx --prerelease allow sciskill bib-lint view /path/to/references.bib-lint
-uvx --prerelease allow sciskill rebuttal import-openreview /path/to/discussion.html /path/to/my-rebuttal
-uvx --prerelease allow sciskill rebuttal view /path/to/my-rebuttal
+uvx --prerelease allow sciskill bib-lint --help
 ```
 
-Both tools and their browser assets are bundled. Dependencies stay outside your paper's environment; no repository checkout is needed. The prerelease flag selects the alpha release.
+### Rebuttal Desk
 
-See [bib-lint](tools/bib-lint/README.md) and [Rebuttal Desk](tools/rebuttal-desk/README.md) for inputs, outputs, and limitations.
+Import OpenReview discussions and view reviews, linked themes, tasks, and response drafts in a local workspace. See [Rebuttal Desk](tools/rebuttal-desk/README.md).
+
+```sh
+uvx --prerelease allow sciskill rebuttal --help
+```
 
 For repository development, checks, website setup, and release instructions, see [Contributing](CONTRIBUTING.md).
