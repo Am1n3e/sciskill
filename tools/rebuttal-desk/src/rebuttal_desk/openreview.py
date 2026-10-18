@@ -96,7 +96,9 @@ def parse_comment(comment):
     }
 
 
-def reviewer_identity(author):
+def reviewer_identity(author, document_id=None):
+    if author == "Program Chairs" and document_id is not None:
+        return identifier(document_id), author
     match = re.match(r"(Reviewer|Action Editor|Area Chair)\s+([A-Za-z0-9_-]+)", author)
     require(match is not None, f"Unrecognized review author: {author}")
     return match.group(2), f"{match.group(1)} {match.group(2)}"
@@ -107,6 +109,17 @@ def normalized(value):
 
 
 def resolve_replies(comments):
+    by_id = {c["id"]: c for c in comments}
+
+    def thread_root(comment):
+        seen = set()
+        while comment["reply_to"] in by_id:
+            require(comment["id"] not in seen, "Cyclic reply relationship")
+            seen.add(comment["id"])
+            comment = by_id[comment["reply_to"]]
+        return comment["id"]
+
+    roots = {c["id"]: thread_root(c) for c in comments}
     for comment in comments:
         title = comment.pop("reply_title")
         if title is None:
@@ -114,10 +127,21 @@ def resolve_replies(comments):
         matches = [
             c
             for c in comments
-            if normalized(c["title"]) == normalized(title) and c["id"] != comment["id"]
+            if normalized(c["title"]) == normalized(title)
+            and c["id"] != comment["id"]
+            and c["created_at"] <= comment["created_at"]
+            and (comment["reply_to"] is None or roots[c["id"]] == roots[comment["id"]])
         ]
-        require(len(matches) == 1, f"Cannot resolve reply target for {comment['id']}")
-        comment["reply_to"] = matches[0]["id"]
+        parent = by_id.get(comment["reply_to"])
+        if parent in matches:
+            continue  # The captured hierarchy already identifies the matching parent.
+        if len(matches) == 1:
+            comment["reply_to"] = matches[0]["id"]
+        elif matches and parent is not None:
+            # Flattened HTML can repeat generic titles without exposing reply IDs.
+            comment["unresolved_reply_title"] = title
+        else:
+            require(False, f"Cannot resolve reply target for {comment['id']}")
 
 
 def review_for(comment, by_id, reviews):
@@ -149,7 +173,7 @@ def build_reviews(comments):
             "Meta Review",
         }:
             continue
-        reviewer_id, label = reviewer_identity(comment["author"])
+        reviewer_id, label = reviewer_identity(comment["author"], comment["id"])
         reviews[comment["id"]] = {
             **comment,
             "reviewer_id": reviewer_id,

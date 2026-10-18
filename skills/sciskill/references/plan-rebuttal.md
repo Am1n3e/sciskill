@@ -6,7 +6,7 @@ The rebuttal manifest links these outputs. Use [the manifest template](../assets
 
 ## 1. Establish the inputs
 
-Identify the submitted manuscript, its appendix or supplement, the initial reviews, and the destination folder. Ask for missing inputs or an ambiguous manuscript version. Record the paths, hashes, versions, and source review dates in a local provenance file. Distinguish review dates from capture dates; mark unavailable information as unknown.
+Identify the submitted manuscript, its appendix or supplement, the initial reviews, and the destination folder. Ask for missing inputs or an ambiguous manuscript version. Record the paths, hashes, versions, and source review dates in a local provenance file. Distinguish review dates from capture dates; mark unavailable information as unknown. Check modification dates and revision history: a current review post may contain rebuttal updates, and the current PDF may be camera-ready. Describe a snapshot as initial only when its pre-response version is verified.
 
 For a saved OpenReview discussion, import it into a new rebuttal folder:
 
@@ -71,7 +71,7 @@ Update one overview Markdown file, linked from the manifest. Begin directly with
 Include:
 
 - Manuscript path/version, update time, source review dates, and material version uncertainty.
-- Counts of themes, reviewers, concerns, and tasks, including current task status counts, computed from the manifest.
+- Counts of themes, reviewers, concerns, and tasks, including current task status counts using the manifest’s status values.
 - All themes with reviewer counts/IDs and related task links. Sort by descending unique reviewer count, then stable theme number; use that order in the manifest without renumbering themes.
 - A short “Where to start” list of concrete actions and why they matter.
 - Useful answers already in the paper, with precise paper references and linked concerns or follow-up tasks.

@@ -194,6 +194,7 @@ function renderConversation(review,article,initialCard){
       heading.append(node('span',kind,`comment-kind ${comment.type}`));
       meta.append(node('span',`by ${comment.author}`,'signatures'),node('span',comment.created_at.replace('T',' '),'created-date'));
     }
+    if(comment.unresolved_reply_title)meta.append(node('span',`Replying to ${comment.unresolved_reply_title} (exact comment unclear)`,'reply-context'));
     const body=node('div',undefined,'note-content');body.append(prose(comment.document.html));
     card.append(heading,meta,body);cards.set(comment.id,card);
   }
@@ -271,8 +272,8 @@ function render() {
   }
   const article=node('article',undefined,'review-document');
   const note=node('div',undefined,'openreview-note note depth-odd');
-  const heading=node('div',undefined,'heading');heading.append(node('h4',`Official Review by ${review.label}`), originalToggle);
-  const subheading=node('div',undefined,'subheading');subheading.append(node('span','Official Review','invitation highlight'),node('span',`by ${review.label}`,'signatures'));
+  const heading=node('div',undefined,'heading');heading.append(node('h4',`${review.source_type} by ${review.label}`), originalToggle);
+  const subheading=node('div',undefined,'subheading');subheading.append(node('span',review.source_type,'invitation highlight'),node('span',`by ${review.label}`,'signatures'));
   const container=node('div',undefined,'note-content-container');const body=node('div',undefined,'note-content');
   const hasAnnotations=Boolean(review.document.annotated_html?.includes('data-annotation-id'));
   const reviewText=prose(hasAnnotations?review.document.annotated_html:review.document.html,'note-content-value markdown-rendered'+(hasAnnotations?' annotated-review':''));
