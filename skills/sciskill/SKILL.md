@@ -1,11 +1,19 @@
 ---
 name: sciskill
-description: Analyze scientific peer reviews against the submitted manuscript, annotate actionable passages, and produce linked themes and proposed rebuttal tasks for Rebuttal Desk. Use for Science Skills plan-rebuttal workflows.
+description: Set up SciSkill tools with init, or analyze initial peer reviews against a manuscript with plan-rebuttal to produce annotated concerns, linked themes, and proposed rebuttal tasks.
 ---
 
 # Science Skills
 
-For `plan-rebuttal`, turn initial reviews and the manuscript into an evidence-grounded response plan. With no action, briefly describe this capability and ask for the reviews and manuscript. Do not advertise unimplemented actions.
+Use the requested action:
+
+- `init`: read [the setup workflow](references/init.md) and initialize the project configuration, cache, and temporary storage.
+- `plan-rebuttal`: follow the analysis workflow below.
+- With no action, list these two capabilities and ask what the user wants to do. Do not advertise unimplemented actions.
+
+## Plan a rebuttal
+
+For `plan-rebuttal`, turn initial reviews and the manuscript into an evidence-grounded response plan.
 
 Read [the analysis workflow](references/plan-rebuttal.md) and [the workspace contract](references/workspace.md) before running it. Use the existing Rebuttal Desk importer and validator; the tool runs with `uvx` and stores research data outside its package.
 

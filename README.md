@@ -15,6 +15,12 @@ npx skills add Am1n3e/sciskill
 ## Usage
 
 ```text
+/sciskill init
+```
+
+Initialize `.sciskill/` with your LaTeX and bibliography paths, optional venue, and local cache storage. Your `.gitignore` stays unchanged unless you opt in.
+
+```text
 /sciskill plan-rebuttal
 ```
 
