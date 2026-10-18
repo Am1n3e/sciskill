@@ -36,7 +36,7 @@ version: 1
 title: My rebuttal
 source: openreview
 presentation:
-  character_limit: 10000
+  character_limit: null  # Set only when the venue limit is confirmed
 reviews:
   - id: aB12
     label: Reviewer aB12

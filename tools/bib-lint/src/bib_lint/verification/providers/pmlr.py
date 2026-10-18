@@ -3,6 +3,7 @@
 import re
 from urllib.parse import urlsplit
 
+from bib_lint.verification.http import LookupFailure
 from bib_lint.verification.matching import normalize
 from bib_lint.verification.providers.archive import ArchiveProvider
 from bib_lint.verification.providers.common import (
@@ -26,7 +27,7 @@ VENUES = {
 
 class PmlrProvider(ArchiveProvider):
     descriptor = ProviderDescriptor(
-        "pmlr", "PMLR", "1", "publication_archive", ("proceedings.mlr.press",)
+        "pmlr", "PMLR", "2", "publication_archive", ("proceedings.mlr.press",)
     )
 
     def direct_url(self, query):
@@ -53,12 +54,22 @@ class PmlrProvider(ArchiveProvider):
         links = list(
             catalog_links(text, ROOT, lambda u: bool(re.fullmatch(r"/v\d+/?", urlsplit(u).path)))
         )
-        for year in years(query):
-            for url, _, label in links:
-                if str(year) in label and (
-                    not series or re.search(r"\b" + series + r"\b", label, re.I)
-                ):
-                    yield url.rstrip("/") + "/"
+        targets = list(
+            dict.fromkeys(
+                url.rstrip("/") + "/"
+                for year in years(query)
+                for url, _, label in links
+                if str(year) in label
+                and (not series or re.search(r"\b" + series + r"\b", label, re.I))
+            )
+        )
+        if not series and len(targets) > context.policy.max_pages - context.pages:
+            raise LookupFailure(
+                "incomplete_search",
+                "PMLR discovery spans too many volumes; "
+                "provide a venue, volume, or direct paper URL",
+            )
+        yield from targets
 
     def volume_catalog(self, query):
         volume = dict(query.fields).get("volume", "")

@@ -16,7 +16,9 @@ The default audit directory is `<input-stem>.bib-lint` beside the input. It cont
 the report, resumable checkpoint, and integrity-checked cached evidence. Use
 `--output DIRECTORY` to select another location and `--json` for a structured final
 result; check its `status` and `complete` fields for partial or interrupted runs.
-Repeating the verification command resumes eligible work; `--refresh` fetches
+Repeating the verification command resumes unfinished work and preserves saved outcomes,
+including source failures. Use `--refresh` to retry failures (`--key KEY` limits the
+recheck to one reference). `--refresh` fetches
 selected evidence again.
 
 `bib-lint view` also starts without a path. Its local browser interface can parse,

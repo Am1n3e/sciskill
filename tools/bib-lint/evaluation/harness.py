@@ -109,7 +109,7 @@ def run_split(
     stopped = threading.Event()
 
     execute = _case_executor(
-        folder, name, split, selected, stopped, verbose, client, pacer, audit, root
+        folder, name, split, selected, stopped, verbose, client, pacer, audit, root, retry_errors
     )
 
     def save(case, prediction):
@@ -214,7 +214,9 @@ def main(argv=None):
     return 2 if failed else 0
 
 
-def _case_executor(folder, name, split, selected, stopped, verbose, client, pacer, audit, root):
+def _case_executor(
+    folder, name, split, selected, stopped, verbose, client, pacer, audit, root, retry_errors
+):
     def execute(case, index):
         case_folder = folder / "cases" / hashlib.sha256(case.id.encode()).hexdigest()[:24]
         case_folder.mkdir(parents=True, exist_ok=True)
@@ -246,9 +248,14 @@ def _case_executor(folder, name, split, selected, stopped, verbose, client, pace
             if isinstance(task_client, MetadataClient):
                 task_client.cache_dir = case_folder / "audit" / "cache"
                 task_client.cache = ResponseCache(task_client.cache_dir)
+                task_client.refresh = retry_errors
             stage = "bib_lint"
             _, report, _ = audit(
-                input_path, output=case_folder / "audit", client=task_client, progress=progress
+                input_path,
+                output=case_folder / "audit",
+                client=task_client,
+                progress=progress,
+                refresh=retry_errors,
             )
             stage = "export"
             prediction = prediction_from_report(report, time.monotonic() - start)

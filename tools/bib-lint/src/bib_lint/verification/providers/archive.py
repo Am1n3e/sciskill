@@ -26,6 +26,8 @@ class ArchiveProvider:
 
                 if not builder.run("catalog", url, query.title, discover):
                     break
+                if direct_matches(query, builder.candidates):
+                    break
         except LookupFailure as exc:
             if exc.code != "incomplete_search":
                 raise

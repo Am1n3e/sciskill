@@ -16,7 +16,7 @@ From the project root, run:
 uvx sciskill bib-lint verify references.bib --output .sciskill/cache/bib-lint --json
 ```
 
-Substitute the actual bibliography path. Add `--aux paper.aux` when the corresponding AUX is available. Use an existing audit directory if the user is continuing a run. Repeating the same command resumes eligible work; `--refresh` requests new lookups and should be used when a recheck is needed.
+Substitute the actual bibliography path. Add `--aux paper.aux` when the corresponding AUX is available. Use an existing audit directory if the user is continuing a run. Repeating the same command resumes unfinished lookups and preserves saved outcomes, including failures. To retry a failed lookup, use `--refresh`; add `--key CITATION-KEY` to recheck only that reference. If an archive needs a venue, volume, or direct paper URL, report that missing context rather than repeatedly running the same broad search.
 
 Read the final JSON result's `status`, `complete`, `scope`, `warnings`, and artifact paths. A successful process exit can still describe a partial audit. On interruption or failure, report the saved checkpoint and unresolved work rather than claiming the audit is complete.
 

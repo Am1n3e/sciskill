@@ -71,6 +71,9 @@ class OpenReviewImportTests(unittest.TestCase):
             )
         )
         self.assertEqual(import_openreview(self.html, self.output), (3, 2))
+        self.assertIsNone(
+            load_workspace(self.output)["presentation"]["character_limit"]
+        )
         self.assertFalse(list(self.output.rglob("*.json")))
         raw = yaml.safe_load((self.output / "reviews/note1.yaml").read_text())
         self.assertEqual(raw["sections"][0]["heading"], "Claims And Evidence:")

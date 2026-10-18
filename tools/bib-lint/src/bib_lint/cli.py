@@ -49,6 +49,12 @@ def arguments(prog="bib-lint"):
 
 def final_result(status, workspace=None, report=None, warnings=None, error=None):
     summary = audit_summary(report) if report is not None else None
+    warnings = list(warnings or [])
+    if summary and summary["source_failures"]:
+        warnings.append(
+            f"{summary['source_failures']} source lookups failed; inspect per-source errors. "
+            "Resume preserves these outcomes. Use --refresh (optionally --key) to retry."
+        )
     return {
         "schema_version": 1,
         "command": "verify",
@@ -61,12 +67,14 @@ def final_result(status, workspace=None, report=None, warnings=None, error=None)
         else None,
         "scope": validate_report(report)["mode"] if report is not None else None,
         "summary": summary,
-        "warnings": warnings or [],
+        "warnings": warnings,
         "error": error,
     }
 
 
 def emit(result, machine):
+    for warning in result["warnings"]:
+        print(warning, file=sys.stderr)
     if machine:
         print(json.dumps(result, ensure_ascii=False))
     else:
@@ -124,8 +132,6 @@ def main(argv=None, *, prog="bib-lint"):
             verbose=args.verbose,
             progress=lambda message: print(message, file=sys.stderr, flush=True),
         )
-        for warning in warnings:
-            print(warning, file=sys.stderr)
         result = final_result(
             "completed" if report["verification_run"]["complete"] else "partial",
             workspace,

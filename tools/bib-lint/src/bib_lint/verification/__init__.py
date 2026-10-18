@@ -103,7 +103,7 @@ def verify_reference(
     results = []
     saved = {m["name"]: m for m in (previous or [])}
     for name, provider in registry.items():
-        if name in saved and saved[name]["status"] != "error":
+        if name in saved:
             results.append(saved[name])
             if progress:
                 progress(f"  {name}: Resumed ({source_status(saved[name]['status'])})")

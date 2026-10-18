@@ -86,7 +86,9 @@ class PackageTests(unittest.TestCase):
         self.assertTrue(result["complete"])
         workspace = self.directory / "rebuttal"
         self.run_cli("rebuttal", "init", workspace)
-        self.assertIn("Valid:", self.run_cli("rebuttal", "validate", workspace))
+        self.assertIn(
+            "Valid structure:", self.run_cli("rebuttal", "validate", workspace)
+        )
         for tool, path in (("bib-lint", result["output_dir"]), ("rebuttal", workspace)):
             with self.subTest(tool=tool):
                 self.check_viewer(tool, path)

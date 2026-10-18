@@ -208,3 +208,29 @@ def test_lock_error_and_secret_redaction(source, monkeypatch, capsys):
     assert main(["verify", str(source), "--json"]) == 2
     envelope, err = result(capsys)
     assert "VERYSECRET" not in json.dumps(envelope) + err
+
+
+def test_source_failure_warning_survives_resume_and_partial_output(tmp_path, capsys, monkeypatch):
+    path = tmp_path / "refs.bib"
+    path.write_text("@book{A,title={One}}\n@book{B,title={Two}}")
+    calls = []
+
+    def fail(record, client):
+        calls.append(record["title"])
+        raise ValueError("Provider unavailable")
+
+    def run(*args, **kwargs):
+        return run_audit(
+            *args, **kwargs, client=FakeClient(), methods=fixture_registry({"test": fail})
+        )
+
+    monkeypatch.setattr("bib_lint.cli.run_audit", run)
+    assert main(["verify", str(path), "--key", "A", "--json"]) == 0
+    envelope, err = result(capsys)
+    assert not envelope["complete"]
+    assert "1 source lookups failed" in envelope["warnings"][0]
+    assert "--refresh" in err
+    assert main(["verify", str(path), "--json"]) == 0
+    envelope, _ = result(capsys)
+    assert envelope["complete"] and envelope["summary"]["source_failures"] == 2
+    assert calls == ["One", "Two"]

@@ -374,10 +374,12 @@ def test_resume_retry_and_failed_inputs_stay_in_denominator(tmp_path):
     rows[2]["reference"] = "Unknown format"
     snapshot(tmp_path, "zenodo", {"manual_reference_verification_dataset.csv": csv_bytes(rows)})
     called = []
+    refreshes = []
 
     def audit(path, **kwargs):
         key = json.loads(path.read_text())["items"][0]["entry"]["key"]
         called.append(key)
+        refreshes.append(kwargs["refresh"])
         kwargs["progress"]("Fake provider")
         return (
             None,
@@ -398,6 +400,7 @@ def test_resume_retry_and_failed_inputs_stay_in_denominator(tmp_path):
     assert len(called) == 2
     harness.run_split("zenodo", "all", tmp_path, retry_errors=True, audit=audit, client=object())
     assert called[-1] == "P1_R2" and len(called) == 3
+    assert refreshes == [False, False, True]
     predictions = harness.read_predictions(tmp_path / "runs" / "zenodo" / "all")
     assert len(predictions) == 3 and predictions[-1]["status"] == "Not evaluated"
     result_rows = list(

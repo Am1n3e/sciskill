@@ -632,3 +632,88 @@ def test_archive_volume_discovery_without_year(tmp_path, name, volume):
     assert len(calls) == 2
     assert result.attempts[0].scope == provider.volume_catalog(q)
     client.close()
+
+
+def test_openreview_public_author_objects(tmp_path):
+    data = json.loads(payload("openreview"))
+    data["notes"][0]["content"]["authors"]["value"] = [
+        {"fullname": "Jane Smith", "username": "~Jane_Smith1"},
+        "John Doe",
+    ]
+    provider = METHODS["openreview"]
+    client, context, _ = client_for(tmp_path, provider, lambda _: httpx.Response(200, json=data))
+    record = assert_contract(provider, query("openreview"), context).candidates[0]
+    assert [author.family for author in record.authors] == ["Smith", "Doe"]
+    client.close()
+
+
+@pytest.mark.parametrize("name", ["pmlr", "acl_anthology"])
+def test_broad_archive_discovery_requests_routing_context(tmp_path, name):
+    provider = METHODS[name]
+    if name == "pmlr":
+        body = "".join(f'<li><a href="v{i}">Volume {i}</a> Conference 2025</li>' for i in range(20))
+    else:
+        body = "".join(f'<a href="/events/event{i}-2025/">Event</a>' for i in range(20))
+    client, context, calls = client_for(
+        tmp_path, provider, lambda _: httpx.Response(200, text=body)
+    )
+    result = assert_contract(provider, replace(query(name, direct=False), venue=None), context)
+    assert not result.complete
+    assert "provide a venue, volume, or direct paper URL" in result.diagnostic
+    assert len(calls) == 1  # No crawl through unrelated event or volume pages.
+    client.close()
+
+
+def test_archive_stops_after_matching_catalog(tmp_path):
+    provider = METHODS["pmlr"]
+
+    def respond(request):
+        if request.url.path == "/":
+            return httpx.Response(
+                200,
+                text="".join(
+                    f'<li><a href="v{i}">Volume {i}</a> ICML 2025</li>' for i in range(20)
+                ),
+            )
+        return discovery_response("pmlr", request)
+
+    client, context, calls = client_for(tmp_path, provider, respond)
+    result = assert_contract(provider, query("pmlr", direct=False), context)
+    assert result.complete and result.candidates
+    assert len(calls) == 3
+    client.close()
+
+
+def test_openreview_title_search_uses_phrase_not_any_word(tmp_path):
+    provider = METHODS["openreview"]
+
+    def respond(request):
+        assert request.url.params["type"] == "exact"
+        assert request.url.params["content"] == "title"
+        assert request.url.params["term"] == "an example paper"
+        return httpx.Response(200, json=json.loads(payload("openreview")))
+
+    client, context, calls = client_for(tmp_path, provider, respond)
+    result = assert_contract(provider, query("openreview", direct=False), context)
+    assert result.complete and result.candidates and len(calls) == 1
+    client.close()
+
+
+def test_neurips_official_datasets_catalog_host(tmp_path):
+    provider = METHODS["neurips"]
+    host = "datasets-benchmarks-proceedings.neurips.cc"
+
+    def respond(request):
+        if request.url.host == "proceedings.neurips.cc":
+            body = f'<a href="https://{host}/paper/2025">Datasets and Benchmarks 2025</a>'
+        elif request.url.path == "/paper/2025":
+            body = '<a href="/paper/2025/hash/abc-Abstract.html">An Example Paper</a>'
+        else:
+            body = payload("neurips")
+        return httpx.Response(200, text=body)
+
+    client, context, calls = client_for(tmp_path, provider, respond)
+    result = assert_contract(provider, query("neurips", direct=False), context)
+    assert result.complete and result.candidates
+    assert calls[-1].url.host == host
+    client.close()

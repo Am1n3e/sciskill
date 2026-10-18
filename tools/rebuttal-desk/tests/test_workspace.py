@@ -200,7 +200,9 @@ class WorkspaceTests(unittest.TestCase):
 
     def test_limit_defaults_override_and_disable(self):
         original = load_workspace(self.root)
-        self.assertEqual(original["presentation"]["character_limit"], 10000)
+        self.assertIsNone(original["presentation"]["character_limit"])
+        self.mutate(lambda x: x.update(presentation={}))
+        self.assertIsNone(load_workspace(self.root)["presentation"]["character_limit"])
         for limit in [500, None]:
             self.mutate(
                 lambda x, limit=limit: x.update(presentation={"character_limit": limit})
