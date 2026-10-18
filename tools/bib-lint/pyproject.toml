@@ -3,9 +3,7 @@ name = "bib-lint"
 version = "0.1.0"
 description = "Read-only BibTeX parsing for reproducible reference audits"
 readme = "README.md"
-authors = [
-    { name = "Amine ElHattami", email = "amine.elhattami@gmail.com" }
-]
+authors = [{ name = "Amine El Hattami", email = "amine.elhattami@gmail.com" }]
 requires-python = ">=3.12"
 license = "MIT"
 dependencies = [
