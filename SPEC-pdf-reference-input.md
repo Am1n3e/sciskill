@@ -1,6 +1,6 @@
 # Spec: Audit references from research-paper PDFs
 
-Status: Draft for review. This document specifies behavior; it does not approve an implementation plan or select a citation-parsing dependency.
+Status: Requirements draft, updated with the E2E testing approach discussed with the user. Planning is requested; implementation and citation-parser selection await plan review.
 
 ## Objective
 
@@ -77,6 +77,7 @@ In the viewer, the input field accepts a local PDF path. **Parse only** performs
 - Produce the existing entry shape: key, entry type, text-valued fields, and structured names. Keep provenance and extraction diagnostics alongside the entry.
 - Each accepted field must be traceable to the original reference. Missing fields stay missing. A parser's guessed author/title/venue boundary remains uncertain.
 - Preserve distinct printed locators, malformed identifiers, and version pins so existing consistency checks can inspect them. A correct DOI must not erase a conflicting printed arXiv ID or URL.
+- Retain URI annotations associated with a reference as separate PDF evidence, distinguishing hyperlink targets from printed text. Do not follow those links during extraction. A locator absent from both the rendered text and relevant annotations cannot be inferred from the original BibTeX.
 - Do not complete an input citation with retrieved canonical metadata and then compare that completed citation against the same source. Retrieved metadata remains source evidence and proposed corrections.
 - Distinguish a field printed incorrectly from a field extracted ambiguously. Uncertain extraction alone cannot establish that the printed citation is invalid.
 
@@ -180,7 +181,15 @@ Use TDD: establish independent expected reference boundaries, fields, provenance
 | End to end | Synthetic PDF through actual extraction, CLI/viewer, independently controlled provider responses, persisted report, reload, resume, and selected-key refresh; verify original bytes remain unchanged |
 | Distribution | Standalone wheel and shared `sciskill` package contain the adapter and install its dependencies on supported macOS/Linux environments; BibTeX-only use still works |
 
-Maintain a small annotated acceptance corpus of research-paper layouts with roughly 20 varied reference occurrences, including multiple provider locators, books, proceedings, preprints, and web resources. Public fixtures are synthetic or explicitly redistributable; personal papers, large captured sources, generated audit evidence, and benchmark outputs stay under ignored `.local/` storage.
+Build the primary acceptance corpus from the earlier 20-entry representative bibliography, 31 rule variants, and 35 adversarial cases. Render each bibliography through official conference LaTeX templates with deterministic generated research-paper text. The initial explicit venue list is NeurIPS, ICML, ICLR, AAAI, IJCAI, AISTATS, UAI, ACL, EMNLP, NAACL, CVPR, ICCV, and ECCV: 13 venues and 39 baseline project builds. Pin template releases, bibliography styles, compilation options, and the TeX toolchain. Shared template families still receive separate venue configurations.
+
+The pipeline under test is LaTeX project → compiled PDF → actual PDF extraction and metadata parsing → existing verification → persisted report. Give the product only the PDF; keep `.bib`, `.bbl`, `.aux`, case identifiers, and expected answers in the test harness. Mock only the scholarly HTTP transport with controlled, independently curated responses; compilation, extraction, providers, comparison, and report generation run for real.
+
+Before implementing extraction, establish independent per-template expectations for reference order, printed fields, original page locations, and required findings. Classify each source-case rendering as preserved in text, retained only in a URI annotation, partially preserved, omitted, or unable to compile. Freeze these classifications before evaluating the extractor. Omitted source metadata is not a PDF detection success or a parser failure; it remains an explicit coverage limitation. Compilation failures are build failures with case attribution, not successful PDF checks or silently skipped tests. If a source case needs TeX-safe build keys, record that mapping without changing its citation metadata or the frozen original bibliography.
+
+Require the intended field-level finding, not merely any non-Correct verdict. Test clean controls and paired corruptions; identify missing and extra occurrences, merges, splits, ordering errors, and wrong provenance. Generate layout variants for wrapping, column/page transitions, headers/footers, appendix boundaries, and misleading citation-like body text. Keep the direct-BibTeX tests for source-only checks and use differential results for diagnosis, never as the sole expected-answer generator.
+
+Public fixtures are synthetic or explicitly redistributable and include only the sources, compact response fixtures, manifests, and expectations needed to reproduce tests. Personal papers, large captured sources, generated PDFs, compiler logs, audit evidence, and benchmark outputs stay under ignored `.local/` storage or CI artifacts. Promotion of selected earlier corpus files must not restore the removed development/evidence tree wholesale.
 
 For each supported acceptance fixture, every annotated occurrence must be represented once with correct boundaries and physical page provenance, or explicitly retained as unresolved with a diagnostic. Fully supported fixtures must extract the annotated fields correctly. Partial/unsupported fixtures must produce their expected warning or failure; a blanket “needs review” result is not a substitute for successful extraction on supported fixtures. Body/appendix text must not become a fabricated reference. No expected bad or uncertain case may be classified Correct. Do not make an accuracy-percentage claim beyond the measured corpus.
 
@@ -212,6 +221,6 @@ uv build
 
 1. Confirm the proposed first-release target: ordinary text-based research PDFs, with OCR deferred and unreadable reference pages flagged.
 2. Choose the local citation-parser approach after evaluating annotated examples. The no-service requirement is settled; the package or local executable is not selected.
-3. Agree the small acceptance corpus and measured resource limits before implementation. No representative PDF has been supplied for this feature yet.
+3. Validate the pinned official template assets, independent rendering expectations, and measured resource limits. The agreed first corpus will be generated by compiling the earlier bibliographies, rather than depending on a separately supplied PDF.
 
-After this draft is reviewed and approved, create a technical plan and ordered tasks in a later turn. This specification does not authorize starting implementation in the current turn.
+The implementation plan and ordered tasks live in `tasks/plan.md` and `tasks/todo.md`. Review the plan before starting implementation.
