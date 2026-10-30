@@ -1,0 +1,2501 @@
+{
+  "schema_version": 1,
+  "expectation_policy": {
+    "canonical_facts": "Archive-linked facts curated independently from input mutations. Saved audit verdicts, comparisons and live lookup outcomes are not truth.",
+    "source_expectations": "Earlier hand-specified rule/adversarial expectations apply to direct BibTeX scenarios only. Representative cases are coverage intents, not asserted live verdicts.",
+    "pdf_expectations": "Unset until T04/T04a-d inspect each exact template rendering. A source Correct/Invalid label is never automatically a PDF expected verdict.",
+    "rendering_visibility": "Awaiting compilation. Do not classify information as omitted, preserved or annotation-only from the BibTeX alone.",
+    "scope_exclusions": ["scientific_claim_support", "pages", "volume", "edition"],
+    "source_only_checks": "Source keys, AUX usage and cache-path behavior remain direct-input tests; their bibliography occurrences still require PDF extraction coverage."
+  },
+  "canonical_records": {
+    "codenav": {
+      "provider": "arxiv",
+      "source_url": "https://arxiv.org/abs/2406.12276v1",
+      "metadata": {
+        "title": "CodeNav: Beyond tool-use to using real-world codebases with LLM agents",
+        "authors": [
+          {"given": "Tanmay", "family": "Gupta", "suffix": ""},
+          {"given": "Luca", "family": "Weihs", "suffix": ""},
+          {"given": "Aniruddha", "family": "Kembhavi", "suffix": ""}
+        ],
+        "year": "2024",
+        "venue": "arXiv",
+        "identifiers": {"arxiv": "2406.12276v1"},
+        "url": "https://arxiv.org/abs/2406.12276v1",
+        "record_type": "preprint",
+        "publication_status": "published",
+        "version": "2406.12276v1"
+      },
+      "evidence": {
+        "kind": "previously_curated_primary_metadata",
+        "seed_file": "adversarial.sources.json",
+        "seed_sha256": "043768412189070b4c9ceded7fd1ee22ea7cb58e97ff357e4aaa7ac83ac96da7",
+        "seed_record": "codenav",
+        "scope": "Source-linked citation facts only; no audit verdicts or comparisons."
+      }
+    },
+    "gaia": {
+      "provider": "arxiv",
+      "source_url": "https://arxiv.org/abs/2311.12983v1",
+      "metadata": {
+        "title": "GAIA: a benchmark for General AI Assistants",
+        "authors": [
+          {"given": "Grégoire", "family": "Mialon", "suffix": ""},
+          {"given": "Clémentine", "family": "Fourrier", "suffix": ""},
+          {"given": "Craig", "family": "Swift", "suffix": ""},
+          {"given": "Thomas", "family": "Wolf", "suffix": ""},
+          {"given": "Yann", "family": "LeCun", "suffix": ""},
+          {"given": "Thomas", "family": "Scialom", "suffix": ""}
+        ],
+        "year": "2023",
+        "venue": "arXiv",
+        "identifiers": {"arxiv": "2311.12983v1"},
+        "url": "https://arxiv.org/abs/2311.12983v1",
+        "record_type": "preprint",
+        "publication_status": "published",
+        "version": "2311.12983v1"
+      },
+      "evidence": {
+        "kind": "previously_curated_primary_metadata",
+        "seed_file": "adversarial.sources.json",
+        "seed_sha256": "043768412189070b4c9ceded7fd1ee22ea7cb58e97ff357e4aaa7ac83ac96da7",
+        "seed_record": "gaia",
+        "scope": "Source-linked citation facts only; no audit verdicts or comparisons."
+      }
+    },
+    "tulu": {
+      "provider": "arxiv",
+      "source_url": "https://arxiv.org/abs/2411.15124v5",
+      "metadata": {
+        "title": "Tulu 3: Pushing Frontiers in Open Language Model Post-Training",
+        "authors": [
+          {"given": "Nathan", "family": "Lambert", "suffix": ""},
+          {"given": "Jacob", "family": "Morrison", "suffix": ""},
+          {"given": "Valentina", "family": "Pyatkin", "suffix": ""},
+          {"given": "Shengyi", "family": "Huang", "suffix": ""},
+          {"given": "Hamish", "family": "Ivison", "suffix": ""},
+          {"given": "Faeze", "family": "Brahman", "suffix": ""},
+          {"given": "Lester James V.", "family": "Miranda", "suffix": ""},
+          {"given": "Alisa", "family": "Liu", "suffix": ""},
+          {"given": "Nouha", "family": "Dziri", "suffix": ""},
+          {"given": "Shane", "family": "Lyu", "suffix": ""},
+          {"given": "Yuling", "family": "Gu", "suffix": ""},
+          {"given": "Saumya", "family": "Malik", "suffix": ""},
+          {"given": "Victoria", "family": "Graf", "suffix": ""},
+          {"given": "Jena D.", "family": "Hwang", "suffix": ""},
+          {"given": "Jiangjiang", "family": "Yang", "suffix": ""},
+          {"given": "Ronan Le", "family": "Bras", "suffix": ""},
+          {"given": "Oyvind", "family": "Tafjord", "suffix": ""},
+          {"given": "Chris", "family": "Wilhelm", "suffix": ""},
+          {"given": "Luca", "family": "Soldaini", "suffix": ""},
+          {"given": "Noah A.", "family": "Smith", "suffix": ""},
+          {"given": "Yizhong", "family": "Wang", "suffix": ""},
+          {"given": "Pradeep", "family": "Dasigi", "suffix": ""},
+          {"given": "Hannaneh", "family": "Hajishirzi", "suffix": ""}
+        ],
+        "year": "2024",
+        "venue": "arXiv",
+        "identifiers": {"arxiv": "2411.15124v5"},
+        "url": "https://arxiv.org/abs/2411.15124v5",
+        "record_type": "preprint",
+        "publication_status": "published",
+        "version": "2411.15124v5"
+      },
+      "evidence": {
+        "kind": "previously_curated_primary_metadata",
+        "seed_file": "adversarial.sources.json",
+        "seed_sha256": "043768412189070b4c9ceded7fd1ee22ea7cb58e97ff357e4aaa7ac83ac96da7",
+        "seed_record": "tulu",
+        "scope": "Source-linked citation facts only; no audit verdicts or comparisons."
+      }
+    },
+    "datawise": {
+      "provider": "acl_anthology",
+      "source_url": "https://aclanthology.org/2025.emnlp-main.58/",
+      "metadata": {
+        "title": "DatawiseAgent: A Notebook-Centric LLM Agent Framework for Adaptive and Robust Data Science Automation",
+        "authors": [
+          {"given": "Ziming", "family": "You", "suffix": ""},
+          {"given": "Yumiao", "family": "Zhang", "suffix": ""},
+          {"given": "Dexuan", "family": "Xu", "suffix": ""},
+          {"given": "Yiwei", "family": "Lou", "suffix": ""},
+          {"given": "Yandong", "family": "Yan", "suffix": ""},
+          {"given": "Wei", "family": "Wang", "suffix": ""},
+          {"given": "Huamin", "family": "Zhang", "suffix": ""},
+          {"given": "Yu", "family": "Huang", "suffix": ""}
+        ],
+        "year": "2025",
+        "venue": "Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing",
+        "identifiers": {"acl": "2025.emnlp-main.58", "doi": "10.18653/v1/2025.emnlp-main.58"},
+        "url": "https://aclanthology.org/2025.emnlp-main.58/",
+        "record_type": "publication",
+        "publication_status": "published",
+        "version": null
+      },
+      "evidence": {
+        "kind": "previously_curated_primary_metadata",
+        "seed_file": "adversarial.sources.json",
+        "seed_sha256": "043768412189070b4c9ceded7fd1ee22ea7cb58e97ff357e4aaa7ac83ac96da7",
+        "seed_record": "datawise",
+        "scope": "Source-linked citation facts only; no audit verdicts or comparisons."
+      }
+    },
+    "kim_neurips": {
+      "provider": "neurips",
+      "source_url": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/7cc1005ec73cfbaac9fa21192b622507-Abstract-Conference.html",
+      "metadata": {
+        "title": "Language Models can Solve Computer Tasks",
+        "authors": [
+          {"given": "Geunwoo", "family": "Kim", "suffix": ""},
+          {"given": "Pierre", "family": "Baldi", "suffix": ""},
+          {"given": "Stephen", "family": "McAleer", "suffix": ""}
+        ],
+        "year": "2023",
+        "venue": "Advances in Neural Information Processing Systems",
+        "identifiers": {
+          "neurips": "paper_files/paper/2023/hash/7cc1005ec73cfbaac9fa21192b622507-Abstract-Conference",
+          "doi": "10.52202/075280-1723"
+        },
+        "url": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/7cc1005ec73cfbaac9fa21192b622507-Abstract-Conference.html",
+        "record_type": "publication",
+        "publication_status": "published",
+        "version": null
+      },
+      "evidence": {
+        "kind": "previously_curated_primary_metadata",
+        "seed_file": "adversarial.sources.json",
+        "seed_sha256": "043768412189070b4c9ceded7fd1ee22ea7cb58e97ff357e4aaa7ac83ac96da7",
+        "seed_record": "kim_neurips",
+        "scope": "Source-linked citation facts only; no audit verdicts or comparisons."
+      }
+    },
+    "pal_accepted": {
+      "provider": "openreview",
+      "source_url": "https://openreview.net/forum?id=M1fd9Z00sj",
+      "metadata": {
+        "title": "PAL: Program-aided Language Models",
+        "authors": [
+          {"given": "Luyu", "family": "Gao", "suffix": ""},
+          {"given": "Aman", "family": "Madaan", "suffix": ""},
+          {"given": "Shuyan", "family": "Zhou", "suffix": ""},
+          {"given": "Uri", "family": "Alon", "suffix": ""},
+          {"given": "Pengfei", "family": "Liu", "suffix": ""},
+          {"given": "Yiming", "family": "Yang", "suffix": ""},
+          {"given": "Jamie", "family": "Callan", "suffix": ""},
+          {"given": "Graham", "family": "Neubig", "suffix": ""}
+        ],
+        "year": "2023",
+        "venue": "ICML 2023 Poster",
+        "identifiers": {"openreview": "M1fd9Z00sj"},
+        "url": "https://openreview.net/forum?id=M1fd9Z00sj",
+        "record_type": "publication",
+        "publication_status": "accepted",
+        "version": "2"
+      },
+      "evidence": {
+        "kind": "previously_curated_primary_metadata",
+        "seed_file": "adversarial.sources.json",
+        "seed_sha256": "043768412189070b4c9ceded7fd1ee22ea7cb58e97ff357e4aaa7ac83ac96da7",
+        "seed_record": "pal_accepted",
+        "scope": "Source-linked citation facts only; no audit verdicts or comparisons."
+      }
+    },
+    "sb3": {
+      "provider": "jmlr",
+      "source_url": "https://jmlr.org/papers/v22/20-1364.html",
+      "metadata": {
+        "title": "Stable-Baselines3: Reliable Reinforcement Learning Implementations",
+        "authors": [
+          {"given": "Antonin", "family": "Raffin", "suffix": ""},
+          {"given": "Ashley", "family": "Hill", "suffix": ""},
+          {"given": "Adam", "family": "Gleave", "suffix": ""},
+          {"given": "Anssi", "family": "Kanervisto", "suffix": ""},
+          {"given": "Maximilian", "family": "Ernestus", "suffix": ""},
+          {"given": "Noah", "family": "Dormann", "suffix": ""}
+        ],
+        "year": "2021",
+        "venue": "Journal of Machine Learning Research",
+        "identifiers": {"jmlr": "v22/20-1364"},
+        "url": "https://jmlr.org/papers/v22/20-1364.html",
+        "record_type": "publication",
+        "publication_status": "published",
+        "version": null
+      },
+      "evidence": {
+        "kind": "previously_curated_primary_metadata",
+        "seed_file": "adversarial.sources.json",
+        "seed_sha256": "043768412189070b4c9ceded7fd1ee22ea7cb58e97ff357e4aaa7ac83ac96da7",
+        "seed_record": "sb3",
+        "scope": "Source-linked citation facts only; no audit verdicts or comparisons."
+      }
+    },
+    "hcpi": {
+      "provider": "pmlr",
+      "source_url": "https://proceedings.mlr.press/v37/thomas15.html",
+      "metadata": {
+        "title": "High Confidence Policy Improvement",
+        "authors": [
+          {"given": "Philip", "family": "Thomas", "suffix": ""},
+          {"given": "Georgios", "family": "Theocharous", "suffix": ""},
+          {"given": "Mohammad", "family": "Ghavamzadeh", "suffix": ""}
+        ],
+        "year": "2015",
+        "venue": "International Conference on Machine Learning",
+        "identifiers": {"pmlr": "v37/thomas15"},
+        "url": "https://proceedings.mlr.press/v37/thomas15.html",
+        "record_type": "publication",
+        "publication_status": "published"
+      },
+      "evidence": {
+        "kind": "previously_curated_primary_metadata",
+        "seed_file": "adversarial.sources.json",
+        "seed_sha256": "043768412189070b4c9ceded7fd1ee22ea7cb58e97ff357e4aaa7ac83ac96da7",
+        "seed_record": "hcpi",
+        "scope": "Source-linked citation facts only; no audit verdicts or comparisons."
+      }
+    },
+    "pal_arxiv": {
+      "provider": "arxiv",
+      "source_url": "https://arxiv.org/abs/2211.10435v2",
+      "metadata": {
+        "title": "PAL: Program-aided Language Models",
+        "authors": [
+          {"given": "Luyu", "family": "Gao", "suffix": ""},
+          {"given": "Aman", "family": "Madaan", "suffix": ""},
+          {"given": "Shuyan", "family": "Zhou", "suffix": ""},
+          {"given": "Uri", "family": "Alon", "suffix": ""},
+          {"given": "Pengfei", "family": "Liu", "suffix": ""},
+          {"given": "Yiming", "family": "Yang", "suffix": ""},
+          {"given": "Jamie", "family": "Callan", "suffix": ""},
+          {"given": "Graham", "family": "Neubig", "suffix": ""}
+        ],
+        "year": "2022",
+        "venue": "arXiv",
+        "identifiers": {"arxiv": "2211.10435v2"},
+        "url": "https://arxiv.org/abs/2211.10435v2",
+        "record_type": "preprint",
+        "publication_status": "published",
+        "version": "2211.10435v2"
+      },
+      "evidence": {
+        "kind": "previously_curated_primary_metadata",
+        "seed_file": "adversarial.sources.json",
+        "seed_sha256": "043768412189070b4c9ceded7fd1ee22ea7cb58e97ff357e4aaa7ac83ac96da7",
+        "seed_record": "arxiv_8",
+        "scope": "Source-linked citation facts only; no audit verdicts or comparisons."
+      }
+    },
+    "kim_arxiv": {
+      "provider": "arxiv",
+      "source_url": "https://arxiv.org/abs/2303.17491v3",
+      "metadata": {
+        "title": "Language Models can Solve Computer Tasks",
+        "authors": [
+          {"given": "Geunwoo", "family": "Kim", "suffix": ""},
+          {"given": "Pierre", "family": "Baldi", "suffix": ""},
+          {"given": "Stephen", "family": "McAleer", "suffix": ""}
+        ],
+        "year": "2023",
+        "venue": "arXiv",
+        "identifiers": {"arxiv": "2303.17491v3"},
+        "url": "https://arxiv.org/abs/2303.17491v3",
+        "record_type": "preprint",
+        "publication_status": "published",
+        "version": "2303.17491v3"
+      },
+      "evidence": {
+        "kind": "previously_curated_primary_metadata",
+        "seed_file": "adversarial.sources.json",
+        "seed_sha256": "043768412189070b4c9ceded7fd1ee22ea7cb58e97ff357e4aaa7ac83ac96da7",
+        "seed_record": "arxiv_9",
+        "scope": "Source-linked citation facts only; no audit verdicts or comparisons."
+      }
+    },
+    "kim_openreview": {
+      "provider": "openreview",
+      "source_url": "https://openreview.net/forum?id=M6OmjAZ4CX",
+      "metadata": {
+        "title": "Language Models can Solve Computer Tasks",
+        "authors": [
+          {"given": "Geunwoo", "family": "Kim", "suffix": ""},
+          {"given": "Pierre", "family": "Baldi", "suffix": ""},
+          {"given": "Stephen Marcus", "family": "McAleer", "suffix": ""}
+        ],
+        "year": "2023",
+        "venue": "NeurIPS 2023 poster",
+        "identifiers": {"openreview": "M6OmjAZ4CX"},
+        "url": "https://openreview.net/forum?id=M6OmjAZ4CX",
+        "record_type": "publication",
+        "publication_status": "accepted",
+        "version": "2"
+      },
+      "evidence": {
+        "kind": "previously_curated_primary_metadata",
+        "seed_file": "adversarial.sources.json",
+        "seed_sha256": "043768412189070b4c9ceded7fd1ee22ea7cb58e97ff357e4aaa7ac83ac96da7",
+        "seed_record": "openreview_10",
+        "scope": "Source-linked citation facts only; no audit verdicts or comparisons."
+      }
+    },
+    "datawise_openreview": {
+      "provider": "openreview",
+      "source_url": "https://openreview.net/forum?id=gy7fpSzJqz",
+      "metadata": {
+        "title": "DatawiseAgent: A Notebook-Centric LLM Agent Framework for Adaptive and Robust Data Science Automation",
+        "authors": [
+          {"given": "Ziming", "family": "You", "suffix": ""},
+          {"given": "Yumiao", "family": "Zhang", "suffix": ""},
+          {"given": "Dexuan", "family": "Xu", "suffix": ""},
+          {"given": "Yiwei", "family": "Lou", "suffix": ""},
+          {"given": "Yandong", "family": "Yan", "suffix": ""},
+          {"given": "Wei", "family": "Wang", "suffix": ""},
+          {"given": "Huamin", "family": "Zhang", "suffix": ""},
+          {"given": "Yu", "family": "Huang", "suffix": ""}
+        ],
+        "year": null,
+        "venue": null,
+        "identifiers": {"openreview": "gy7fpSzJqz"},
+        "url": "https://openreview.net/forum?id=gy7fpSzJqz",
+        "record_type": "unknown",
+        "publication_status": "unknown",
+        "version": "2"
+      },
+      "evidence": {
+        "kind": "previously_curated_primary_metadata",
+        "seed_file": "adversarial.sources.json",
+        "seed_sha256": "043768412189070b4c9ceded7fd1ee22ea7cb58e97ff357e4aaa7ac83ac96da7",
+        "seed_record": "openreview_11",
+        "scope": "Source-linked citation facts only; no audit verdicts or comparisons."
+      }
+    },
+    "tulu_openreview_1": {
+      "provider": "openreview",
+      "source_url": "https://openreview.net/forum?id=i1uGbfHHpH",
+      "metadata": {
+        "title": "Tulu 3: Pushing Frontiers in Open Language Model Post-Training",
+        "authors": [
+          {"given": "Nathan", "family": "Lambert", "suffix": ""},
+          {"given": "Jacob", "family": "Morrison", "suffix": ""},
+          {"given": "Valentina", "family": "Pyatkin", "suffix": ""},
+          {"given": "Shengyi", "family": "Huang", "suffix": ""},
+          {"given": "Hamish", "family": "Ivison", "suffix": ""},
+          {"given": "Faeze", "family": "Brahman", "suffix": ""},
+          {"given": "Lester James Validad", "family": "Miranda", "suffix": ""},
+          {"given": "Alisa", "family": "Liu", "suffix": ""},
+          {"given": "Nouha", "family": "Dziri", "suffix": ""},
+          {"given": "Xinxi", "family": "Lyu", "suffix": ""},
+          {"given": "Yuling", "family": "Gu", "suffix": ""},
+          {"given": "Saumya", "family": "Malik", "suffix": ""},
+          {"given": "Victoria", "family": "Graf", "suffix": ""},
+          {"given": "Jena D.", "family": "Hwang", "suffix": ""},
+          {"given": "Jiangjiang", "family": "Yang", "suffix": ""},
+          {"given": "Ronan Le", "family": "Bras", "suffix": ""},
+          {"given": "Oyvind", "family": "Tafjord", "suffix": ""},
+          {"given": "Christopher", "family": "Wilhelm", "suffix": ""},
+          {"given": "Luca", "family": "Soldaini", "suffix": ""},
+          {"given": "Noah A.", "family": "Smith", "suffix": ""},
+          {"given": "Yizhong", "family": "Wang", "suffix": ""},
+          {"given": "Pradeep", "family": "Dasigi", "suffix": ""},
+          {"given": "Hannaneh", "family": "Hajishirzi", "suffix": ""}
+        ],
+        "year": null,
+        "venue": null,
+        "identifiers": {"openreview": "i1uGbfHHpH"},
+        "url": "https://openreview.net/forum?id=i1uGbfHHpH",
+        "record_type": "unknown",
+        "publication_status": "unknown",
+        "version": "2"
+      },
+      "evidence": {
+        "kind": "previously_curated_primary_metadata",
+        "seed_file": "adversarial.sources.json",
+        "seed_sha256": "043768412189070b4c9ceded7fd1ee22ea7cb58e97ff357e4aaa7ac83ac96da7",
+        "seed_record": "openreview_12",
+        "scope": "Source-linked citation facts only; no audit verdicts or comparisons."
+      }
+    },
+    "tulu_openreview_2": {
+      "provider": "openreview",
+      "source_url": "https://openreview.net/forum?id=UdD1Ppvs8X",
+      "metadata": {
+        "title": "TÜLU 3: Pushing Frontiers in Open Language Model Post-Training",
+        "authors": [
+          {"given": "Nathan", "family": "Lambert", "suffix": ""},
+          {"given": "Jacob", "family": "Morrison", "suffix": ""},
+          {"given": "Valentina", "family": "Pyatkin", "suffix": ""},
+          {"given": "Shengyi", "family": "Huang", "suffix": ""},
+          {"given": "Hamish", "family": "Ivison", "suffix": ""},
+          {"given": "Faeze", "family": "Brahman", "suffix": ""},
+          {"given": "Lester James V.", "family": "Miranda", "suffix": ""},
+          {"given": "Alisa", "family": "Liu", "suffix": ""},
+          {"given": "Nouha", "family": "Dziri", "suffix": ""},
+          {"given": "Shane", "family": "Lyu", "suffix": ""},
+          {"given": "Yuling", "family": "Gu", "suffix": ""},
+          {"given": "Saumya", "family": "Malik", "suffix": ""},
+          {"given": "Victoria", "family": "Graf", "suffix": ""},
+          {"given": "Jena D.", "family": "Hwang", "suffix": ""},
+          {"given": "Jiangjiang", "family": "Yang", "suffix": ""},
+          {"given": "Ronan Le", "family": "Bras", "suffix": ""},
+          {"given": "Oyvind", "family": "Tafjord", "suffix": ""},
+          {"given": "Chris", "family": "Wilhelm", "suffix": ""},
+          {"given": "Luca", "family": "Soldaini", "suffix": ""},
+          {"given": "Noah A.", "family": "Smith", "suffix": ""},
+          {"given": "Yizhong", "family": "Wang", "suffix": ""},
+          {"given": "Pradeep", "family": "Dasigi", "suffix": ""},
+          {"given": "Hannaneh", "family": "Hajishirzi", "suffix": ""}
+        ],
+        "year": null,
+        "venue": null,
+        "identifiers": {"openreview": "UdD1Ppvs8X"},
+        "url": "https://openreview.net/forum?id=UdD1Ppvs8X",
+        "record_type": "unknown",
+        "publication_status": "unknown",
+        "version": "2"
+      },
+      "evidence": {
+        "kind": "previously_curated_primary_metadata",
+        "seed_file": "adversarial.sources.json",
+        "seed_sha256": "043768412189070b4c9ceded7fd1ee22ea7cb58e97ff357e4aaa7ac83ac96da7",
+        "seed_record": "openreview_13",
+        "scope": "Source-linked citation facts only; no audit verdicts or comparisons."
+      }
+    },
+    "offline_rl": {
+      "provider": "arxiv",
+      "source_url": "https://arxiv.org/abs/2005.01643v3",
+      "metadata": {
+        "title": "Offline Reinforcement Learning: Tutorial, Review, and Perspectives on Open Problems",
+        "authors": [
+          {"given": "Sergey", "family": "Levine", "suffix": ""},
+          {"given": "Aviral", "family": "Kumar", "suffix": ""},
+          {"given": "George", "family": "Tucker", "suffix": ""},
+          {"given": "Justin", "family": "Fu", "suffix": ""}
+        ],
+        "year": "2020",
+        "venue": "arXiv",
+        "identifiers": {"arxiv": "2005.01643v3"},
+        "url": "https://arxiv.org/abs/2005.01643v3",
+        "record_type": "preprint",
+        "publication_status": "published",
+        "version": "2005.01643v3"
+      },
+      "source_author_names": ["Sergey Levine", "Aviral Kumar", "George Tucker", "Justin Fu"],
+      "evidence": {
+        "kind": "reviewed_archived_primary_metadata",
+        "request_url": "https://export.arxiv.org/api/query?id_list=2005.01643",
+        "raw_sha256": "839ad860bb413c24b3db02584d989a91ca2068602b47cae1a40193321f495244",
+        "author_structure": "Manually reviewed source names"
+      }
+    },
+    "seeclick": {
+      "provider": "acl_anthology",
+      "source_url": "https://aclanthology.org/2024.acl-long.505/",
+      "metadata": {
+        "title": "SeeClick: Harnessing GUI Grounding for Advanced Visual GUI Agents",
+        "authors": [
+          {"given": "Kanzhi", "family": "Cheng", "suffix": ""},
+          {"given": "Qiushi", "family": "Sun", "suffix": ""},
+          {"given": "Yougang", "family": "Chu", "suffix": ""},
+          {"given": "Fangzhi", "family": "Xu", "suffix": ""},
+          {"given": "Li", "family": "YanTao", "suffix": ""},
+          {"given": "Jianbing", "family": "Zhang", "suffix": ""},
+          {"given": "Zhiyong", "family": "Wu", "suffix": ""}
+        ],
+        "year": "2024",
+        "venue": "Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)",
+        "identifiers": {"acl": "2024.acl-long.505", "doi": "10.18653/v1/2024.acl-long.505"},
+        "url": "https://aclanthology.org/2024.acl-long.505/",
+        "record_type": "publication",
+        "publication_status": "published"
+      },
+      "source_author_names": [
+        "Kanzhi Cheng",
+        "Qiushi Sun",
+        "Yougang Chu",
+        "Fangzhi Xu",
+        "Li YanTao",
+        "Jianbing Zhang",
+        "Zhiyong Wu"
+      ],
+      "evidence": {
+        "kind": "reviewed_archived_primary_metadata",
+        "request_url": "https://aclanthology.org/2024.acl-long.505/",
+        "raw_sha256": "fb1dd65e6a0a826e139fd11f30a0bc4ee5b00a140a1ab1df3838dcee5d54cb91",
+        "author_structure": "Explicit source BibTeX"
+      }
+    },
+    "caap": {
+      "provider": "arxiv",
+      "source_url": "https://arxiv.org/abs/2406.06947v3",
+      "metadata": {
+        "title": "CAAP: Context-Aware Action Planning Prompting to Solve Computer Tasks with Front-End UI Only",
+        "authors": [
+          {"given": "Junhee", "family": "Cho", "suffix": ""},
+          {"given": "Jihoon", "family": "Kim", "suffix": ""},
+          {"given": "Daseul", "family": "Bae", "suffix": ""},
+          {"given": "Jinho", "family": "Choo", "suffix": ""},
+          {"given": "Youngjune", "family": "Gwon", "suffix": ""},
+          {"given": "Yeong-Dae", "family": "Kwon", "suffix": ""}
+        ],
+        "year": "2024",
+        "venue": "arXiv",
+        "identifiers": {"arxiv": "2406.06947v3"},
+        "url": "https://arxiv.org/abs/2406.06947v3",
+        "record_type": "preprint",
+        "publication_status": "published",
+        "version": "2406.06947v3"
+      },
+      "source_author_names": ["Junhee Cho", "Jihoon Kim", "Daseul Bae", "Jinho Choo", "Youngjune Gwon", "Yeong-Dae Kwon"],
+      "evidence": {
+        "kind": "reviewed_archived_primary_metadata",
+        "request_url": "https://export.arxiv.org/api/query?id_list=2406.06947",
+        "raw_sha256": "e7fcda409a220dada870e075d4ad413d780ca0d86d272cabacf0a61a86f0e4f3",
+        "author_structure": "Manually reviewed source names"
+      }
+    },
+    "webvoyager": {
+      "provider": "acl_anthology",
+      "source_url": "https://aclanthology.org/2024.acl-long.371/",
+      "metadata": {
+        "title": "WebVoyager: Building an End-to-End Web Agent with Large Multimodal Models",
+        "authors": [
+          {"given": "Hongliang", "family": "He", "suffix": ""},
+          {"given": "Wenlin", "family": "Yao", "suffix": ""},
+          {"given": "Kaixin", "family": "Ma", "suffix": ""},
+          {"given": "Wenhao", "family": "Yu", "suffix": ""},
+          {"given": "Yong", "family": "Dai", "suffix": ""},
+          {"given": "Hongming", "family": "Zhang", "suffix": ""},
+          {"given": "Zhenzhong", "family": "Lan", "suffix": ""},
+          {"given": "Dong", "family": "Yu", "suffix": ""}
+        ],
+        "year": "2024",
+        "venue": "Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)",
+        "identifiers": {"acl": "2024.acl-long.371", "doi": "10.18653/v1/2024.acl-long.371"},
+        "url": "https://aclanthology.org/2024.acl-long.371/",
+        "record_type": "publication",
+        "publication_status": "published"
+      },
+      "source_author_names": [
+        "Hongliang He",
+        "Wenlin Yao",
+        "Kaixin Ma",
+        "Wenhao Yu",
+        "Yong Dai",
+        "Hongming Zhang",
+        "Zhenzhong Lan",
+        "Dong Yu"
+      ],
+      "evidence": {
+        "kind": "reviewed_archived_primary_metadata",
+        "request_url": "https://aclanthology.org/2024.acl-long.371/",
+        "raw_sha256": "2452c570a77a073cf3ada0ce893df748454080117b8db3f61ccedc3194757cae",
+        "author_structure": "Explicit source BibTeX"
+      }
+    },
+    "world_of_bits": {
+      "provider": "pmlr",
+      "source_url": "https://proceedings.mlr.press/v70/shi17a.html",
+      "metadata": {
+        "title": "World of Bits: An Open-Domain Platform for Web-Based Agents",
+        "authors": [
+          {"given": "Tianlin", "family": "Shi", "suffix": ""},
+          {"given": "Andrej", "family": "Karpathy", "suffix": ""},
+          {"given": "Linxi", "family": "Fan", "suffix": ""},
+          {"given": "Jonathan", "family": "Hernandez", "suffix": ""},
+          {"given": "Percy", "family": "Liang", "suffix": ""}
+        ],
+        "year": "2017",
+        "venue": "International Conference on Machine Learning",
+        "identifiers": {"pmlr": "v70/shi17a"},
+        "url": "https://proceedings.mlr.press/v70/shi17a.html",
+        "record_type": "publication",
+        "publication_status": "published"
+      },
+      "source_author_names": ["Tianlin Shi", "Andrej Karpathy", "Linxi Fan", "Jonathan Hernandez", "Percy Liang"],
+      "evidence": {
+        "kind": "reviewed_archived_primary_metadata",
+        "request_url": "https://proceedings.mlr.press/v70/shi17a.html",
+        "raw_sha256": "749d2a150e4c2bcde1b219a0ecb86c95546134a057892544e8495b5e45323c44",
+        "author_structure": "Manually reviewed source names"
+      }
+    },
+    "reflexion_arxiv": {
+      "provider": "arxiv",
+      "source_url": "https://arxiv.org/abs/2303.11366v4",
+      "metadata": {
+        "title": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+        "authors": [
+          {"given": "Noah", "family": "Shinn", "suffix": ""},
+          {"given": "Federico", "family": "Cassano", "suffix": ""},
+          {"given": "Edward", "family": "Berman", "suffix": ""},
+          {"given": "Ashwin", "family": "Gopinath", "suffix": ""},
+          {"given": "Karthik", "family": "Narasimhan", "suffix": ""},
+          {"given": "Shunyu", "family": "Yao", "suffix": ""}
+        ],
+        "year": "2023",
+        "venue": "arXiv",
+        "identifiers": {"arxiv": "2303.11366v4"},
+        "url": "https://arxiv.org/abs/2303.11366v4",
+        "record_type": "preprint",
+        "publication_status": "published",
+        "version": "2303.11366v4"
+      },
+      "source_author_names": [
+        "Noah Shinn",
+        "Federico Cassano",
+        "Edward Berman",
+        "Ashwin Gopinath",
+        "Karthik Narasimhan",
+        "Shunyu Yao"
+      ],
+      "evidence": {
+        "kind": "reviewed_archived_primary_metadata",
+        "request_url": "https://export.arxiv.org/api/query?search_query=ti%3A%22Reflexion+++Language+++Agents++with++Verbal+++Reinforcement+++Learning+%22&start=0&max_results=20",
+        "raw_sha256": "a49ea538ae281b079985bd5a997ef80a2fc879767fc8d112c62792c3fd8a6a3f",
+        "author_structure": "Manually reviewed source names"
+      }
+    },
+    "reflexion_neurips": {
+      "provider": "neurips",
+      "source_url": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/1b44b878bb782e6954cd888628510e90-Abstract-Conference.html",
+      "metadata": {
+        "title": "Reflexion: language agents with verbal reinforcement learning",
+        "authors": [
+          {"given": "Noah", "family": "Shinn", "suffix": ""},
+          {"given": "Federico", "family": "Cassano", "suffix": ""},
+          {"given": "Ashwin", "family": "Gopinath", "suffix": ""},
+          {"given": "Karthik", "family": "Narasimhan", "suffix": ""},
+          {"given": "Shunyu", "family": "Yao", "suffix": ""}
+        ],
+        "year": "2023",
+        "venue": "Advances in Neural Information Processing Systems",
+        "identifiers": {
+          "neurips": "paper_files/paper/2023/hash/1b44b878bb782e6954cd888628510e90-Abstract-Conference",
+          "doi": "10.52202/075280-0377"
+        },
+        "url": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/1b44b878bb782e6954cd888628510e90-Abstract-Conference.html",
+        "record_type": "publication",
+        "publication_status": "published"
+      },
+      "source_author_names": ["Shinn, Noah", "Cassano, Federico", "Gopinath, Ashwin", "Narasimhan, Karthik", "Yao, Shunyu"],
+      "evidence": {
+        "kind": "reviewed_archived_primary_metadata",
+        "request_url": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/1b44b878bb782e6954cd888628510e90-Abstract-Conference.html",
+        "raw_sha256": "bc98559ad2f7670a27e27350a77c3ffe15fe8f0728676a9fecfc82ae72a6fbde",
+        "author_structure": "Manually reviewed source names"
+      }
+    },
+    "trial_arxiv": {
+      "provider": "arxiv",
+      "source_url": "https://arxiv.org/abs/2403.02502v2",
+      "metadata": {
+        "title": "Trial and Error: Exploration-Based Trajectory Optimization for LLM Agents",
+        "authors": [
+          {"given": "Yifan", "family": "Song", "suffix": ""},
+          {"given": "Da", "family": "Yin", "suffix": ""},
+          {"given": "Xiang", "family": "Yue", "suffix": ""},
+          {"given": "Jie", "family": "Huang", "suffix": ""},
+          {"given": "Sujian", "family": "Li", "suffix": ""},
+          {"given": "Bill Yuchen", "family": "Lin", "suffix": ""}
+        ],
+        "year": "2024",
+        "venue": "arXiv",
+        "identifiers": {"arxiv": "2403.02502v2"},
+        "url": "https://arxiv.org/abs/2403.02502v2",
+        "record_type": "preprint",
+        "publication_status": "published",
+        "version": "2403.02502v2"
+      },
+      "source_author_names": ["Yifan Song", "Da Yin", "Xiang Yue", "Jie Huang", "Sujian Li", "Bill Yuchen Lin"],
+      "evidence": {
+        "kind": "reviewed_archived_primary_metadata",
+        "request_url": "https://export.arxiv.org/api/query?search_query=ti%3A%22Trial+and++++++Error++++++++++++Exploration+-+Based+++Trajectory+++Optimization++++++of++++++LLM+++Agents+++++%22&start=0&max_results=20",
+        "raw_sha256": "ed8bec2f058284fca97d7cd6b8e6406dc5a95f146593cba9b3d2f8f977434a2e",
+        "author_structure": "Manually reviewed source names"
+      }
+    },
+    "trial_acl": {
+      "provider": "acl_anthology",
+      "source_url": "https://aclanthology.org/2024.acl-long.409/",
+      "metadata": {
+        "title": "Trial and Error: Exploration-Based Trajectory Optimization of LLM Agents",
+        "authors": [
+          {"given": "Yifan", "family": "Song", "suffix": ""},
+          {"given": "Da", "family": "Yin", "suffix": ""},
+          {"given": "Xiang", "family": "Yue", "suffix": ""},
+          {"given": "Jie", "family": "Huang", "suffix": ""},
+          {"given": "Sujian", "family": "Li", "suffix": ""},
+          {"given": "Bill Yuchen", "family": "Lin", "suffix": ""}
+        ],
+        "year": "2024",
+        "venue": "Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)",
+        "identifiers": {"acl": "2024.acl-long.409", "doi": "10.18653/v1/2024.acl-long.409"},
+        "url": "https://aclanthology.org/2024.acl-long.409/",
+        "record_type": "publication",
+        "publication_status": "published"
+      },
+      "source_author_names": ["Yifan Song", "Da Yin", "Xiang Yue", "Jie Huang", "Sujian Li (李素建)", "Bill Yuchen Lin"],
+      "evidence": {
+        "kind": "reviewed_archived_primary_metadata",
+        "request_url": "https://aclanthology.org/2024.acl-long.409/",
+        "raw_sha256": "e49d4d8c5497b9976a264149a0139689bb0c777815d0c888a413ea87c8d45ccc",
+        "author_structure": "Explicit source BibTeX"
+      }
+    },
+    "memory_tree": {
+      "provider": "arxiv",
+      "source_url": "https://arxiv.org/abs/2603.07024v1",
+      "metadata": {
+        "title": "Enhancing Web Agents with a Hierarchical Memory Tree",
+        "authors": [
+          {"given": "Yunteng", "family": "Tan", "suffix": ""},
+          {"given": "Zhi", "family": "Gao", "suffix": ""},
+          {"given": "Xinxiao", "family": "Wu", "suffix": ""}
+        ],
+        "year": "2026",
+        "venue": "arXiv",
+        "identifiers": {"arxiv": "2603.07024v1"},
+        "url": "https://arxiv.org/abs/2603.07024v1",
+        "record_type": "preprint",
+        "publication_status": "published",
+        "version": "2603.07024v1"
+      },
+      "source_author_names": ["Yunteng Tan", "Zhi Gao", "Xinxiao Wu"],
+      "evidence": {
+        "kind": "reviewed_archived_primary_metadata",
+        "request_url": "https://export.arxiv.org/api/query?id_list=2603.07024",
+        "raw_sha256": "eac6fb50109bf81495460d1f02b945094c27589e8ef227c2768cc51cb12a9b48",
+        "author_structure": "Manually reviewed source names"
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "representative-20/lambert2024tulu",
+      "corpus": "representative-20",
+      "citation_key": "lambert2024tulu",
+      "kind": "representative",
+      "purpose": "First-submission year versus revised-version year; retain the supplied 2025.",
+      "canonical_records": ["tulu", "tulu_openreview_1", "tulu_openreview_2"],
+      "provider_focus": ["arxiv"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "year",
+            "requirement": "Preserve input 2025 and archived first-publication 2024 separately; do not invent a unique revision-year correction."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/guo2025deepseek",
+      "corpus": "representative-20",
+      "citation_key": "guo2025deepseek",
+      "kind": "representative",
+      "purpose": "Nature DOI with a very long author list; configured archives do not directly verify Nature.",
+      "canonical_records": [],
+      "provider_focus": [],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "authors",
+            "requirement": "Preserve the complete long printed author list; no authoritative Nature fixture is curated for the configured archive adapters."
+          }
+        ],
+        "coverage_gap": true
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/JMLR:v22:20-1364",
+      "corpus": "representative-20",
+      "citation_key": "JMLR:v22:20-1364",
+      "kind": "representative",
+      "purpose": "Related reinforcement-learning software paper with official complete JMLR metadata and direct paper URL.",
+      "canonical_records": ["sb3"],
+      "provider_focus": ["jmlr"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "core_metadata",
+            "requirement": "Complete official JMLR control; the original author, title, year and venue metadata are expected to match."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/thomas2015hcpi",
+      "corpus": "representative-20",
+      "citation_key": "thomas2015hcpi",
+      "kind": "representative",
+      "purpose": "Title/venue discovery without a direct URL; exercises the fixed abs-link catalog bug.",
+      "canonical_records": ["hcpi"],
+      "provider_focus": ["pmlr"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "routing",
+            "requirement": "Discover the independent PMLR record by title/venue without copying input metadata into the source."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/levine2020offline",
+      "corpus": "representative-20",
+      "citation_key": "levine2020offline",
+      "kind": "representative",
+      "purpose": "An article whose arXiv identifier appears in its journal field.",
+      "canonical_records": ["offline_rl"],
+      "provider_focus": ["arxiv"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "arxiv",
+            "requirement": "Retain the arXiv identifier embedded in the journal field and compare it to 2005.01643v3."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/gelman2013bayesian",
+      "corpus": "representative-20",
+      "citation_key": "gelman2013bayesian",
+      "kind": "representative",
+      "purpose": "Book, six authors, publisher and third-edition metadata; expect an archive coverage gap.",
+      "canonical_records": [],
+      "provider_focus": [],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "coverage",
+            "requirement": "No primary book fixture: preserve authors/publisher/edition and do not claim fabrication or verified edition."
+          }
+        ],
+        "coverage_gap": true
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/chengSeeClickHarnessingGUI2024",
+      "corpus": "representative-20",
+      "citation_key": "chengSeeClickHarnessingGUI2024",
+      "kind": "representative",
+      "purpose": "Direct ACL URL with damaged author names and escaped title casing.",
+      "canonical_records": ["seeclick"],
+      "provider_focus": ["acl_anthology"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "authors",
+            "requirement": "Do not confirm damaged input author structure; source author parts are given by the official ACL BibTeX."
+          },
+          {
+            "field": "title",
+            "requirement": "Keep escaped source spelling distinct from what the PDF eventually renders."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/cho2024caapcontextawareactionplanning",
+      "corpus": "representative-20",
+      "citation_key": "cho2024caapcontextawareactionplanning",
+      "kind": "representative",
+      "purpose": "A protected and separator merges Youngjune Gwon and Yeong-Dae Kwon.",
+      "canonical_records": ["caap"],
+      "provider_focus": ["arxiv"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "authors",
+            "requirement": "The protected separator merges Youngjune Gwon and Yeong-Dae Kwon; compare to six independent source authors."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/gupta2024codenavtooluseusingrealworld",
+      "corpus": "representative-20",
+      "citation_key": "gupta2024codenavtooluseusingrealworld",
+      "kind": "representative",
+      "purpose": "Clean preprint resolved from an arXiv URL without an eprint field.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "core_metadata",
+            "requirement": "Complete preprint control with a URL but no eprint field; the original core metadata should match the source."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/he-etal-2024-webvoyager",
+      "corpus": "representative-20",
+      "citation_key": "he-etal-2024-webvoyager",
+      "kind": "representative",
+      "purpose": "Title normalization issue while the author list is otherwise unchanged.",
+      "canonical_records": ["webvoyager"],
+      "provider_focus": ["acl_anthology"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "title",
+            "requirement": "Check displayed title fidelity without treating TeX formatting itself as a scientific title change."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/kimLanguageModelsCan2023a",
+      "corpus": "representative-20",
+      "citation_key": "kimLanguageModelsCan2023a",
+      "kind": "representative",
+      "purpose": "Title discovery reaches NeurIPS and an accepted OpenReview record as well as arXiv.",
+      "canonical_records": ["kim_arxiv", "kim_neurips", "kim_openreview"],
+      "provider_focus": ["neurips", "openreview", "arxiv"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "source_identity",
+            "requirement": "Retain the distinct arXiv, NeurIPS and qualified OpenReview records; source counts do not erase differing name or version evidence."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/mialon2024gaia",
+      "corpus": "representative-20",
+      "citation_key": "mialon2024gaia",
+      "kind": "representative",
+      "purpose": "A direct OpenReview forum ID; exercise source access handling and publication/preprint differences.",
+      "canonical_records": ["gaia"],
+      "provider_focus": ["openreview", "arxiv"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "source_identity",
+            "requirement": "Retain the supplied 2024 conference context and 2023 arXiv record separately; unavailable OpenReview evidence is not fabrication."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/noauthor_measuring_2025",
+      "corpus": "representative-20",
+      "citation_key": "noauthor_measuring_2025",
+      "kind": "representative",
+      "purpose": "A blog URL stored as article, with no author field; do not infer fabrication.",
+      "canonical_records": [],
+      "provider_focus": [],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "coverage",
+            "requirement": "Preserve the blog and missing author; an archive coverage gap is not a demonstrated invalid citation."
+          }
+        ],
+        "coverage_gap": true
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/pmlr-v70-shi17a",
+      "corpus": "representative-20",
+      "citation_key": "pmlr-v70-shi17a",
+      "kind": "representative",
+      "purpose": "Direct publication URL with a merged Jonathan Hernandez/Percy Liang author.",
+      "canonical_records": ["world_of_bits"],
+      "provider_focus": ["pmlr"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "authors",
+            "requirement": "Do not confirm the merged Jonathan Hernandez/Percy Liang input author against the five-author source."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/shinnReflexionLanguageAgents2023",
+      "corpus": "representative-20",
+      "citation_key": "shinnReflexionLanguageAgents2023",
+      "kind": "representative",
+      "purpose": "Cross-source author/version comparison with a NeurIPS publication.",
+      "canonical_records": ["reflexion_arxiv", "reflexion_neurips"],
+      "provider_focus": ["neurips", "openreview", "arxiv"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "source_identity",
+            "requirement": "Keep the six-author arXiv version and five-author NeurIPS publication distinct; do not vote away the difference."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/songTrialErrorExplorationBased2024",
+      "corpus": "representative-20",
+      "citation_key": "songTrialErrorExplorationBased2024",
+      "kind": "representative",
+      "purpose": "ACL venue discovery with a DOI but no direct URL, escaped title and cross-source differences.",
+      "canonical_records": ["trial_arxiv", "trial_acl"],
+      "provider_focus": ["acl_anthology", "arxiv"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "source_identity",
+            "requirement": "Preserve the source title distinction: arXiv says for LLM Agents and ACL says of LLM Agents."
+          },
+          {
+            "field": "authors",
+            "requirement": "The ACL display alias Sujian Li (李素建) and explicit BibTeX Li, Sujian describe the same source author; do not use the alias as a family name."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/you2025datawiseagentnotebookcentricllmagent",
+      "corpus": "representative-20",
+      "citation_key": "you2025datawiseagentnotebookcentricllmagent",
+      "kind": "representative",
+      "purpose": "Clean ACL record with direct URL and DOI.",
+      "canonical_records": ["datawise", "datawise_openreview"],
+      "provider_focus": ["acl_anthology"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "core_metadata",
+            "requirement": "Complete official ACL control; an unqualified OpenReview note must not invent a primary conflict."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/tanEnhancingWebAgents2026",
+      "corpus": "representative-20",
+      "citation_key": "tanEnhancingWebAgents2026",
+      "kind": "representative",
+      "purpose": "Clean preprint with an eprint identifier and no URL.",
+      "canonical_records": ["memory_tree"],
+      "provider_focus": ["arxiv"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "core_metadata",
+            "requirement": "Complete preprint control with an eprint but no URL; retain 2603.07024v1 and the 2026 source year."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/iso25010_2023",
+      "corpus": "representative-20",
+      "citation_key": "iso25010_2023",
+      "kind": "representative",
+      "purpose": "Standard with a brace-protected institutional author and no paper identifier.",
+      "canonical_records": [],
+      "provider_focus": [],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "coverage",
+            "requirement": "Preserve the institutional standard and literal author; no primary standards fixture or verified edition is supplied."
+          }
+        ],
+        "coverage_gap": true
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "representative-20/gao2022pal",
+      "corpus": "representative-20",
+      "citation_key": "gao2022pal",
+      "kind": "representative",
+      "purpose": "Accepted OpenReview publication versus arXiv preprint year/identifier metadata.",
+      "canonical_records": ["pal_arxiv", "pal_accepted"],
+      "provider_focus": ["openreview", "arxiv"],
+      "mutation": null,
+      "source_expectation": {
+        "kind": "coverage_intent_not_a_frozen_live_verdict",
+        "required_checks": [
+          {
+            "field": "source_identity",
+            "requirement": "Keep the 2022 preprint and 2023 accepted publication distinct; no unique-year correction follows solely from source preference."
+          }
+        ],
+        "coverage_gap": false
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_clean",
+      "corpus": "rule-variants",
+      "citation_key": "case_clean",
+      "kind": "controlled_variant",
+      "purpose": "Pinned, complete preprint control.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {}, "remove": [], "authors_changed": false},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Correct",
+        "comparisons": {"title": "match", "authors": "match", "year": "match", "venue": "not_checked", "arxiv": "match"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_authors_partial",
+      "corpus": "rule-variants",
+      "citation_key": "case_authors_partial",
+      "kind": "controlled_variant",
+      "purpose": "Valid first-author prefix followed by the BibTeX others sentinel.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {}, "remove": [], "authors_changed": true},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Partial match",
+        "comparisons": {"authors": "partial_match"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_authors_reordered",
+      "corpus": "rule-variants",
+      "citation_key": "case_authors_reordered",
+      "kind": "controlled_variant",
+      "purpose": "Swap the first two real authors.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {}, "remove": [], "authors_changed": true},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Invalid",
+        "comparisons": {"authors": "mismatch"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_authors_wrong_given",
+      "corpus": "rule-variants",
+      "citation_key": "case_authors_wrong_given",
+      "kind": "controlled_variant",
+      "purpose": "Wrong first given name while preserving the real family name.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {}, "remove": [], "authors_changed": true},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Invalid",
+        "comparisons": {"authors": "mismatch"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_authors_initials",
+      "corpus": "rule-variants",
+      "citation_key": "case_authors_initials",
+      "kind": "controlled_variant",
+      "purpose": "Compatible initials remain insufficient to confirm full given names.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {}, "remove": [], "authors_changed": true},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Needs review",
+        "comparisons": {"authors": "unknown"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_authors_missing",
+      "corpus": "rule-variants",
+      "citation_key": "case_authors_missing",
+      "kind": "controlled_variant",
+      "purpose": "Missing input authors with an exact pinned source identifier.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {}, "remove": [], "authors_changed": true},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Needs review",
+        "comparisons": {"authors": "unknown"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_authors_short_without_others",
+      "corpus": "rule-variants",
+      "citation_key": "case_authors_short_without_others",
+      "kind": "controlled_variant",
+      "purpose": "Truncation without an others marker is a mismatch.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {}, "remove": [], "authors_changed": true},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Invalid",
+        "comparisons": {"authors": "mismatch"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_authors_wrong_prefix",
+      "corpus": "rule-variants",
+      "citation_key": "case_authors_wrong_prefix",
+      "kind": "controlled_variant",
+      "purpose": "An incorrect author prefix cannot be a partial match.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {}, "remove": [], "authors_changed": true},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Invalid",
+        "comparisons": {"authors": "mismatch"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_authors_only_others",
+      "corpus": "rule-variants",
+      "citation_key": "case_authors_only_others",
+      "kind": "controlled_variant",
+      "purpose": "A bare others sentinel confirms no named author prefix.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {}, "remove": [], "authors_changed": true},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Needs review",
+        "comparisons": {"authors": "unknown"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_year_wrong",
+      "corpus": "rule-variants",
+      "citation_key": "case_year_wrong",
+      "kind": "controlled_variant",
+      "purpose": "Deliberately change 2024 to 2023.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {"year": "2023"}, "remove": [], "authors_changed": false},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Invalid",
+        "comparisons": {"year": "mismatch"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_year_missing",
+      "corpus": "rule-variants",
+      "citation_key": "case_year_missing",
+      "kind": "controlled_variant",
+      "purpose": "A missing input year remains unverified.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {}, "remove": ["year"], "authors_changed": false},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Needs review",
+        "comparisons": {"year": "unknown"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_title_typo",
+      "corpus": "rule-variants",
+      "citation_key": "case_title_typo",
+      "kind": "controlled_variant",
+      "purpose": "A small title change still identifies the paper but is flagged.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {
+        "set": {"title": "CodeNav: Beyond tool-use to using real-world codebases with LLM agents Revisited"},
+        "remove": [],
+        "authors_changed": false
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Invalid",
+        "comparisons": {"title": "mismatch"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_title_missing",
+      "corpus": "rule-variants",
+      "citation_key": "case_title_missing",
+      "kind": "controlled_variant",
+      "purpose": "An identifier alone cannot validate a citation with no title.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {}, "remove": ["title"], "authors_changed": false},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "not_found",
+        "reference_status": "Unresolved",
+        "rejected_candidates": true,
+        "direct_comparisons": {"title": "unknown"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_title_unrelated",
+      "corpus": "rule-variants",
+      "citation_key": "case_title_unrelated",
+      "kind": "controlled_variant",
+      "purpose": "Correct DOI cannot validate a wholly unrelated title.",
+      "canonical_records": ["datawise"],
+      "provider_focus": ["acl_anthology"],
+      "mutation": {
+        "set": {"title": "Controlled Test: Orbital Dynamics of Binary Stars"},
+        "remove": [],
+        "authors_changed": false
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "not_found",
+        "reference_status": "Unresolved",
+        "rejected_candidates": true
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_arxiv_unversioned",
+      "corpus": "rule-variants",
+      "citation_key": "case_arxiv_unversioned",
+      "kind": "controlled_variant",
+      "purpose": "An unversioned input accepts the corresponding pinned source version.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {
+        "set": {"url": "https://arxiv.org/abs/2406.12276", "eprint": "2406.12276"},
+        "remove": [],
+        "authors_changed": false
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Correct",
+        "comparisons": {"arxiv": "match"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_arxiv_wrong_identifier",
+      "corpus": "rule-variants",
+      "citation_key": "case_arxiv_wrong_identifier",
+      "kind": "controlled_variant",
+      "purpose": "A different real arXiv ID must be rejected before title fallback rediscovers CodeNav.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {
+        "set": {"url": "https://arxiv.org/abs/2411.15124v5", "eprint": "2411.15124v5"},
+        "remove": [],
+        "authors_changed": false
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Invalid",
+        "comparisons": {"arxiv": "mismatch"},
+        "rejected_candidates": true
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_doi_wrapped",
+      "corpus": "rule-variants",
+      "citation_key": "case_doi_wrapped",
+      "kind": "controlled_variant",
+      "purpose": "Normalize an HTTPS DOI wrapper and DOI letter case.",
+      "canonical_records": ["datawise"],
+      "provider_focus": ["acl_anthology"],
+      "mutation": {
+        "set": {"doi": "https://doi.org/10.18653/V1/2025.EMNLP-MAIN.58"},
+        "remove": [],
+        "authors_changed": false
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Correct",
+        "comparisons": {"doi": "match"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_doi_wrong",
+      "corpus": "rule-variants",
+      "citation_key": "case_doi_wrong",
+      "kind": "controlled_variant",
+      "purpose": "Another real ACL DOI is an explicit mismatch, not proof of identity.",
+      "canonical_records": ["datawise"],
+      "provider_focus": ["acl_anthology"],
+      "mutation": {"set": {"doi": "10.18653/v1/2024.acl-long.505"}, "remove": [], "authors_changed": false},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Invalid",
+        "comparisons": {"doi": "mismatch"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_doi_in_url",
+      "corpus": "rule-variants",
+      "citation_key": "case_doi_in_url",
+      "kind": "controlled_variant",
+      "purpose": "Extract DOI from its URL, then discover the publication through the venue catalog.",
+      "canonical_records": ["datawise"],
+      "provider_focus": ["acl_anthology"],
+      "mutation": {
+        "set": {"url": "https://doi.org/10.18653/v1/2025.emnlp-main.58"},
+        "remove": ["doi"],
+        "authors_changed": false
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Correct",
+        "comparisons": {"doi": "match"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_venue_abbreviated",
+      "corpus": "rule-variants",
+      "citation_key": "case_venue_abbreviated",
+      "kind": "controlled_variant",
+      "purpose": "A venue abbreviation produces review rather than an invented venue correction.",
+      "canonical_records": ["datawise"],
+      "provider_focus": ["acl_anthology"],
+      "mutation": {"set": {"booktitle": "EMNLP 2025"}, "remove": [], "authors_changed": false},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Needs review",
+        "comparisons": {"venue": "unknown"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_venue_missing",
+      "corpus": "rule-variants",
+      "citation_key": "case_venue_missing",
+      "kind": "controlled_variant",
+      "purpose": "An omitted venue is explicitly not checked.",
+      "canonical_records": ["datawise"],
+      "provider_focus": ["acl_anthology"],
+      "mutation": {"set": {}, "remove": ["booktitle"], "authors_changed": false},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Correct",
+        "comparisons": {"venue": "not_checked"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_gaia_unicode",
+      "corpus": "rule-variants",
+      "citation_key": "case_gaia_unicode",
+      "kind": "controlled_variant",
+      "purpose": "Real accented names are preserved.",
+      "canonical_records": ["gaia"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {}, "remove": [], "authors_changed": false},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Correct",
+        "comparisons": {"authors": "match"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_gaia_tex_accents",
+      "corpus": "rule-variants",
+      "citation_key": "case_gaia_tex_accents",
+      "kind": "controlled_variant",
+      "purpose": "Equivalent LaTeX and Unicode accent spellings compare equal.",
+      "canonical_records": ["gaia"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {}, "remove": [], "authors_changed": true},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Correct",
+        "comparisons": {"authors": "match"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_jmlr_clean",
+      "corpus": "rule-variants",
+      "citation_key": "case_jmlr_clean",
+      "kind": "controlled_variant",
+      "purpose": "Complete direct JMLR control.",
+      "canonical_records": ["sb3"],
+      "provider_focus": ["jmlr"],
+      "mutation": {"set": {}, "remove": [], "authors_changed": false},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Correct",
+        "comparisons": {"authors": "match", "year": "match", "venue": "match"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_jmlr_title_discovery",
+      "corpus": "rule-variants",
+      "citation_key": "case_jmlr_title_discovery",
+      "kind": "controlled_variant",
+      "purpose": "JMLR year/catalog discovery without a direct URL or volume.",
+      "canonical_records": ["sb3"],
+      "provider_focus": ["jmlr"],
+      "mutation": {"set": {}, "remove": ["url", "volume"], "authors_changed": false},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Correct",
+        "comparisons": {}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_jmlr_volume_only",
+      "corpus": "rule-variants",
+      "citation_key": "case_jmlr_volume_only",
+      "kind": "controlled_variant",
+      "purpose": "Volume routing works without a year; the absent year remains unknown.",
+      "canonical_records": ["sb3"],
+      "provider_focus": ["jmlr"],
+      "mutation": {"set": {}, "remove": ["url", "year"], "authors_changed": false},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Needs review",
+        "comparisons": {"year": "unknown"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_jmlr_identifier_only",
+      "corpus": "rule-variants",
+      "citation_key": "case_jmlr_identifier_only",
+      "kind": "controlled_variant",
+      "purpose": "Retrieve by the explicit JMLR locator while refusing to confirm a missing title.",
+      "canonical_records": ["sb3"],
+      "provider_focus": ["jmlr"],
+      "mutation": {"set": {"jmlr": "v22/20-1364"}, "remove": ["url", "title"], "authors_changed": false},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "not_found",
+        "reference_status": "Unresolved",
+        "rejected_candidates": true
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_scope_unchecked",
+      "corpus": "rule-variants",
+      "citation_key": "case_scope_unchecked",
+      "kind": "controlled_variant",
+      "purpose": "Pages, volume, edition and a test claim are outside the metadata decision scope.",
+      "canonical_records": ["sb3"],
+      "provider_focus": ["jmlr"],
+      "mutation": {
+        "set": {
+          "pages": "999--1000",
+          "volume": "999",
+          "edition": "99th",
+          "note": "Controlled test claim, intentionally not assessed for scientific support."
+        },
+        "remove": [],
+        "authors_changed": false
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Correct",
+        "comparisons": {},
+        "unchecked_fields": ["pages", "volume", "edition", "note"]
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_openreview_accepted_direct",
+      "corpus": "rule-variants",
+      "citation_key": "case_openreview_accepted_direct",
+      "kind": "controlled_variant",
+      "purpose": "Verify a public accepted OpenReview forum record using its note ID.",
+      "canonical_records": ["pal_accepted"],
+      "provider_focus": ["openreview"],
+      "mutation": {"set": {}, "remove": [], "authors_changed": false},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "found",
+        "reference_status": "Correct",
+        "comparisons": {"authors": "match", "year": "match", "venue": "match"}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_not_applicable",
+      "corpus": "rule-variants",
+      "citation_key": "case_not_applicable",
+      "kind": "controlled_variant",
+      "purpose": "No title, locator or other metadata: all six sources are inapplicable.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["all"],
+      "mutation": {"set": {}, "remove": ["title", "year", "url", "eprint", "archiveprefix"], "authors_changed": true},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "not_applicable",
+        "reference_status": "Unresolved",
+        "no_http": true
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "rule-variants/case_missing_routing_context",
+      "corpus": "rule-variants",
+      "citation_key": "case_missing_routing_context",
+      "kind": "controlled_variant",
+      "purpose": "Archive discovery without year, volume or direct locator must request context.",
+      "canonical_records": ["sb3"],
+      "provider_focus": ["jmlr"],
+      "mutation": {"set": {}, "remove": ["url", "year", "volume"], "authors_changed": false},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "source_status": "error",
+        "reference_status": "Unresolved",
+        "error_code": "incomplete_search",
+        "no_http": true
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_match_family_boundary_collision",
+      "corpus": "adversarial",
+      "citation_key": "adv_match_family_boundary_collision",
+      "kind": "adversarial",
+      "purpose": "The first author has the entire name stored as the family name and no given name. Full displayed strings match, but structured author identity and in-text citation spelling do not. Preserve the given/family boundary instead of flattening it into one string.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"fields": {}, "authors": ["Tanmay Gupta,", "Weihs, Luca", "Kembhavi, Aniruddha"]},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid", "Needs review"],
+        "field_checks": [{"field": "authors", "results": ["mismatch", "unknown"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_match_literal_prefix_collision",
+      "corpus": "adversarial",
+      "citation_key": "adv_match_literal_prefix_collision",
+      "kind": "adversarial",
+      "purpose": "A corporate/literal first-author token plus others must not become a verified personal-author prefix merely because its flattened text matches the real person. Literal/person semantics and family-name boundaries differ.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"fields": {}, "authors": ["{Tanmay Gupta}", "others"]},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid", "Needs review"],
+        "field_checks": [{"field": "authors", "results": ["mismatch", "unknown"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_match_arxiv_concatenated_identifiers",
+      "corpus": "adversarial",
+      "citation_key": "adv_match_arxiv_concatenated_identifiers",
+      "kind": "adversarial",
+      "purpose": "One eprint field concatenates two distinct real arXiv papers. Matching the first substring silently discards the contradictory second identifier. Flag the malformed/conflicting locator instead of confirming the entry.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"fields": {"eprint": "2406.12276v1/2411.15124v5"}, "authors": null},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid", "Needs review"],
+        "field_checks": [],
+        "required_issue": {
+          "field": "arxiv",
+          "requirement": "Detect the malformed complete eprint, not just its valid first substring."
+        }
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_match_arxiv_double_version",
+      "corpus": "adversarial",
+      "citation_key": "adv_match_arxiv_double_version",
+      "kind": "adversarial",
+      "purpose": "The eprint has two version suffixes. A prefix regex must not turn the malformed identifier into the real v1 paper and approve it.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"fields": {"eprint": "2406.12276v1v5"}, "authors": null},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid", "Needs review"],
+        "field_checks": [],
+        "required_issue": {"field": "arxiv", "requirement": "Detect the malformed double version suffix."}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_match_arxiv_foreign_url_identifier",
+      "corpus": "adversarial",
+      "citation_key": "adv_match_arxiv_foreign_url_identifier",
+      "kind": "adversarial",
+      "purpose": "The eprint claims a foreign-host URL containing a real identifier. Treating any numeric substring as an official locator loses the supplied identifier syntax/host. No network request to the foreign host is needed or authorized by this case.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"fields": {"eprint": "https://evil.example/2406.12276v1"}, "authors": null},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid", "Needs review"],
+        "field_checks": [],
+        "required_issue": {
+          "field": "arxiv",
+          "requirement": "Reject the foreign-host eprint wrapper without fetching its host."
+        }
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_match_doi_tex_escaped_percent",
+      "corpus": "adversarial",
+      "citation_key": "adv_match_doi_tex_escaped_percent",
+      "kind": "control",
+      "purpose": "The TeX-escaped percent signs and percent-encoded separators display the exact verified Datawise DOI URL. Decode the TeX presentation before percent-decoding the DOI; do not turn the escape backslashes into identifier characters.",
+      "canonical_records": ["datawise"],
+      "provider_focus": ["acl_anthology"],
+      "mutation": {"fields": {"doi": "HTTPS://doi.org/10.18653\\%2Fv1\\%2F2025.EMNLP-MAIN.58"}, "authors": null},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Correct"],
+        "field_checks": [{"field": "doi", "results": ["match"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_match_title_tex_emphasis",
+      "corpus": "adversarial",
+      "citation_key": "adv_match_title_tex_emphasis",
+      "kind": "control",
+      "purpose": "Standard TeX emphasis changes presentation only. The displayed title is identical to the primary-source title, so the TeX command name must not become a new title word or a demonstrated title error.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {
+        "fields": {"title": "\\emph{CodeNav}: Beyond tool-use to using real-world codebases with LLM agents"},
+        "authors": null
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Correct"],
+        "field_checks": [{"field": "title", "results": ["match"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_match_same_initial_impostor",
+      "corpus": "adversarial",
+      "citation_key": "adv_match_same_initial_impostor",
+      "kind": "adversarial",
+      "purpose": "Replace Tanmay with the fully spelled, different given name Tristan while keeping T., family, author order, title and pinned ID. Compatible-initial logic must not mark the names as a match; review is acceptable if the matcher cannot prove the full-name conflict.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"fields": {}, "authors": ["Gupta, Tristan", "Weihs, Luca", "Kembhavi, Aniruddha"]},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid", "Needs review"],
+        "field_checks": [{"field": "authors", "results": ["mismatch", "unknown"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_match_invented_suffix",
+      "corpus": "adversarial",
+      "citation_key": "adv_match_invented_suffix",
+      "kind": "adversarial",
+      "purpose": "Invent a generational suffix while preserving given name and family. The primary record has no such suffix. Do not erase a potential person-identity distinction or confirm the author field.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"fields": {}, "authors": ["Gupta, Jr., Tanmay", "Weihs, Luca", "Kembhavi, Aniruddha"]},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid", "Needs review"],
+        "field_checks": [{"field": "authors", "results": ["mismatch", "unknown"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_match_sentinel_in_middle",
+      "corpus": "adversarial",
+      "citation_key": "adv_match_sentinel_in_middle",
+      "kind": "adversarial",
+      "purpose": "The others sentinel is buried between two real authors and replaces Luca Weihs. This is not a valid trailing prefix abbreviation and must never be labelled Correct or Partial match.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"fields": {}, "authors": ["Gupta, Tanmay", "others", "Kembhavi, Aniruddha"]},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid", "Needs review"],
+        "field_checks": [{"field": "authors", "results": ["mismatch", "unknown"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_match_clean_unicode_decomposed",
+      "corpus": "adversarial",
+      "citation_key": "adv_match_clean_unicode_decomposed",
+      "kind": "control",
+      "purpose": "Canonically equivalent decomposed Unicode accents are the same real author names and must continue to match while the adjacent identity traps are rejected.",
+      "canonical_records": ["gaia"],
+      "provider_focus": ["arxiv"],
+      "mutation": {
+        "fields": {},
+        "authors": [
+          "Mialon, Grégoire",
+          "Fourrier, Clémentine",
+          "Swift, Craig",
+          "Wolf, Thomas",
+          "LeCun, Yann",
+          "Scialom, Thomas"
+        ]
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Correct"],
+        "field_checks": [{"field": "authors", "results": ["match"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_match_clean_doi_encoded",
+      "corpus": "adversarial",
+      "citation_key": "adv_match_clean_doi_encoded",
+      "kind": "control",
+      "purpose": "The same wrapped/encoded/case-varied real DOI with raw percent signs is a clean control. It distinguishes the TeX escaping issue from wholesale rejection of valid percent-encoded DOI wrappers.",
+      "canonical_records": ["datawise"],
+      "provider_focus": ["acl_anthology"],
+      "mutation": {"fields": {"doi": "HTTPS://doi.org/10.18653%2Fv1%2F2025.EMNLP-MAIN.58"}, "authors": null},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Correct"],
+        "field_checks": [{"field": "doi", "results": ["match"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_provider_split_arxiv_url",
+      "corpus": "adversarial",
+      "citation_key": "adv_provider_split_arxiv_url",
+      "kind": "adversarial",
+      "purpose": "Flag contradictory arXiv locators: eprint identifies CodeNav but URL identifies Tulu. Do not silently certify the entire entry.",
+      "canonical_records": ["codenav", "tulu"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {"url": "https://arxiv.org/abs/2411.15124v5"}, "remove": []},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid", "Needs review"],
+        "field_checks": [],
+        "required_issue": {"field": "arxiv", "requirement": "Expose the conflicting CodeNav and Tulu locators."}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_provider_shadowed_version_pin",
+      "corpus": "adversarial",
+      "citation_key": "adv_provider_shadowed_version_pin",
+      "kind": "adversarial",
+      "purpose": "Flag the impossible explicit URL version; the unversioned eprint must not erase a supplied version pin.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {"eprint": "2406.12276", "url": "https://arxiv.org/abs/2406.12276v999"}, "remove": []},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid", "Needs review"],
+        "field_checks": [],
+        "required_issue": {
+          "field": "arxiv",
+          "requirement": "Do not erase the explicit v999 pin behind an unversioned eprint."
+        }
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_provider_shadowed_journal_id",
+      "corpus": "adversarial",
+      "citation_key": "adv_provider_shadowed_journal_id",
+      "kind": "adversarial",
+      "purpose": "Retain a warning or mismatch for the conflicting journal-field arXiv identifier, even though a correct eprint exists.",
+      "canonical_records": ["codenav", "tulu"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"set": {"journal": "arXiv preprint arXiv:2411.15124v5"}, "remove": []},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid", "Needs review"],
+        "field_checks": [],
+        "required_issue": {"field": "arxiv", "requirement": "Expose the conflicting arXiv ID embedded in journal."}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_provider_acl_alias_conflict",
+      "corpus": "adversarial",
+      "citation_key": "adv_provider_acl_alias_conflict",
+      "kind": "adversarial",
+      "purpose": "Flag that the explicitly supported ACL locator identifies SeeClick while URL/DOI identify DatawiseAgent. The contradictory locator must appear in a field finding or explicit identifier diagnostic; generic review of publication versions is insufficient.",
+      "canonical_records": ["datawise", "seeclick"],
+      "provider_focus": ["acl_anthology"],
+      "mutation": {"set": {"acl_id": "2024.acl-long.505"}, "remove": []},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid", "Needs review"],
+        "field_checks": [],
+        "required_issue": {
+          "field": "acl",
+          "requirement": "Expose the secondary SeeClick ACL locator, not unrelated version uncertainty."
+        }
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_provider_openreview_alias_conflict",
+      "corpus": "adversarial",
+      "citation_key": "adv_provider_openreview_alias_conflict",
+      "kind": "adversarial",
+      "purpose": "Flag the contradictory supported OpenReview ID; the correct forum URL must not silently hide a different note ID. The contradictory locator must appear in a field finding or explicit identifier diagnostic; generic review of publication versions is insufficient.",
+      "canonical_records": ["pal_accepted", "datawise_openreview"],
+      "provider_focus": ["openreview"],
+      "mutation": {"set": {"openreview_id": "gy7fpSzJqz"}, "remove": []},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid", "Needs review"],
+        "field_checks": [],
+        "required_issue": {"field": "openreview", "requirement": "Expose the supported secondary ID for a different note."}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_provider_duplicate_forum_id",
+      "corpus": "adversarial",
+      "citation_key": "adv_provider_duplicate_forum_id",
+      "kind": "adversarial",
+      "purpose": "Report an ambiguous/repeated forum locator rather than silently accepting only its first value. The contradictory locator must appear in a field finding or explicit identifier diagnostic; generic review of publication versions is insufficient.",
+      "canonical_records": ["pal_accepted", "datawise_openreview"],
+      "provider_focus": ["openreview"],
+      "mutation": {"set": {"url": "https://openreview.net/forum?id=M1fd9Z00sj&id=gy7fpSzJqz"}, "remove": []},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid", "Needs review", "Unresolved"],
+        "field_checks": [],
+        "required_issue": {"field": "openreview", "requirement": "Preserve and assess both id query values."}
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_provider_venue_masquerade",
+      "corpus": "adversarial",
+      "citation_key": "adv_provider_venue_masquerade",
+      "kind": "adversarial",
+      "purpose": "Retain a venue uncertainty: the accepted source says ICML, so user-provided NeurIPS must never become a source fact.",
+      "canonical_records": ["pal_accepted"],
+      "provider_focus": ["openreview"],
+      "mutation": {"set": {"booktitle": "NeurIPS 2023 poster"}, "remove": []},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Needs review"],
+        "field_checks": [{"field": "venue", "results": ["unknown"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_provider_year_vs_volume_route",
+      "corpus": "adversarial",
+      "citation_key": "adv_provider_year_vs_volume_route",
+      "kind": "adversarial",
+      "purpose": "Retrieve the known volume independently of the false input year, then flag the 2031/2021 discrepancy.",
+      "canonical_records": ["sb3"],
+      "provider_focus": ["jmlr"],
+      "mutation": {"set": {"year": "2031", "volume": "22"}, "remove": ["url"]},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid"],
+        "field_checks": [{"field": "year", "results": ["mismatch"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_provider_pdf_volume_shadow",
+      "corpus": "adversarial",
+      "citation_key": "adv_provider_pdf_volume_shadow",
+      "kind": "adversarial",
+      "purpose": "The valid official PDF locator contains the paper identity. A wrong out-of-scope volume should not make correct core metadata disappear without explaining the routing conflict.",
+      "canonical_records": ["sb3"],
+      "provider_focus": ["jmlr"],
+      "mutation": {
+        "set": {"url": "https://jmlr.org/papers/volume22/20-1364/20-1364.pdf", "volume": "999"},
+        "remove": []
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Correct", "Needs review"],
+        "field_checks": [],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_provider_pmlr_alias_conflict",
+      "corpus": "adversarial",
+      "citation_key": "adv_provider_pmlr_alias_conflict",
+      "kind": "adversarial",
+      "purpose": "Flag the conflicting supported PMLR locator, which identifies World of Bits while URL and citation describe High Confidence Policy Improvement. The contradictory locator must appear in a field finding or explicit identifier diagnostic; generic review of publication versions is insufficient.",
+      "canonical_records": ["hcpi", "world_of_bits"],
+      "provider_focus": ["pmlr"],
+      "mutation": {"set": {"pmlr_id": "v70/shi17a"}, "remove": []},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Invalid", "Needs review"],
+        "field_checks": [],
+        "required_issue": {
+          "field": "pmlr",
+          "requirement": "Expose the World of Bits locator contradicting High Confidence Policy Improvement."
+        }
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_consensus_shadowed_booktitle",
+      "corpus": "adversarial",
+      "citation_key": "adv_consensus_shadowed_booktitle",
+      "kind": "adversarial",
+      "purpose": "Flag the mutually contradictory standard venue fields; do not call the entire citation Correct merely because journal wins field precedence.",
+      "canonical_records": ["datawise"],
+      "provider_focus": ["acl_anthology"],
+      "mutation": {"journal": "correct ACL proceedings title", "booktitle": "contradictory NeurIPS proceedings title"},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Needs review", "Invalid"],
+        "field_checks": [{"field": "venue", "results": ["unknown", "mismatch"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_consensus_shadowed_journal",
+      "corpus": "adversarial",
+      "citation_key": "adv_consensus_shadowed_journal",
+      "kind": "adversarial",
+      "purpose": "Flag the conflict between venue fields, preserving the correct booktitle as evidence rather than inventing a NeurIPS-to-ACL correction.",
+      "canonical_records": ["datawise"],
+      "provider_focus": ["acl_anthology"],
+      "mutation": {
+        "journal": "contradictory NeurIPS proceedings title",
+        "booktitle": "correct ACL proceedings title retained"
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Needs review", "Invalid"],
+        "field_checks": [{"field": "venue", "results": ["unknown"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_consensus_arxiv_impostor_venue",
+      "corpus": "adversarial",
+      "citation_key": "adv_consensus_arxiv_impostor_venue",
+      "kind": "adversarial",
+      "purpose": "Do not normalize an arbitrary venue mentioning arXiv to the arXiv archive. The venue must remain uncertain or discrepant.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"journal": "different purported proceedings title containing the token arXiv"},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Needs review", "Invalid"],
+        "field_checks": [{"field": "venue", "results": ["unknown", "mismatch"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_consensus_pal_year_hybrid",
+      "corpus": "adversarial",
+      "citation_key": "adv_consensus_pal_year_hybrid",
+      "kind": "adversarial",
+      "purpose": "Retain preprint and accepted-publication records separately; request review rather than voting a 2022 or 2023 year into a correction.",
+      "canonical_records": ["pal_accepted", "pal_arxiv"],
+      "provider_focus": ["arxiv", "openreview"],
+      "mutation": {
+        "accepted_metadata": "2023 ICML accepted record",
+        "retained_locators": "2022 preprint eprint and DOI"
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Needs review"],
+        "field_checks": [
+          {"field": "year", "source": "arxiv", "results": ["mismatch"]},
+          {"field": "year", "source": "openreview", "results": ["match"]}
+        ],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_consensus_pal_common_year_error",
+      "corpus": "adversarial",
+      "citation_key": "adv_consensus_pal_common_year_error",
+      "kind": "adversarial",
+      "purpose": "Expose the year discrepancy against every retrieved primary version, even though the primary records disagree with one another about 2022 versus 2023. No Correct verdict and no unique-year suggestion from this conflict.",
+      "canonical_records": ["pal_accepted", "pal_arxiv"],
+      "provider_focus": ["arxiv", "openreview"],
+      "mutation": {
+        "year": "2032 (digit transposition of accepted 2023 year)",
+        "retained_locators": "valid preprint and accepted publication IDs"
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Needs review", "Invalid"],
+        "field_checks": [{"field": "year", "source": "all_authoritative_found", "results": ["mismatch"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_consensus_kim_unlinked_primaries",
+      "corpus": "adversarial",
+      "citation_key": "adv_consensus_kim_unlinked_primaries",
+      "kind": "adversarial",
+      "purpose": "Keep unlinked primary records and differing middle-name/venue facts visible; no source count or canonical priority should suppress the conflict.",
+      "canonical_records": ["kim_neurips", "kim_arxiv", "kim_openreview"],
+      "provider_focus": ["arxiv", "neurips", "openreview"],
+      "mutation": {
+        "input": "canonical NeurIPS title, full authors, year, venue and DOI",
+        "source_set": "real arXiv, NeurIPS and accepted OpenReview records"
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Needs review"],
+        "field_checks": [],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_consensus_datawise_primary_control",
+      "corpus": "adversarial",
+      "citation_key": "adv_consensus_datawise_primary_control",
+      "kind": "control",
+      "purpose": "Accept the official complete primary match; the unqualified note with unknown year/venue must not create a fake primary conflict.",
+      "canonical_records": ["datawise", "datawise_openreview"],
+      "provider_focus": ["acl_anthology", "openreview"],
+      "mutation": {
+        "input": "canonical ACL publication",
+        "source_set": "official ACL plus unqualified public OpenReview note"
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Correct"],
+        "field_checks": [],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_consensus_tulu_ambiguous_truncation",
+      "corpus": "adversarial",
+      "citation_key": "adv_consensus_tulu_ambiguous_truncation",
+      "kind": "adversarial",
+      "purpose": "Retain ambiguity and inspect the omitted authors; do not promote a locally valid prefix match to an unqualified global confirmation.",
+      "canonical_records": ["tulu", "tulu_openreview_1", "tulu_openreview_2"],
+      "provider_focus": ["arxiv", "openreview"],
+      "mutation": {
+        "author": "correct first-author prefix followed by others",
+        "year": "correct pinned preprint first-publication 2024",
+        "source_set": "arXiv primary and two distinct unqualified public OpenReview notes"
+      },
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Needs review"],
+        "field_checks": [{"field": "authors", "source": "arxiv", "results": ["partial_match"]}],
+        "required_issue": null
+      },
+      "source_only_checks": [],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_consensus_ſb3",
+      "corpus": "adversarial",
+      "citation_key": "adv_consensus_ſb3",
+      "kind": "adversarial",
+      "purpose": "A full audit may verify the metadata, but key selection and AUX usage must use one consistent equivalence policy. Do not silently merge or make either key impossible to select.",
+      "canonical_records": ["sb3"],
+      "provider_focus": ["jmlr"],
+      "mutation": {"citation_key": "adv_consensus_ſb3", "paired_key": "adv_consensus_sb3"},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Correct"],
+        "field_checks": [],
+        "required_issue": null
+      },
+      "source_only_checks": ["citation_key_exact_first_selection"],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_consensus_sb3",
+      "corpus": "adversarial",
+      "citation_key": "adv_consensus_sb3",
+      "kind": "adversarial",
+      "purpose": "A full audit may verify the metadata, but key selection and AUX usage must use one consistent equivalence policy. Do not silently merge or make either key impossible to select.",
+      "canonical_records": ["sb3"],
+      "provider_focus": ["jmlr"],
+      "mutation": {"citation_key": "adv_consensus_sb3", "paired_key": "adv_consensus_ſb3"},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Correct"],
+        "field_checks": [],
+        "required_issue": null
+      },
+      "source_only_checks": ["citation_key_exact_first_selection"],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_flow_CodeNav/../%2E%2E",
+      "corpus": "adversarial",
+      "citation_key": "adv_flow_CodeNav/../%2E%2E",
+      "kind": "control",
+      "purpose": "Treat path-like citation keys as literal identities; keep checksum files inside the audit cache and preserve exact UI/select-key identity.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"citation_key": "adv_flow_CodeNav/../%2E%2E"},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Correct"],
+        "field_checks": [{"field": "authors", "results": ["match"]}, {"field": "arxiv", "results": ["match"]}],
+        "required_issue": null
+      },
+      "source_only_checks": ["literal_citation_key_cache_containment"],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_flow_<script>alert(1)</script>",
+      "corpus": "adversarial",
+      "citation_key": "adv_flow_<script>alert(1)</script>",
+      "kind": "control",
+      "purpose": "Render hostile-looking key text literally and preserve it through report, cache and viewer APIs; it must not execute markup.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"citation_key": "adv_flow_<script>alert(1)</script>"},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Correct"],
+        "field_checks": [{"field": "authors", "results": ["match"]}, {"field": "arxiv", "results": ["match"]}],
+        "required_issue": null
+      },
+      "source_only_checks": ["literal_citation_key_html_rendering"],
+      "pdf_expectation": null
+    },
+    {
+      "id": "adversarial/adv_flow_ſingle",
+      "corpus": "adversarial",
+      "citation_key": "adv_flow_ſingle",
+      "kind": "adversarial",
+      "purpose": "Recognize the same Unicode casefold alias consistently for missing-key warnings and citation usage. A cited reference must not silently become unused.",
+      "canonical_records": ["codenav"],
+      "provider_focus": ["arxiv"],
+      "mutation": {"citation_key": "adv_flow_ſingle"},
+      "source_expectation": {
+        "kind": "independently_designed_direct_bib_checks",
+        "acceptable_statuses": ["Correct"],
+        "field_checks": [{"field": "authors", "results": ["match"]}, {"field": "arxiv", "results": ["match"]}],
+        "required_issue": null
+      },
+      "source_only_checks": ["citation_key_casefold_aux_usage"],
+      "pdf_expectation": null
+    }
+  ]
+}

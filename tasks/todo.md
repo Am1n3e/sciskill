@@ -2,7 +2,7 @@
 
 Plan: [plan.md](plan.md). Specification: [PDF reference input](../SPEC-pdf-reference-input.md).
 
-All tasks are planned and unchecked. Commands below run from `tools/bib-lint` unless a repository-root command is explicitly marked. New test names, harness commands, markers, and options are proposed outputs of their owning tasks; they are not available yet.
+The user authorized gradual implementation. T01 is complete; T02 is next. Commands below run from `tools/bib-lint` unless a repository-root command is explicitly marked. New test names, harness commands, markers, and options remain proposed outputs until their owning tasks are completed.
 
 Each task follows red → green → refactor, preserves passing related regressions, and gets one focused commit after verification. Pure fixture/configuration/documentation tasks use content/build validation rather than invented behavioral tests. Do not mark a task complete while its expected behavior is skipped, xfailed, replaced by a stub, or merely covered by an unrelated Needs review verdict.
 
@@ -10,19 +10,21 @@ Generated projects, PDFs, build logs, temporary probes, and run output go under 
 
 ## T01: Freeze the earlier bibliography cases
 
-- [ ] Complete T01.
+- [x] Complete T01.
 
 **Description:** Prepare the three earlier corpora as reproducible input fixtures with independently curated canonical metadata and explicit case intent. Preserve original local copies and review the exact subset promoted into official tests.
 
 **Acceptance criteria:**
-- [ ] Record hashes and 20/31/35-entry inventories, case IDs, mutations, expected fields/findings, and control outcomes; expectations do not derive from current verdicts.
-- [ ] Preserve metadata and literal source keys; record any later build-key mapping separately. Source-only checks are identified rather than silently discarded.
-- [ ] Promoted fixtures contain only the agreed sources and compact truth, with attribution where needed; no old development logs, evaluation history, or captured evidence tree is restored.
+- [x] Record hashes and 20/31/35-entry inventories, case IDs, mutations, expected fields/findings, and control outcomes; expectations do not derive from current verdicts.
+- [x] Preserve metadata and literal source keys; record any later build-key mapping separately. Source-only checks are identified rather than silently discarded.
+- [x] Promoted fixtures contain only the agreed sources and compact truth, with attribution where needed; no old development logs, evaluation history, or captured evidence tree is restored.
 
 **Verification:** Compare inventory/hashes against the three `.local/bib-lint-development/tests/fixtures/e2e/` inputs; parse every entry with the existing parser; review the truth/case inventory before product work. T03 supplies the automated `--check-inputs` command.
 
 **Dependencies:** None. **Estimated scope:** M, five fixture files.
 **Files likely touched:** `tests/fixtures/pdf/corpora/{representative-20.bib,rule-variants.bib,adversarial.bib}`, `tests/fixtures/pdf/corpora/manifest.json`, `tests/fixtures/pdf/truth.json`.
+
+**Completed verification:** All three copies match their original bytes, SHA-256, entry order/types, and 20/31/35 counts. All 86 case bindings and prior independently designed source expectations are retained. The 19 user-derived representative entries match the original 147-entry input; the official JMLR addition is attributed. Canonical facts contain 24 records, including ten checked directly against checksum-verified archived source metadata. Four references explicitly lack a curated primary fixture, five cases retain source-only key/AUX/cache checks, and all PDF expectations remain unset for T04. Existing offline suite: 989 passed, one optional skip, one package test deselected. Tool wheel/sdist build, Ruff lint/format/complexity, and fixture-integrity checks passed. No runtime behavior or dependency changed.
 
 ## T02: Pin official conference templates
 

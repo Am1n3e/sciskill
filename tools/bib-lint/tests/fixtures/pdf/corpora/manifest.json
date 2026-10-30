@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "scope": "Frozen bibliography inputs and independent source-level case designs. No PDF rendering expectations or audit output are included.",
+  "origin": {
+    "kind": "19 user-supplied entries plus 1 official related-paper citation",
+    "user_bibliography": {
+      "kind": "user-provided bibliography",
+      "entry_count": 147,
+      "sha256": "d0e2cb6a50b88e6b33cff6b7dd1595e42c8308887dca4b650cac6df0af755c1b"
+    },
+    "additional_reference": {
+      "key": "JMLR:v22:20-1364",
+      "paper_url": "https://jmlr.org/papers/v22/20-1364.html",
+      "bibtex_url": "https://jmlr.org/papers/v22/20-1364.bib"
+    }
+  },
+  "corpora": [
+    {
+      "id": "representative-20",
+      "path": "representative-20.bib",
+      "entry_count": 20,
+      "sha256": "9bd36809160865b9d9015fe841337eb6fa64532d6d93a8d11355a6de64aad117",
+      "bytes": 19543,
+      "entry_keys": [
+        "lambert2024tulu",
+        "guo2025deepseek",
+        "JMLR:v22:20-1364",
+        "thomas2015hcpi",
+        "levine2020offline",
+        "gelman2013bayesian",
+        "chengSeeClickHarnessingGUI2024",
+        "cho2024caapcontextawareactionplanning",
+        "gupta2024codenavtooluseusingrealworld",
+        "he-etal-2024-webvoyager",
+        "kimLanguageModelsCan2023a",
+        "mialon2024gaia",
+        "noauthor_measuring_2025",
+        "pmlr-v70-shi17a",
+        "shinnReflexionLanguageAgents2023",
+        "songTrialErrorExplorationBased2024",
+        "you2025datawiseagentnotebookcentricllmagent",
+        "tanEnhancingWebAgents2026",
+        "iso25010_2023",
+        "gao2022pal"
+      ],
+      "entry_types": {
+        "article": 6,
+        "book": 1,
+        "inproceedings": 7,
+        "misc": 6
+      }
+    },
+    {
+      "id": "rule-variants",
+      "path": "rule-variants.bib",
+      "entry_count": 31,
+      "sha256": "972c229a45fe3d171d430aa28660f1b1e2a1f95f6a45afa07188f08e4a3f854a",
+      "bytes": 10889,
+      "entry_keys": [
+        "case_clean",
+        "case_authors_partial",
+        "case_authors_reordered",
+        "case_authors_wrong_given",
+        "case_authors_initials",
+        "case_authors_missing",
+        "case_authors_short_without_others",
+        "case_authors_wrong_prefix",
+        "case_authors_only_others",
+        "case_year_wrong",
+        "case_year_missing",
+        "case_title_typo",
+        "case_title_missing",
+        "case_title_unrelated",
+        "case_arxiv_unversioned",
+        "case_arxiv_wrong_identifier",
+        "case_doi_wrapped",
+        "case_doi_wrong",
+        "case_doi_in_url",
+        "case_venue_abbreviated",
+        "case_venue_missing",
+        "case_gaia_unicode",
+        "case_gaia_tex_accents",
+        "case_jmlr_clean",
+        "case_jmlr_title_discovery",
+        "case_jmlr_volume_only",
+        "case_jmlr_identifier_only",
+        "case_scope_unchecked",
+        "case_openreview_accepted_direct",
+        "case_not_applicable",
+        "case_missing_routing_context"
+      ],
+      "entry_types": {
+        "article": 6,
+        "inproceedings": 7,
+        "misc": 18
+      }
+    },
+    {
+      "id": "adversarial",
+      "path": "adversarial.bib",
+      "entry_count": 35,
+      "sha256": "9372e3c06d05b71b074a3fcf3c54870f9babb39b3fdf7fd84ee87fc229a86e55",
+      "bytes": 15966,
+      "entry_keys": [
+        "adv_match_family_boundary_collision",
+        "adv_match_literal_prefix_collision",
+        "adv_match_arxiv_concatenated_identifiers",
+        "adv_match_arxiv_double_version",
+        "adv_match_arxiv_foreign_url_identifier",
+        "adv_match_doi_tex_escaped_percent",
+        "adv_match_title_tex_emphasis",
+        "adv_match_same_initial_impostor",
+        "adv_match_invented_suffix",
+        "adv_match_sentinel_in_middle",
+        "adv_match_clean_unicode_decomposed",
+        "adv_match_clean_doi_encoded",
+        "adv_provider_split_arxiv_url",
+        "adv_provider_shadowed_version_pin",
+        "adv_provider_shadowed_journal_id",
+        "adv_provider_acl_alias_conflict",
+        "adv_provider_openreview_alias_conflict",
+        "adv_provider_duplicate_forum_id",
+        "adv_provider_venue_masquerade",
+        "adv_provider_year_vs_volume_route",
+        "adv_provider_pdf_volume_shadow",
+        "adv_provider_pmlr_alias_conflict",
+        "adv_consensus_shadowed_booktitle",
+        "adv_consensus_shadowed_journal",
+        "adv_consensus_arxiv_impostor_venue",
+        "adv_consensus_pal_year_hybrid",
+        "adv_consensus_pal_common_year_error",
+        "adv_consensus_kim_unlinked_primaries",
+        "adv_consensus_datawise_primary_control",
+        "adv_consensus_tulu_ambiguous_truncation",
+        "adv_consensus_ſb3",
+        "adv_consensus_sb3",
+        "adv_flow_CodeNav/../%2E%2E",
+        "adv_flow_<script>alert(1)</script>",
+        "adv_flow_ſingle"
+      ],
+      "entry_types": {
+        "article": 5,
+        "inproceedings": 12,
+        "misc": 18
+      }
+    }
+  ],
+  "truth": {
+    "path": "../truth.json",
+    "sha256": "218644a5b46019e1fecbcf64ca621e7ed282e007880f675d84388e61af665b8a"
+  },
+  "design_provenance": [
+    {
+      "file": "representative-20.cases.json",
+      "sha256": "87c20cc6359e64598db55c3267c00c7b9f392245e33139d97ed8f972054f20be",
+      "content_retained": "Case intent and independently specified source checks only; development history excluded."
+    },
+    {
+      "file": "rule-variants.cases.json",
+      "sha256": "82962ac15cb006733b4072fa8616e148a173c8024f5ddf421c4a8120331de2ce",
+      "content_retained": "Case intent and independently specified source checks only; development history excluded."
+    },
+    {
+      "file": "adversarial.cases.json",
+      "sha256": "b1f0b950b94b83efce79194b492197d0063502b2aa64804fdeb4afc9b2c598fc",
+      "content_retained": "Case intent and independently specified source checks only; development history excluded."
+    }
+  ],
+  "artifact_policy": "Keep generated LaTeX projects, PDFs, logs and audit evidence in ignored .local/pdf-e2e/ or CI artifacts. No captured source-response bodies are promoted here."
+}

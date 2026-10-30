@@ -1,6 +1,6 @@
 # Implementation plan: PDF reference auditing through conference-paper E2E tests
 
-Status: Draft for human review. This turn produces planning documents only; none of the planned compiler harness, PDF adapter, tests, dependencies, or CI jobs is implemented yet.
+Status: The user authorized gradual implementation. T01 (frozen bibliography inputs and independent source-level expectations) is complete; T02 (official template pins) is next. Compiler tooling, PDF runtime behavior, dependencies, and CI integration remain unimplemented.
 
 Specification: [SPEC-pdf-reference-input.md](../SPEC-pdf-reference-input.md).
 Task list target: [todo.md](todo.md). Use these files as the single plan/task index; no external tracker is designated.
@@ -82,7 +82,7 @@ A `compile_failure` is attributed to its source/asset and reported separately. R
 
 ## Dependency graph and task index
 
-Detailed checklists, file budgets, and verification commands are in [todo.md](todo.md). Every task is incomplete.
+Detailed checklists, file budgets, progress, and verification results are in [todo.md](todo.md).
 
 ```text
 T01 corpus ───────────┐
@@ -191,4 +191,4 @@ No agents are dispatched by this planning turn. Any later parallel work must hav
 - Review corpus promotion and all visibility exceptions at C2. Keep compiled artifacts and the earlier removed development/evidence tree out of the public diff.
 - Review the PDF schema/CLI extraction-summary proposal before integrating it with product decisions. Existing schema-2/3 and BibTeX contracts remain acceptance gates.
 
-Implementation starts only after human review of this plan. Checkpoints are concrete review points; they must not silently reduce scope, modify expectations, or introduce a service/cloud fallback.
+Implementation is authorized in small verified commits. Checkpoints are concrete review points; they must not silently reduce scope, modify expectations, or introduce a service/cloud fallback. Parser choice, measured limits, and rendering exceptions remain explicit review decisions at their named checkpoints.
