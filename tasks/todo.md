@@ -2,7 +2,7 @@
 
 Plan: [plan.md](plan.md). Specification: [PDF reference input](../SPEC-pdf-reference-input.md).
 
-The user authorized gradual implementation. T01 is complete; T02 is next. Commands below run from `tools/bib-lint` unless a repository-root command is explicitly marked. New test names, harness commands, markers, and options remain proposed outputs until their owning tasks are completed.
+The user authorized gradual implementation. T01 is complete. T02 has verified pins for 12 of 13 venue configurations; the official UAI archive remains unavailable, so T02 is not complete. Commands below run from `tools/bib-lint` unless a repository-root command is explicitly marked. New test names, harness commands, markers, and options remain proposed outputs until their owning tasks are completed.
 
 Each task follows red → green → refactor, preserves passing related regressions, and gets one focused commit after verification. Pure fixture/configuration/documentation tasks use content/build validation rather than invented behavioral tests. Do not mark a task complete while its expected behavior is skipped, xfailed, replaced by a stub, or merely covered by an unrelated Needs review verdict.
 
@@ -41,6 +41,8 @@ Generated projects, PDFs, build logs, temporary probes, and run output go under 
 
 **Dependencies:** None; can be prepared alongside T01. **Estimated scope:** S, two files.
 **Files likely touched:** `tests/fixtures/pdf/templates.json`, `tests/fixtures/pdf/README.md`.
+
+**Progress:** Nine official archives/commit snapshots were downloaded into ignored storage and checked, including actual sample/style/bibliography member names and SHA-256 values; they cover 12 venue configurations. UAI's official HTTPS archive repeatedly resets the connection, so its checksum/members/bibliography recipe remain explicitly unset and the baseline must not omit it. The test-only Linux/amd64 TeX image is pinned by immutable platform digest; registry/configuration metadata and the local Docker engine were checked, but image layers/compiler execution remain for T03. No vendor archive or third-party substitute was promoted. T02 remains unchecked pending the official UAI asset.
 
 ## T03: Generate and compile the LaTeX projects
 
