@@ -54,10 +54,15 @@ def reference_status(validations):
     sources = result.get("methods", [])
     found = [s for s in sources if s.get("found_ref")]
     if not found:
-        return "Needs review" if any(s.get("candidates") for s in sources) else "Unresolved"
+        return (
+            "Needs review"
+            if result.get("input_findings") or any(s.get("candidates") for s in sources)
+            else "Unresolved"
+        )
     comparisons = [c for s in found for c in s.get("comparisons", [])]
     if (
         any(c.get("result") == "partial_match" for c in comparisons)
+        and not result.get("input_findings")
         and all(c.get("result") in {"match", "partial_match", "not_checked"} for c in comparisons)
         and all(s.get("agrees_with_consensus") is True for s in found)
         and any(s.get("authority") for s in found)

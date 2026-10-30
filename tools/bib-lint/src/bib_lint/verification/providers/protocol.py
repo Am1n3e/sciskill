@@ -14,6 +14,14 @@ class Author:
     given: str = ""
     family: str = ""
     suffix: str = ""
+    kind: str = ""
+
+
+def _author_data(author):
+    data = asdict(author)
+    if not data["kind"]:
+        data.pop("kind")
+    return data
 
 
 @dataclass(frozen=True)
@@ -46,12 +54,13 @@ class LookupQuery:
     def as_record(self):
         return {
             "title": self.title,
-            "authors": [asdict(a) for a in self.authors],
+            "authors": [_author_data(a) for a in self.authors],
             "year": self.year,
             "venue": self.venue,
             "identifiers": dict(self.identifiers),
             "input_url": self.input_url,
             "record_type": self.record_type,
+            "input_fields": dict(self.fields),
         }
 
 
@@ -191,7 +200,9 @@ class Candidate:
         if self.year is not None and type(self.year) not in (str, int):
             raise ValueError("Candidate year must be text, integer or unknown")
         if not isinstance(self.authors, tuple) or any(
-            not isinstance(a, Author) or any(not isinstance(v, str) for v in asdict(a).values())
+            not isinstance(a, Author)
+            or any(not isinstance(v, str) for v in asdict(a).values())
+            or a.kind not in {"", "person", "literal", "others"}
             for a in self.authors
         ):
             raise ValueError("Candidate authors must be ordered structured names")
@@ -228,7 +239,7 @@ class Candidate:
     def as_record(self):
         self.validate()
         result = asdict(self)
-        result["authors"] = [asdict(a) for a in self.authors]
+        result["authors"] = [_author_data(a) for a in self.authors]
         result["identifiers"] = dict(self.identifiers)
         result["provenance"] = dict(self.provenance)
         return result

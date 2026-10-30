@@ -3,6 +3,8 @@
 import hashlib
 import json
 
+from bib_lint.citation_keys import resolve_citation_key
+
 
 def validate_outcome(method):
     if (
@@ -33,8 +35,8 @@ def validate_report(report):
     _validate_run(report)
     if "summary" in report and not isinstance(report["summary"], dict):
         raise ValueError("summary must be an object")
-    if len(set(keys)) != len(keys):
-        raise ValueError("Duplicate citation keys in report")
+    if len({key.lower() for key in keys}) != len(keys):
+        raise ValueError("Duplicate citation keys in report; each key must match exactly one entry")
     return _validate_scope(report, keys)
 
 
@@ -48,9 +50,10 @@ def selected_items(report, key=None):
     eligible = eligible_items(report)
     if key is None:
         return eligible
-    matches = [i for i in report["items"] if i["entry"]["key"].casefold() == key.casefold()]
-    if len(matches) != 1:
+    resolved = resolve_citation_key(key, (i["entry"]["key"] for i in report["items"]))
+    if resolved is None:
         raise ValueError(f"Citation key must match exactly one entry: {key}")
+    matches = [i for i in report["items"] if i["entry"]["key"] == resolved]
     if matches[0] not in eligible:
         raise ValueError(f"Citation key is unused according to AUX: {key}")
     return matches
@@ -112,6 +115,19 @@ def _validate_people(entry):
                 raise ValueError("Name parts must be lists of text")
 
 
+def _validate_input_findings(correctness):
+    if "input_findings" not in correctness:
+        return  # Historical reports predate local metadata validation.
+    findings = correctness["input_findings"]
+    if not isinstance(findings, list) or any(
+        not isinstance(finding, dict)
+        or any(not isinstance(finding.get(key), str) for key in ("field", "code", "message"))
+        or finding.get("result") not in ("unknown", "mismatch")
+        for finding in findings
+    ):
+        raise ValueError("Input findings must contain structured metadata diagnostics")
+
+
 def _validate_items(report):
     keys = []
     for item in report["items"]:
@@ -136,6 +152,7 @@ def _validate_items(report):
         ):
             raise ValueError("Correctness must contain structured source outcomes")
         if correctness is not None:
+            _validate_input_findings(correctness)
             for method in correctness["methods"]:
                 validate_outcome(method)
         keys.append(entry["key"])

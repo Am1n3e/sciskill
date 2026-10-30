@@ -2,8 +2,23 @@
 
 from bib_lint.verification.matching import compare_fields, same_record
 
+POLICY_VERSION = 8
+CHECKED_FIELDS = [
+    "title",
+    "authors",
+    "year",
+    "venue",
+    "doi",
+    "arxiv",
+    "pmlr",
+    "jmlr",
+    "acl",
+    "neurips",
+    "openreview",
+]
 
-def build_consensus(methods):
+
+def build_consensus(methods, *, input_findings=None):
     found = [m for m in methods if m["status"] == "found"]
     selected, reason = _select_cluster(found)
     for method in found:
@@ -31,15 +46,24 @@ def build_consensus(methods):
             preferred = sorted(primary, key=lambda m: (m.get("canonical_priority", 9), m["name"]))
             canonical = preferred[0]["found_ref"]
             correct, reason = _primary_decision(primary, methods, reason)
+    findings = list(input_findings or [])
+    if findings:
+        if correct is True:
+            correct = None
+        reason += "; Input metadata needs review: " + "; ".join(
+            f"{finding['field']}: {finding['message']}" for finding in findings
+        )
     return {
         "is_correct": correct,
         "consensus": consensus,
         "methods": methods,
         "canonical_ref": canonical,
         "reason": reason,
-        "policy_version": 5,
-        "checked_fields": ["title", "authors", "year", "venue", "doi", "arxiv"],
-        "scope": "Core citation metadata only; not claim support, pages, volume, or edition",
+        "input_findings": findings,
+        "policy_version": POLICY_VERSION,
+        "checked_fields": CHECKED_FIELDS.copy(),
+        "scope": "Core citation metadata and supplied locator consistency; "
+        "not claim support, pages, volume, or edition",
     }
 
 

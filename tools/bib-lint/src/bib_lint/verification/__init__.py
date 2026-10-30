@@ -10,10 +10,11 @@ from pathlib import Path
 
 from bib_lint.scope import eligible_items, fingerprint, selected_items, validate_report
 from bib_lint.status import reference_status, source_status
-from bib_lint.storage import report_lock, report_paths
+from bib_lint.storage import ReportLockError, report_lock, report_paths
 from bib_lint.storage import write_json as _write_json
-from bib_lint.verification.consensus import build_consensus
+from bib_lint.verification.consensus import POLICY_VERSION, build_consensus
 from bib_lint.verification.http import LookupFailure, MetadataClient
+from bib_lint.verification.input_checks import input_findings, unverified_locator_findings
 from bib_lint.verification.matching import select_result
 from bib_lint.verification.providers import METHODS
 from bib_lint.verification.providers.context import RequestContext
@@ -132,7 +133,12 @@ def verify_reference(
         if progress:
             _source_progress(name, result, progress)
     client.progress = None
-    return build_consensus(results)
+    return _consensus_with_input(results, dict(query.fields))
+
+
+def _consensus_with_input(results, fields):
+    findings = input_findings(fields) + unverified_locator_findings(fields, results)
+    return build_consensus(results, input_findings=findings)
 
 
 _validate_report = validate_report
@@ -249,7 +255,7 @@ def verify_report_locked(
                 merged = {m["name"]: m for m in previous}
                 merged.update({m["name"]: m for m in results})
                 results = [merged[name] for name in registry if name in merged]
-                result = build_consensus(results)
+                result = _consensus_with_input(results, item["entry"].get("fields", {}))
                 result["complete"] = len(results) == len(registry)
                 if not result["complete"]:
                     result["is_correct"] = None
@@ -295,8 +301,8 @@ def verify_report_locked(
 def _execute_provider(name, provider, query, context):
     try:
         result = _source_result(provider, query, context)
-    except OSError:
-        # Evidence persistence failures are execution errors, not provider findings.
+    except (OSError, ReportLockError):
+        # Local storage failures are execution errors, not provider findings.
         raise
     except Exception as exc:
         # One provider failing must not prevent other independent lookups.
@@ -338,8 +344,8 @@ def _prepare_run(report, registry, selected, refresh):
     expected = {
         "fingerprint": input_hash,
         "methods": list(registry),
-        "policy_version": 5,
-        "orchestration_version": 2,
+        "policy_version": POLICY_VERSION,
+        "orchestration_version": 4,
         "provider_protocol_version": 1,
         "providers": [p.descriptor.serialize() for p in registry.values()],
     }

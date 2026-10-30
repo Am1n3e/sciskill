@@ -42,3 +42,32 @@ def test_partial_check_is_not_counted_as_completed_unresolved():
         ]
     }
     assert _totals(report)["unresolved"] == 0
+
+
+def test_local_input_issue_cannot_hide_behind_partial_authors():
+    from dataclasses import asdict
+
+    from provider_support import FixtureProvider
+    from support import FakeClient
+
+    from bib_lint.parser import parse_string
+    from bib_lint.verification import verify_reference
+
+    entry = asdict(
+        parse_string(
+            "@article{x,title={An Example Paper},author={Smith, Jane and others},"
+            "year={2025},journal={Example Journal},doi={10.1234/example},url={not-a-url}}"
+        ).entries["x"]
+    )
+    provider = FixtureProvider(
+        payload={
+            "heading": "An Example Paper",
+            "date": "2025",
+            "journal": "Example Journal",
+            "ids": {"doi": "10.1234/example"},
+            "people": [{"given": "Jane", "family": "Smith"}, {"given": "John", "family": "Jones"}],
+        }
+    )
+    result = verify_reference(entry, FakeClient(), methods=[provider])
+    assert any(f["code"] == "invalid_url" for f in result["input_findings"])
+    assert reference_status({"correctness": result}) == "Needs review"

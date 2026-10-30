@@ -3,6 +3,8 @@
 from dataclasses import asdict, dataclass
 from typing import Literal
 
+from bib_lint.citation_keys import resolve_citation_usage
+
 
 @dataclass(frozen=True)
 class Name:
@@ -35,13 +37,13 @@ class Bibliography:
 
     def to_dict(self, *, include_source: bool = False, used_keys: set[str] | None = None) -> dict:
         """Return versioned JSON-ready data; retain file order and citation-key spelling."""
-        used = None if used_keys is None else {key.lower() for key in used_keys}
+        used = (
+            None if used_keys is None else resolve_citation_usage(self.entries, used_keys).used_keys
+        )
         items = [
             {
                 "entry": asdict(entry),
-                "validations": {}
-                if used is None
-                else {"is_used": "*" in used or key.lower() in used},
+                "validations": {} if used is None else {"is_used": key in used},
             }
             for key, entry in self.entries.items()
         ]
