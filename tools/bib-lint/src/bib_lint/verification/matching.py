@@ -42,6 +42,11 @@ def doi(value):
     # Do not pass a URI through the TeX codec: a raw % starts a TeX comment.
     # Decode presentation escapes first so \%2F does not become a spurious \/.
     text = re.sub(r"\\([%_&#])", r"\1", html.unescape(str(value or ""))).strip()
+    if re.match(r"https?://(?:dx\.)?doi\.org/", text, flags=re.I):
+        # URI query/fragment delimiters are not part of the DOI. Decode the path
+        # afterwards: encoded ? and # can legitimately belong to the identifier.
+        # Split explicitly so a URI parser cannot silently erase invalid controls.
+        text = re.split(r"[?#]", text, maxsplit=1)[0]
     return (
         re.sub(r"^(?:https?://(?:dx\.)?doi\.org/|doi:\s*)", "", unquote(text).strip(), flags=re.I)
         .strip()
@@ -78,6 +83,8 @@ def name_parts(value):
 
 
 def input_record(entry):
+    from bib_lint.verification.input_checks import strict_arxiv
+
     fields = entry.get("fields", {})
     authors = []
     for person in entry.get("persons", {}).get("author", []):
@@ -95,9 +102,9 @@ def input_record(entry):
     url = fields.get("url", "").strip()
     if not identifiers.get("doi") and re.match(r"https?://(?:dx\.)?doi\.org/", url, flags=re.I):
         identifiers["doi"] = doi(url)
-    arxiv = arxiv_id(fields.get("eprint"))
-    if not arxiv and "arxiv.org/" in url.lower():
-        arxiv = arxiv_id(url)
+    arxiv = strict_arxiv(fields.get("eprint", "")) or arxiv_id(fields.get("eprint"))
+    if not arxiv:
+        arxiv = strict_arxiv(url)
     if not arxiv and "arxiv" in fields.get("journal", "").lower():
         arxiv = arxiv_id(fields["journal"])
     if arxiv:

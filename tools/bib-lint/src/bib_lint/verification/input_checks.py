@@ -49,7 +49,7 @@ def strict_arxiv(value):
             "export.arxiv.org",
         }:
             return None
-        if not safe_url(parsed):
+        if not safe_url(parsed) or invalid_url_characters(value):
             return None
         match = re.fullmatch(r"/(?:abs|pdf|html)/(.+?)(?:\.pdf)?/?", unquote(parsed.path))
         value = match[1] if match else ""
@@ -61,6 +61,11 @@ def safe_url(parsed):
         return not parsed.username and not parsed.password and parsed.port in {None, 80, 443}
     except ValueError:
         return False
+
+
+def invalid_url_characters(value):
+    # urlsplit silently removes tabs/newlines. Inspect the original input first.
+    return any(char.isspace() or ord(char) < 32 or ord(char) == 127 for char in value)
 
 
 def locator(provider, value):
@@ -96,6 +101,9 @@ def locator(provider, value):
 
 
 def url_locators(value):
+    value = value.strip()
+    if invalid_url_characters(value):
+        return []
     try:
         parsed = urlsplit(value)
     except ValueError:
@@ -248,7 +256,12 @@ def url_findings(fields):
         return []
     try:
         parsed = urlsplit(value)
-        valid = parsed.scheme in {"http", "https"} and parsed.hostname and safe_url(parsed)
+        valid = (
+            parsed.scheme in {"http", "https"}
+            and parsed.hostname
+            and safe_url(parsed)
+            and not invalid_url_characters(value)
+        )
     except ValueError:
         valid = False
     if valid:

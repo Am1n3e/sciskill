@@ -71,7 +71,7 @@ def test_seventh_provider_audit_checkpoint_resume_and_json(bib):
     assert report["items"][0]["validations"]["correctness"]["is_correct"] is True
     assert report["verification_run"]["provider_protocol_version"] == 1
     assert report["verification_run"]["orchestration_version"] == 4
-    assert report["verification_run"]["policy_version"] == 7
+    assert report["verification_run"]["policy_version"] == 8
     assert report["verification_run"]["providers"] == [p.descriptor.serialize()]
     assert json.loads(workspace.final.read_text()) == json.loads(json.dumps(report))
     p.retrieval = lambda *_: pytest.fail("Compatible completed source rerun")
@@ -285,7 +285,7 @@ def test_default_sources_no_retired_network_requests(tmp_path):
     assert [m["name"] for m in result["methods"]] == list(METHODS)
     allowed = {h for p in METHODS.values() for h in p.descriptor.allowed_hosts}
     assert all(request.url.host in allowed for request in calls)
-    assert result["policy_version"] == 7
+    assert result["policy_version"] == 8
     client.close()
 
 

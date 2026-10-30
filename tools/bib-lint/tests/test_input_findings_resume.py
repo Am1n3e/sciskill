@@ -1,12 +1,13 @@
 """Local contradictions survive unavailable sources, checkpoints, and policy upgrades."""
 
 import json
+from contextlib import closing
 
 import httpx
 import pytest
 from metadata_support import entry, html_record, write_bib
 from provider_support import FixtureProvider
-from support import FakeClient
+from support import ENTRY, FakeClient
 
 from bib_lint.audit import audit_summary, run_audit
 from bib_lint.scope import validate_report
@@ -107,7 +108,13 @@ def test_partial_checkpoint_retains_local_checks_and_resume_keeps_source_failure
 
 
 @pytest.mark.parametrize(
-    "legacy_run", [{"policy_version": 5}, {"policy_version": 6}, {"orchestration_version": 3}]
+    "legacy_run",
+    [
+        {"policy_version": 5},
+        {"policy_version": 6},
+        {"policy_version": 7},
+        {"orchestration_version": 3},
+    ],
 )
 def test_old_saved_verdict_recomputes_input_checks_without_rewriting_evidence(tmp_path, legacy_run):
     source = isolated_bibliography(tmp_path)
@@ -145,7 +152,7 @@ def test_old_saved_verdict_recomputes_input_checks_without_rewriting_evidence(tm
     finally:
         client.close()
     result = resumed["items"][0]["validations"]["correctness"]
-    assert result["policy_version"] == resumed["verification_run"]["policy_version"] == 7
+    assert result["policy_version"] == resumed["verification_run"]["policy_version"] == 8
     assert resumed["verification_run"]["orchestration_version"] == 4
     assert reference_status({"correctness": result}) == "Needs review"
     assert has_finding(result, "conflicting_venues")
@@ -193,3 +200,55 @@ def test_malformed_saved_input_findings_are_rejected_before_viewing_or_resuming(
         run_audit(source, output=workspace.root, client=FakeClient(), methods=[provider])
     assert workspace.final.read_bytes() == before
     assert not workspace.checkpoint.exists()
+
+
+def test_policy_upgrade_rechecks_url_using_cached_source_evidence(tmp_path):
+    source = tmp_path / "references.bib"
+    source.write_text(
+        "@article{Example,title={An Example Paper},author={Jane Smith},year={2025},"
+        "journal={Example Journal},doi={10.1234/example},"
+        "url={https://arxiv. org/abs/2501.12345}}"
+    )
+    payload = {
+        "heading": ENTRY["fields"]["title"],
+        "date": "2025",
+        "journal": "Example Journal",
+        "people": [{"given": "Jane", "family": "Smith"}],
+        "ids": {"doi": "10.1234/example"},
+    }
+    calls = []
+
+    def lookup(query, context):
+        context.get("https://fixture.test/paper")
+        return FixtureProvider(payload=payload).lookup(query, context)
+
+    def respond(request):
+        calls.append(request)
+        return httpx.Response(200, text="Independent source evidence")
+
+    provider = FixtureProvider(lookup=lookup)
+    with closing(
+        MetadataClient(tmp_path / "audit/cache", transport=httpx.MockTransport(respond))
+    ) as client:
+        workspace, first, _ = run_audit(
+            source, output=tmp_path / "audit", client=client, methods=[provider]
+        )
+        manifest = (workspace.cache / "checksum.json").read_bytes()
+        evidence = {
+            row["path"]: (workspace.cache / row["path"]).read_bytes()
+            for row in json.loads(manifest)["files"]
+        }
+        # Model the old policy's false positive, retaining its valid source outcome.
+        first["verification_run"]["policy_version"] = 7
+        legacy = first["items"][0]["validations"]["correctness"]
+        legacy.update(is_correct=True, policy_version=7, input_findings=[])
+        write_json(workspace.final, first)
+        _, resumed, _ = run_audit(source, output=workspace.root, client=client, methods=[provider])
+    result = resumed["items"][0]["validations"]["correctness"]
+    assert result["policy_version"] == 8
+    assert reference_status({"correctness": result}) == "Needs review"
+    assert has_finding(result, "invalid_url")
+    assert result["methods"][0]["requests"][0]["cached"]
+    assert len(calls) == 1
+    assert (workspace.cache / "checksum.json").read_bytes() == manifest
+    assert all((workspace.cache / path).read_bytes() == value for path, value in evidence.items())
