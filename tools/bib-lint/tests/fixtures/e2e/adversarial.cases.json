@@ -1,0 +1,1655 @@
+{
+  "schema_version": 1,
+  "bibliography": "adversarial.bib",
+  "sources": "adversarial.sources.json",
+  "expectation_policy": "Expected behavior was specified before the combined replay. A failing case remains a failing safety/formatting invariant; current verdicts never become gold labels. All-six and focused-provider results are reported separately to expose masking by incidental uncertainty. Scope extensions are distinguished from defects in existing comparisons.",
+  "review": {
+    "agents": [
+      "matching",
+      "providers",
+      "consensus"
+    ],
+    "parent": "transport/cache/AUX/workflow/CLI/viewer integration",
+    "implementation_inventory": [
+      "tools/bib-lint/src/bib_lint/__init__.py",
+      "tools/bib-lint/src/bib_lint/__main__.py",
+      "tools/bib-lint/src/bib_lint/audit.py",
+      "tools/bib-lint/src/bib_lint/aux.py",
+      "tools/bib-lint/src/bib_lint/cli.py",
+      "tools/bib-lint/src/bib_lint/models.py",
+      "tools/bib-lint/src/bib_lint/parser.py",
+      "tools/bib-lint/src/bib_lint/scope.py",
+      "tools/bib-lint/src/bib_lint/status.py",
+      "tools/bib-lint/src/bib_lint/storage.py",
+      "tools/bib-lint/src/bib_lint/verification/__init__.py",
+      "tools/bib-lint/src/bib_lint/verification/cache.py",
+      "tools/bib-lint/src/bib_lint/verification/consensus.py",
+      "tools/bib-lint/src/bib_lint/verification/http.py",
+      "tools/bib-lint/src/bib_lint/verification/matching.py",
+      "tools/bib-lint/src/bib_lint/verification/providers/__init__.py",
+      "tools/bib-lint/src/bib_lint/verification/providers/acl_anthology.py",
+      "tools/bib-lint/src/bib_lint/verification/providers/archive.py",
+      "tools/bib-lint/src/bib_lint/verification/providers/arxiv.py",
+      "tools/bib-lint/src/bib_lint/verification/providers/common.py",
+      "tools/bib-lint/src/bib_lint/verification/providers/context.py",
+      "tools/bib-lint/src/bib_lint/verification/providers/jmlr.py",
+      "tools/bib-lint/src/bib_lint/verification/providers/neurips.py",
+      "tools/bib-lint/src/bib_lint/verification/providers/openreview.py",
+      "tools/bib-lint/src/bib_lint/verification/providers/pmlr.py",
+      "tools/bib-lint/src/bib_lint/verification/providers/protocol.py",
+      "tools/bib-lint/src/bib_lint/verification/providers/registry.py",
+      "tools/bib-lint/src/bib_lint/viewer/__init__.py",
+      "tools/bib-lint/src/bib_lint/viewer/agent.py",
+      "tools/bib-lint/src/bib_lint/viewer/app.py",
+      "tools/bib-lint/src/bib_lint/viewer/data.py",
+      "tools/bib-lint/src/bib_lint/viewer/jobs.py",
+      "tools/bib-lint/src/bib_lint/viewer/presentation.py",
+      "tools/bib-lint/src/bib_lint/viewer/server.py",
+      "tools/bib-lint/src/bib_lint/viewer/static/app.js",
+      "tools/bib-lint/src/bib_lint/viewer/static/index.html",
+      "tools/bib-lint/src/bib_lint/viewer/static/styles.css",
+      "tools/bib-lint/src/bib_lint/workflow.py"
+    ],
+    "deduplicated_cases": {
+      "adv_provider_dual_venue_shadow": "adv_consensus_shadowed_booktitle"
+    }
+  },
+  "cases": [
+    {
+      "citation_key": "adv_match_family_boundary_collision",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "fields": {},
+        "authors": [
+          "Tanmay Gupta,",
+          "Weihs, Luca",
+          "Kembhavi, Aniruddha"
+        ]
+      },
+      "independent_expected_behavior": "The first author has the entire name stored as the family name and no given name. Full displayed strings match, but structured author identity and in-text citation spelling do not. Preserve the given/family boundary instead of flattening it into one string.",
+      "acceptable_statuses": [
+        "Invalid",
+        "Needs review"
+      ],
+      "field_checks": [
+        {
+          "field": "authors",
+          "results": [
+            "mismatch",
+            "unknown"
+          ]
+        }
+      ],
+      "severity": "high",
+      "code_paths": [
+        "tools/bib-lint/src/bib_lint/verification/matching.py::input_record",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::compare_fields",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::select_result"
+      ],
+      "why_tricky": "The first author has the entire name stored as the family name and no given name. Full displayed strings match, but structured author identity and in-text citation spelling do not. Preserve the given/family boundary instead of flattening it into one string.",
+      "scope_boundary": "implemented metadata scope",
+      "is_control": false,
+      "source_url": "https://arxiv.org/abs/2406.12276v1",
+      "designer": "matching",
+      "providers": [
+        "arxiv"
+      ],
+      "raw_entry_sha256": "5e44f9bf18e99172dca31268b0e76da98aae1fc910279ec36d632c22d34feb38",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": "name_structure"
+    },
+    {
+      "citation_key": "adv_match_literal_prefix_collision",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "fields": {},
+        "authors": [
+          "{Tanmay Gupta}",
+          "others"
+        ]
+      },
+      "independent_expected_behavior": "A corporate/literal first-author token plus others must not become a verified personal-author prefix merely because its flattened text matches the real person. Literal/person semantics and family-name boundaries differ.",
+      "acceptable_statuses": [
+        "Invalid",
+        "Needs review"
+      ],
+      "field_checks": [
+        {
+          "field": "authors",
+          "results": [
+            "mismatch",
+            "unknown"
+          ]
+        }
+      ],
+      "severity": "high",
+      "code_paths": [
+        "tools/bib-lint/src/bib_lint/verification/matching.py::input_record",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::compare_fields",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::select_result"
+      ],
+      "why_tricky": "A corporate/literal first-author token plus others must not become a verified personal-author prefix merely because its flattened text matches the real person. Literal/person semantics and family-name boundaries differ.",
+      "scope_boundary": "author-role/name-boundary validation; current comparison discards Name.kind",
+      "is_control": false,
+      "source_url": "https://arxiv.org/abs/2406.12276v1",
+      "designer": "matching",
+      "providers": [
+        "arxiv"
+      ],
+      "raw_entry_sha256": "30d6faa29b32c5142b76c5c7fee380e768e5436d01371a72c073dfbc453fda56",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": "name_structure"
+    },
+    {
+      "citation_key": "adv_match_arxiv_concatenated_identifiers",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "fields": {
+          "eprint": "2406.12276v1/2411.15124v5"
+        },
+        "authors": null
+      },
+      "independent_expected_behavior": "One eprint field concatenates two distinct real arXiv papers. Matching the first substring silently discards the contradictory second identifier. Flag the malformed/conflicting locator instead of confirming the entry.",
+      "acceptable_statuses": [
+        "Invalid",
+        "Needs review"
+      ],
+      "field_checks": [],
+      "severity": "high",
+      "code_paths": [
+        "tools/bib-lint/src/bib_lint/verification/matching.py::input_record",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::compare_fields",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::select_result"
+      ],
+      "why_tricky": "One eprint field concatenates two distinct real arXiv papers. Matching the first substring silently discards the contradictory second identifier. Flag the malformed/conflicting locator instead of confirming the entry.",
+      "scope_boundary": "Strict whole-token eprint validation is a requested invariant; current arxiv_id is a substring extractor. Preserve this expectation as a contract gap, not proof that field comparison is broken.",
+      "is_control": false,
+      "source_url": "https://arxiv.org/abs/2406.12276v1",
+      "designer": "matching",
+      "providers": [
+        "arxiv"
+      ],
+      "raw_entry_sha256": "7bd28ccb5e022cf62cfd362b411ba4177b2676c183ed584643ae45ac8023517f",
+      "required_sources": {},
+      "expectation_class": "strict_locator_contract_extension",
+      "regression_family": "strict_locator_validation"
+    },
+    {
+      "citation_key": "adv_match_arxiv_double_version",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "fields": {
+          "eprint": "2406.12276v1v5"
+        },
+        "authors": null
+      },
+      "independent_expected_behavior": "The eprint has two version suffixes. A prefix regex must not turn the malformed identifier into the real v1 paper and approve it.",
+      "acceptable_statuses": [
+        "Invalid",
+        "Needs review"
+      ],
+      "field_checks": [],
+      "severity": "high",
+      "code_paths": [
+        "tools/bib-lint/src/bib_lint/verification/matching.py::input_record",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::compare_fields",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::select_result"
+      ],
+      "why_tricky": "The eprint has two version suffixes. A prefix regex must not turn the malformed identifier into the real v1 paper and approve it.",
+      "scope_boundary": "Strict whole-token eprint validation is a requested invariant; current arxiv_id is a substring extractor. Preserve this expectation as a contract gap, not proof that field comparison is broken.",
+      "is_control": false,
+      "source_url": "https://arxiv.org/abs/2406.12276v1",
+      "designer": "matching",
+      "providers": [
+        "arxiv"
+      ],
+      "raw_entry_sha256": "5411e350983a21b3b477597632f856f161a6c61d01103a582a61a03f6ee4beff",
+      "required_sources": {},
+      "expectation_class": "strict_locator_contract_extension",
+      "regression_family": "strict_locator_validation"
+    },
+    {
+      "citation_key": "adv_match_arxiv_foreign_url_identifier",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "fields": {
+          "eprint": "https://evil.example/2406.12276v1"
+        },
+        "authors": null
+      },
+      "independent_expected_behavior": "The eprint claims a foreign-host URL containing a real identifier. Treating any numeric substring as an official locator loses the supplied identifier syntax/host. No network request to the foreign host is needed or authorized by this case.",
+      "acceptable_statuses": [
+        "Invalid",
+        "Needs review"
+      ],
+      "field_checks": [],
+      "severity": "high",
+      "code_paths": [
+        "tools/bib-lint/src/bib_lint/verification/matching.py::input_record",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::compare_fields",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::select_result"
+      ],
+      "why_tricky": "The eprint claims a foreign-host URL containing a real identifier. Treating any numeric substring as an official locator loses the supplied identifier syntax/host. No network request to the foreign host is needed or authorized by this case.",
+      "scope_boundary": "Strict whole-token eprint validation is a requested invariant; current arxiv_id is a substring extractor. Preserve this expectation as a contract gap, not proof that field comparison is broken.",
+      "is_control": false,
+      "source_url": "https://arxiv.org/abs/2406.12276v1",
+      "designer": "matching",
+      "providers": [
+        "arxiv"
+      ],
+      "raw_entry_sha256": "70d15beea458c252a803d92882424fe8c5b65c936135444bb363dfaec809c669",
+      "required_sources": {},
+      "expectation_class": "strict_locator_contract_extension",
+      "regression_family": "strict_locator_validation"
+    },
+    {
+      "citation_key": "adv_match_doi_tex_escaped_percent",
+      "base_record": "datawise",
+      "source_reference": "you2025datawiseagentnotebookcentricllmagent",
+      "intended_changes": {
+        "fields": {
+          "doi": "HTTPS://doi.org/10.18653\\%2Fv1\\%2F2025.EMNLP-MAIN.58"
+        },
+        "authors": null
+      },
+      "independent_expected_behavior": "The TeX-escaped percent signs and percent-encoded separators display the exact verified Datawise DOI URL. Decode the TeX presentation before percent-decoding the DOI; do not turn the escape backslashes into identifier characters.",
+      "acceptable_statuses": [
+        "Correct"
+      ],
+      "field_checks": [
+        {
+          "field": "doi",
+          "results": [
+            "match"
+          ]
+        }
+      ],
+      "severity": "medium",
+      "code_paths": [
+        "tools/bib-lint/src/bib_lint/verification/matching.py::input_record",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::compare_fields",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::select_result"
+      ],
+      "why_tricky": "The TeX-escaped percent signs and percent-encoded separators display the exact verified Datawise DOI URL. Decode the TeX presentation before percent-decoding the DOI; do not turn the escape backslashes into identifier characters.",
+      "scope_boundary": "implemented metadata scope",
+      "is_control": true,
+      "source_url": "https://aclanthology.org/2025.emnlp-main.58/",
+      "designer": "matching",
+      "providers": [
+        "acl_anthology"
+      ],
+      "raw_entry_sha256": "214e1c761ce453f611edb2d6f98277a2988a07068a17c9346592eb9e456f8ba4",
+      "required_sources": {},
+      "expectation_class": "benign_formatting_normalization",
+      "regression_family": "latex_normalization"
+    },
+    {
+      "citation_key": "adv_match_title_tex_emphasis",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "fields": {
+          "title": "\\emph{CodeNav}: Beyond tool-use to using real-world codebases with LLM agents"
+        },
+        "authors": null
+      },
+      "independent_expected_behavior": "Standard TeX emphasis changes presentation only. The displayed title is identical to the primary-source title, so the TeX command name must not become a new title word or a demonstrated title error.",
+      "acceptable_statuses": [
+        "Correct"
+      ],
+      "field_checks": [
+        {
+          "field": "title",
+          "results": [
+            "match"
+          ]
+        }
+      ],
+      "severity": "medium",
+      "code_paths": [
+        "tools/bib-lint/src/bib_lint/verification/matching.py::input_record",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::compare_fields",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::select_result"
+      ],
+      "why_tricky": "Standard TeX emphasis changes presentation only. The displayed title is identical to the primary-source title, so the TeX command name must not become a new title word or a demonstrated title error.",
+      "scope_boundary": "supported TeX presentation normalization; current code decodes accents but does not strip this formatting command",
+      "is_control": true,
+      "source_url": "https://arxiv.org/abs/2406.12276v1",
+      "designer": "matching",
+      "providers": [
+        "arxiv"
+      ],
+      "raw_entry_sha256": "ace6f37442a4184002d450f314ba9b7393ea24a6822e274599b05146c15085f9",
+      "required_sources": {},
+      "expectation_class": "benign_formatting_normalization",
+      "regression_family": "latex_normalization"
+    },
+    {
+      "citation_key": "adv_match_same_initial_impostor",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "fields": {},
+        "authors": [
+          "Gupta, Tristan",
+          "Weihs, Luca",
+          "Kembhavi, Aniruddha"
+        ]
+      },
+      "independent_expected_behavior": "Replace Tanmay with the fully spelled, different given name Tristan while keeping T., family, author order, title and pinned ID. Compatible-initial logic must not mark the names as a match; review is acceptable if the matcher cannot prove the full-name conflict.",
+      "acceptable_statuses": [
+        "Invalid",
+        "Needs review"
+      ],
+      "field_checks": [
+        {
+          "field": "authors",
+          "results": [
+            "mismatch",
+            "unknown"
+          ]
+        }
+      ],
+      "severity": "high",
+      "code_paths": [
+        "tools/bib-lint/src/bib_lint/verification/matching.py::input_record",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::compare_fields",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::select_result"
+      ],
+      "why_tricky": "Replace Tanmay with the fully spelled, different given name Tristan while keeping T., family, author order, title and pinned ID. Compatible-initial logic must not mark the names as a match; review is acceptable if the matcher cannot prove the full-name conflict.",
+      "scope_boundary": "implemented metadata scope",
+      "is_control": false,
+      "source_url": "https://arxiv.org/abs/2406.12276v1",
+      "designer": "matching",
+      "providers": [
+        "arxiv"
+      ],
+      "raw_entry_sha256": "921b46846722267b91cfb63fc6d90966d1b9d9b1e1096b2d98d45e7b5880cb08",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_match_invented_suffix",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "fields": {},
+        "authors": [
+          "Gupta, Jr., Tanmay",
+          "Weihs, Luca",
+          "Kembhavi, Aniruddha"
+        ]
+      },
+      "independent_expected_behavior": "Invent a generational suffix while preserving given name and family. The primary record has no such suffix. Do not erase a potential person-identity distinction or confirm the author field.",
+      "acceptable_statuses": [
+        "Invalid",
+        "Needs review"
+      ],
+      "field_checks": [
+        {
+          "field": "authors",
+          "results": [
+            "mismatch",
+            "unknown"
+          ]
+        }
+      ],
+      "severity": "high",
+      "code_paths": [
+        "tools/bib-lint/src/bib_lint/verification/matching.py::input_record",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::compare_fields",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::select_result"
+      ],
+      "why_tricky": "Invent a generational suffix while preserving given name and family. The primary record has no such suffix. Do not erase a potential person-identity distinction or confirm the author field.",
+      "scope_boundary": "implemented metadata scope",
+      "is_control": false,
+      "source_url": "https://arxiv.org/abs/2406.12276v1",
+      "designer": "matching",
+      "providers": [
+        "arxiv"
+      ],
+      "raw_entry_sha256": "e01364744954573c23ddfe067d32aefede5fccbad71af6d73df016a672d52ede",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_match_sentinel_in_middle",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "fields": {},
+        "authors": [
+          "Gupta, Tanmay",
+          "others",
+          "Kembhavi, Aniruddha"
+        ]
+      },
+      "independent_expected_behavior": "The others sentinel is buried between two real authors and replaces Luca Weihs. This is not a valid trailing prefix abbreviation and must never be labelled Correct or Partial match.",
+      "acceptable_statuses": [
+        "Invalid",
+        "Needs review"
+      ],
+      "field_checks": [
+        {
+          "field": "authors",
+          "results": [
+            "mismatch",
+            "unknown"
+          ]
+        }
+      ],
+      "severity": "high",
+      "code_paths": [
+        "tools/bib-lint/src/bib_lint/verification/matching.py::input_record",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::compare_fields",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::select_result"
+      ],
+      "why_tricky": "The others sentinel is buried between two real authors and replaces Luca Weihs. This is not a valid trailing prefix abbreviation and must never be labelled Correct or Partial match.",
+      "scope_boundary": "implemented metadata scope",
+      "is_control": false,
+      "source_url": "https://arxiv.org/abs/2406.12276v1",
+      "designer": "matching",
+      "providers": [
+        "arxiv"
+      ],
+      "raw_entry_sha256": "91ddc96210d38f6f5815ace6d6fe526f27f4e6922b2fb1ad47b9eaf9643be08f",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_match_clean_unicode_decomposed",
+      "base_record": "gaia",
+      "source_reference": "mialon2024gaia",
+      "intended_changes": {
+        "fields": {},
+        "authors": [
+          "Mialon, Grégoire",
+          "Fourrier, Clémentine",
+          "Swift, Craig",
+          "Wolf, Thomas",
+          "LeCun, Yann",
+          "Scialom, Thomas"
+        ]
+      },
+      "independent_expected_behavior": "Canonically equivalent decomposed Unicode accents are the same real author names and must continue to match while the adjacent identity traps are rejected.",
+      "acceptable_statuses": [
+        "Correct"
+      ],
+      "field_checks": [
+        {
+          "field": "authors",
+          "results": [
+            "match"
+          ]
+        }
+      ],
+      "severity": "control",
+      "code_paths": [
+        "tools/bib-lint/src/bib_lint/verification/matching.py::input_record",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::compare_fields",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::select_result"
+      ],
+      "why_tricky": "Canonically equivalent decomposed Unicode accents are the same real author names and must continue to match while the adjacent identity traps are rejected.",
+      "scope_boundary": "implemented metadata scope",
+      "is_control": true,
+      "source_url": "https://arxiv.org/abs/2311.12983v1",
+      "designer": "matching",
+      "providers": [
+        "arxiv"
+      ],
+      "raw_entry_sha256": "d3a60c0a9d54168ed9bcd151c09b3e4e9f595fa9c4046d22b402959e37ea9f34",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_match_clean_doi_encoded",
+      "base_record": "datawise",
+      "source_reference": "you2025datawiseagentnotebookcentricllmagent",
+      "intended_changes": {
+        "fields": {
+          "doi": "HTTPS://doi.org/10.18653%2Fv1%2F2025.EMNLP-MAIN.58"
+        },
+        "authors": null
+      },
+      "independent_expected_behavior": "The same wrapped/encoded/case-varied real DOI with raw percent signs is a clean control. It distinguishes the TeX escaping issue from wholesale rejection of valid percent-encoded DOI wrappers.",
+      "acceptable_statuses": [
+        "Correct"
+      ],
+      "field_checks": [
+        {
+          "field": "doi",
+          "results": [
+            "match"
+          ]
+        }
+      ],
+      "severity": "control",
+      "code_paths": [
+        "tools/bib-lint/src/bib_lint/verification/matching.py::input_record",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::compare_fields",
+        "tools/bib-lint/src/bib_lint/verification/matching.py::select_result"
+      ],
+      "why_tricky": "The same wrapped/encoded/case-varied real DOI with raw percent signs is a clean control. It distinguishes the TeX escaping issue from wholesale rejection of valid percent-encoded DOI wrappers.",
+      "scope_boundary": "implemented metadata scope",
+      "is_control": true,
+      "source_url": "https://aclanthology.org/2025.emnlp-main.58/",
+      "designer": "matching",
+      "providers": [
+        "acl_anthology"
+      ],
+      "raw_entry_sha256": "1d175e327df756848f53ed74063d889616fabd32b355822fb58ef264f648b408",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_provider_split_arxiv_url",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "set": {
+          "url": "https://arxiv.org/abs/2411.15124v5"
+        },
+        "remove": []
+      },
+      "independent_expected_behavior": "Flag contradictory arXiv locators: eprint identifies CodeNav but URL identifies Tulu. Do not silently certify the entire entry.",
+      "acceptable_statuses": [
+        "Invalid",
+        "Needs review"
+      ],
+      "field_checks": [],
+      "severity": "high",
+      "code_paths": [
+        "verification/providers/arxiv.py",
+        "verification/matching.py::input_record",
+        "verification/matching.py::compare_fields"
+      ],
+      "why_tricky": "A real correct eprint resolves successfully and hides a different real paper in the URL. The title, authors and year all match the preferred locator.",
+      "scope_boundary": "implemented_metadata_check",
+      "designer": "providers",
+      "providers": [
+        "arxiv"
+      ],
+      "is_control": false,
+      "raw_entry_sha256": "ba295b8efa8cde33c8f1336985d335cabeb0a0ddea1707a77bcbd147fb9fa11b",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": "conflicting_arxiv_locators"
+    },
+    {
+      "citation_key": "adv_provider_shadowed_version_pin",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "set": {
+          "eprint": "2406.12276",
+          "url": "https://arxiv.org/abs/2406.12276v999"
+        },
+        "remove": []
+      },
+      "independent_expected_behavior": "Flag the impossible explicit URL version; the unversioned eprint must not erase a supplied version pin.",
+      "acceptable_statuses": [
+        "Invalid",
+        "Needs review"
+      ],
+      "field_checks": [],
+      "severity": "high",
+      "code_paths": [
+        "verification/providers/arxiv.py",
+        "verification/matching.py::input_record",
+        "verification/matching.py::compare_fields"
+      ],
+      "why_tricky": "The intended permissive rule for an unversioned identifier combines with field precedence to swallow an explicit, contradictory version in a second locator.",
+      "scope_boundary": "implemented_metadata_check",
+      "designer": "providers",
+      "providers": [
+        "arxiv"
+      ],
+      "is_control": false,
+      "raw_entry_sha256": "86c5788c64583e18d33bd2f722adb5b45e502e363ffd8e5f5cfe27ecb598aa8c",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": "conflicting_arxiv_locators"
+    },
+    {
+      "citation_key": "adv_provider_shadowed_journal_id",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "set": {
+          "journal": "arXiv preprint arXiv:2411.15124v5"
+        },
+        "remove": []
+      },
+      "independent_expected_behavior": "Retain a warning or mismatch for the conflicting journal-field arXiv identifier, even though a correct eprint exists.",
+      "acceptable_statuses": [
+        "Invalid",
+        "Needs review"
+      ],
+      "field_checks": [],
+      "severity": "high",
+      "code_paths": [
+        "verification/providers/arxiv.py",
+        "verification/matching.py::input_record",
+        "verification/matching.py::compare_fields"
+      ],
+      "why_tricky": "Venue comparison treats all arXiv-looking labels as matching, so even the journal route can conceal another real identifier.",
+      "scope_boundary": "implemented_metadata_check",
+      "designer": "providers",
+      "providers": [
+        "arxiv"
+      ],
+      "is_control": false,
+      "raw_entry_sha256": "ac8c0cef9fc33756f29a5929a52530bd2b9b10dd15ed6968daafb4a9e7422933",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": "conflicting_arxiv_locators"
+    },
+    {
+      "citation_key": "adv_provider_acl_alias_conflict",
+      "base_record": "datawise",
+      "source_reference": "you2025datawiseagentnotebookcentricllmagent",
+      "intended_changes": {
+        "set": {
+          "acl_id": "2024.acl-long.505"
+        },
+        "remove": []
+      },
+      "independent_expected_behavior": "Flag that the explicitly supported ACL locator identifies SeeClick while URL/DOI identify DatawiseAgent. The contradictory locator must appear in a field finding or explicit identifier diagnostic; generic review of publication versions is insufficient.",
+      "acceptable_statuses": [
+        "Invalid",
+        "Needs review"
+      ],
+      "field_checks": [],
+      "severity": "medium",
+      "code_paths": [
+        "verification/providers/archive.py",
+        "verification/matching.py::input_record",
+        "verification/matching.py::compare_fields",
+        "verification/providers/acl_anthology.py"
+      ],
+      "why_tricky": "The provider accepts acl_id as a routing locator but stops after the URL matches, so it may never examine this second locator.",
+      "scope_boundary": "provider_locator_scope_extension",
+      "designer": "providers",
+      "providers": [
+        "acl_anthology"
+      ],
+      "is_control": false,
+      "raw_entry_sha256": "67735e8e64adcb1293efc331bfe74951862a1aeb8b7854e4d0f95747ad4c3369",
+      "required_sources": {},
+      "expectation_class": "provider_routing_scope_extension",
+      "required_finding": {
+        "fields": [
+          "acl",
+          "acl_id",
+          "anthology_id",
+          "url",
+          "identifiers",
+          "identifier_conflicts"
+        ],
+        "results": [
+          "mismatch",
+          "unknown"
+        ],
+        "error_codes": [
+          "conflicting_identifiers",
+          "invalid_identifier",
+          "ambiguous_identifier",
+          "unsupported_url"
+        ]
+      },
+      "regression_family": "secondary_provider_locators"
+    },
+    {
+      "citation_key": "adv_provider_openreview_alias_conflict",
+      "base_record": "pal_accepted",
+      "source_reference": "gao2022pal",
+      "intended_changes": {
+        "set": {
+          "openreview_id": "gy7fpSzJqz"
+        },
+        "remove": []
+      },
+      "independent_expected_behavior": "Flag the contradictory supported OpenReview ID; the correct forum URL must not silently hide a different note ID. The contradictory locator must appear in a field finding or explicit identifier diagnostic; generic review of publication versions is insufficient.",
+      "acceptable_statuses": [
+        "Invalid",
+        "Needs review"
+      ],
+      "field_checks": [],
+      "severity": "medium",
+      "code_paths": [
+        "verification/providers/openreview.py",
+        "verification/matching.py::input_record",
+        "verification/matching.py::compare_fields"
+      ],
+      "why_tricky": "Both locators are syntactically supported and public, and direct successful retrieval can suppress comparison of the custom ID.",
+      "scope_boundary": "provider_locator_scope_extension",
+      "designer": "providers",
+      "providers": [
+        "openreview"
+      ],
+      "is_control": false,
+      "raw_entry_sha256": "e481954fd990014013851723d6a530959a7a74b376e410da0fbb7de261c03504",
+      "required_sources": {},
+      "expectation_class": "provider_routing_scope_extension",
+      "required_finding": {
+        "fields": [
+          "openreview",
+          "openreview_id",
+          "forum",
+          "url",
+          "identifiers",
+          "identifier_conflicts"
+        ],
+        "results": [
+          "mismatch",
+          "unknown"
+        ],
+        "error_codes": [
+          "conflicting_identifiers",
+          "invalid_identifier",
+          "ambiguous_identifier",
+          "unsupported_url"
+        ]
+      },
+      "regression_family": "secondary_provider_locators"
+    },
+    {
+      "citation_key": "adv_provider_duplicate_forum_id",
+      "base_record": "pal_accepted",
+      "source_reference": "gao2022pal",
+      "intended_changes": {
+        "set": {
+          "url": "https://openreview.net/forum?id=M1fd9Z00sj&id=gy7fpSzJqz"
+        },
+        "remove": []
+      },
+      "independent_expected_behavior": "Report an ambiguous/repeated forum locator rather than silently accepting only its first value. The contradictory locator must appear in a field finding or explicit identifier diagnostic; generic review of publication versions is insufficient.",
+      "acceptable_statuses": [
+        "Invalid",
+        "Needs review",
+        "Unresolved"
+      ],
+      "field_checks": [],
+      "severity": "medium",
+      "code_paths": [
+        "verification/providers/openreview.py",
+        "verification/matching.py::input_record",
+        "verification/matching.py::compare_fields"
+      ],
+      "why_tricky": "parse_qs returns both real note IDs, but the implementation currently takes values[0]. The rest of the citation accurately matches the first note.",
+      "scope_boundary": "provider_locator_scope_extension",
+      "designer": "providers",
+      "providers": [
+        "openreview"
+      ],
+      "is_control": false,
+      "raw_entry_sha256": "486fbb4925789c5050e5e9953349bd891448575d230378b3aeb685a2b7edbb4e",
+      "required_sources": {},
+      "expectation_class": "provider_routing_scope_extension",
+      "required_finding": {
+        "fields": [
+          "openreview",
+          "openreview_id",
+          "forum",
+          "url",
+          "identifiers",
+          "identifier_conflicts"
+        ],
+        "results": [
+          "mismatch",
+          "unknown"
+        ],
+        "error_codes": [
+          "conflicting_identifiers",
+          "invalid_identifier",
+          "ambiguous_identifier",
+          "unsupported_url"
+        ]
+      },
+      "regression_family": "secondary_provider_locators"
+    },
+    {
+      "citation_key": "adv_provider_venue_masquerade",
+      "base_record": "pal_accepted",
+      "source_reference": "gao2022pal",
+      "intended_changes": {
+        "set": {
+          "booktitle": "NeurIPS 2023 poster"
+        },
+        "remove": []
+      },
+      "independent_expected_behavior": "Retain a venue uncertainty: the accepted source says ICML, so user-provided NeurIPS must never become a source fact.",
+      "acceptable_statuses": [
+        "Needs review"
+      ],
+      "field_checks": [
+        {
+          "field": "venue",
+          "results": [
+            "unknown"
+          ]
+        }
+      ],
+      "severity": "high",
+      "code_paths": [
+        "verification/providers/openreview.py",
+        "verification/matching.py::input_record",
+        "verification/matching.py::compare_fields"
+      ],
+      "why_tricky": "Title, accepted year and authors all match a genuine publication, but the venue claims another major conference. The source must qualify acceptance independently.",
+      "scope_boundary": "implemented_metadata_check",
+      "designer": "providers",
+      "providers": [
+        "openreview"
+      ],
+      "is_control": false,
+      "raw_entry_sha256": "b9c7bff4a75d27b41a2b9129c5ff6d44fb7d4ba91de169d46a93915fb009e5ed",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_provider_year_vs_volume_route",
+      "base_record": "sb3",
+      "source_reference": "JMLR:v22:20-1364",
+      "intended_changes": {
+        "set": {
+          "year": "2031",
+          "volume": "22"
+        },
+        "remove": [
+          "url"
+        ]
+      },
+      "independent_expected_behavior": "Retrieve the known volume independently of the false input year, then flag the 2031/2021 discrepancy.",
+      "acceptable_statuses": [
+        "Invalid"
+      ],
+      "field_checks": [
+        {
+          "field": "year",
+          "results": [
+            "mismatch"
+          ]
+        }
+      ],
+      "severity": "high",
+      "code_paths": [
+        "verification/providers/archive.py",
+        "verification/matching.py::input_record",
+        "verification/matching.py::compare_fields",
+        "verification/providers/jmlr.py"
+      ],
+      "why_tricky": "With no direct URL and a year far outside the usual adjacent-year window, volume routing must still find the actual source and must not echo the query year.",
+      "scope_boundary": "implemented_metadata_check",
+      "designer": "providers",
+      "providers": [
+        "jmlr"
+      ],
+      "is_control": false,
+      "raw_entry_sha256": "561300287f57f918f3c91f4d6754a13da2142ee7478548873a2494b85cf62af0",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_provider_pdf_volume_shadow",
+      "base_record": "sb3",
+      "source_reference": "JMLR:v22:20-1364",
+      "intended_changes": {
+        "set": {
+          "url": "https://jmlr.org/papers/volume22/20-1364/20-1364.pdf",
+          "volume": "999"
+        },
+        "remove": []
+      },
+      "independent_expected_behavior": "The valid official PDF locator contains the paper identity. A wrong out-of-scope volume should not make correct core metadata disappear without explaining the routing conflict.",
+      "acceptable_statuses": [
+        "Correct",
+        "Needs review"
+      ],
+      "field_checks": [],
+      "severity": "medium",
+      "code_paths": [
+        "verification/providers/archive.py",
+        "verification/matching.py::input_record",
+        "verification/matching.py::compare_fields",
+        "verification/providers/jmlr.py"
+      ],
+      "why_tricky": "The direct source URL is supported by host but deliberately discarded because it ends in PDF; the bad numeric volume then exclusively replaces correct year discovery.",
+      "scope_boundary": "pdf_locator_and_routing_scope_extension",
+      "designer": "providers",
+      "providers": [
+        "jmlr"
+      ],
+      "is_control": false,
+      "raw_entry_sha256": "fe2124e3a618cec88b9f2f8f7110e9a6b41d4adfcfb9a6f6617ee71e7d860eb2",
+      "required_sources": {
+        "jmlr": {
+          "status": "found",
+          "authority": true
+        }
+      },
+      "expectation_class": "provider_routing_scope_extension",
+      "regression_family": "pdf_routing"
+    },
+    {
+      "citation_key": "adv_provider_pmlr_alias_conflict",
+      "base_record": "hcpi",
+      "source_reference": "thomas2015hcpi",
+      "intended_changes": {
+        "set": {
+          "pmlr_id": "v70/shi17a"
+        },
+        "remove": []
+      },
+      "independent_expected_behavior": "Flag the conflicting supported PMLR locator, which identifies World of Bits while URL and citation describe High Confidence Policy Improvement. The contradictory locator must appear in a field finding or explicit identifier diagnostic; generic review of publication versions is insufficient.",
+      "acceptable_statuses": [
+        "Invalid",
+        "Needs review"
+      ],
+      "field_checks": [],
+      "severity": "medium",
+      "code_paths": [
+        "verification/providers/archive.py",
+        "verification/matching.py::input_record",
+        "verification/matching.py::compare_fields",
+        "verification/providers/pmlr.py"
+      ],
+      "why_tricky": "Both locators identify genuine papers in different volumes; a successful direct URL lookup can hide the secondary locator.",
+      "scope_boundary": "provider_locator_scope_extension",
+      "designer": "providers",
+      "providers": [
+        "pmlr"
+      ],
+      "is_control": false,
+      "raw_entry_sha256": "4bf5883073f817e1feff28f8d844a50a5449737bd8f9f4fe878daf909861fd27",
+      "required_sources": {},
+      "expectation_class": "provider_routing_scope_extension",
+      "required_finding": {
+        "fields": [
+          "pmlr",
+          "pmlr_id",
+          "url",
+          "identifiers",
+          "identifier_conflicts"
+        ],
+        "results": [
+          "mismatch",
+          "unknown"
+        ],
+        "error_codes": [
+          "conflicting_identifiers",
+          "invalid_identifier",
+          "ambiguous_identifier",
+          "unsupported_url"
+        ]
+      },
+      "regression_family": "secondary_provider_locators"
+    },
+    {
+      "citation_key": "adv_consensus_shadowed_booktitle",
+      "base_record": "datawise",
+      "source_reference": "you2025datawiseagentnotebookcentricllmagent",
+      "intended_changes": {
+        "journal": "correct ACL proceedings title",
+        "booktitle": "contradictory NeurIPS proceedings title"
+      },
+      "independent_expected_behavior": "Flag the mutually contradictory standard venue fields; do not call the entire citation Correct merely because journal wins field precedence.",
+      "acceptable_statuses": [
+        "Needs review",
+        "Invalid"
+      ],
+      "field_checks": [
+        {
+          "field": "venue",
+          "results": [
+            "unknown",
+            "mismatch"
+          ]
+        }
+      ],
+      "severity": "high",
+      "code_paths": [
+        "verification/consensus.py",
+        "verification/__init__.py",
+        "verification/matching.py",
+        "status.py",
+        "viewer/data.py"
+      ],
+      "why_tricky": "Both journal and booktitle are standard BibTeX metadata; the canonical input collapses them with journal or booktitle before comparisons. Correct direct DOI and title make all retained fields match.",
+      "scope_boundary": "implemented core metadata",
+      "controlled_source_scenario": false,
+      "designer": "consensus",
+      "providers": [
+        "acl_anthology"
+      ],
+      "is_control": false,
+      "viewer_checks": [],
+      "raw_entry_sha256": "1b66d3ad5462d2f6acecd58b698cf92e181ab38b3c556da325831e40b1549d36",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": "venue_field_precedence"
+    },
+    {
+      "citation_key": "adv_consensus_shadowed_journal",
+      "base_record": "datawise",
+      "source_reference": "you2025datawiseagentnotebookcentricllmagent",
+      "intended_changes": {
+        "journal": "contradictory NeurIPS proceedings title",
+        "booktitle": "correct ACL proceedings title retained"
+      },
+      "independent_expected_behavior": "Flag the conflict between venue fields, preserving the correct booktitle as evidence rather than inventing a NeurIPS-to-ACL correction.",
+      "acceptable_statuses": [
+        "Needs review",
+        "Invalid"
+      ],
+      "field_checks": [
+        {
+          "field": "venue",
+          "results": [
+            "unknown"
+          ]
+        }
+      ],
+      "severity": "high",
+      "code_paths": [
+        "verification/consensus.py",
+        "verification/__init__.py",
+        "verification/matching.py",
+        "status.py",
+        "viewer/data.py"
+      ],
+      "why_tricky": "The reverse of the shadowed_booktitle control reveals that order/field precedence changes the verdict for equivalent contradictions.",
+      "scope_boundary": "implemented core metadata",
+      "controlled_source_scenario": false,
+      "designer": "consensus",
+      "providers": [
+        "acl_anthology"
+      ],
+      "is_control": false,
+      "viewer_checks": [],
+      "raw_entry_sha256": "bde2dbdd9b22b54d0da4c6cf4fe0f275d9442fd8ffcdd3dbc604b871fa87f75f",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_consensus_arxiv_impostor_venue",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "journal": "different purported proceedings title containing the token arXiv"
+      },
+      "independent_expected_behavior": "Do not normalize an arbitrary venue mentioning arXiv to the arXiv archive. The venue must remain uncertain or discrepant.",
+      "acceptable_statuses": [
+        "Needs review",
+        "Invalid"
+      ],
+      "field_checks": [
+        {
+          "field": "venue",
+          "results": [
+            "unknown",
+            "mismatch"
+          ]
+        }
+      ],
+      "severity": "high",
+      "code_paths": [
+        "verification/consensus.py",
+        "verification/__init__.py",
+        "verification/matching.py",
+        "status.py",
+        "viewer/data.py"
+      ],
+      "why_tricky": "Record-type inference and venue matching both use a substring arxiv check; the two shortcuts can reinforce each other and suppress all uncertainty.",
+      "scope_boundary": "implemented core metadata",
+      "controlled_source_scenario": false,
+      "designer": "consensus",
+      "providers": [
+        "arxiv"
+      ],
+      "is_control": false,
+      "viewer_checks": [],
+      "raw_entry_sha256": "39cf867db3461681be5453ca9a1bc3249c3dada535d129e81a266f55722cf5f3",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": "arxiv_venue_substring"
+    },
+    {
+      "citation_key": "adv_consensus_pal_year_hybrid",
+      "base_record": "pal_accepted",
+      "source_reference": "gao2022pal",
+      "intended_changes": {
+        "accepted_metadata": "2023 ICML accepted record",
+        "retained_locators": "2022 preprint eprint and DOI"
+      },
+      "independent_expected_behavior": "Retain preprint and accepted-publication records separately; request review rather than voting a 2022 or 2023 year into a correction.",
+      "acceptable_statuses": [
+        "Needs review"
+      ],
+      "field_checks": [
+        {
+          "field": "year",
+          "source": "arxiv",
+          "results": [
+            "mismatch"
+          ]
+        },
+        {
+          "field": "year",
+          "source": "openreview",
+          "results": [
+            "match"
+          ]
+        }
+      ],
+      "severity": "high",
+      "code_paths": [
+        "verification/consensus.py",
+        "verification/__init__.py",
+        "verification/matching.py",
+        "status.py",
+        "viewer/data.py"
+      ],
+      "why_tricky": "All identifiers are real and the same authors/title occur in both sources, but publication qualification and year belong to different manifestations.",
+      "scope_boundary": "implemented core metadata",
+      "controlled_source_scenario": false,
+      "designer": "consensus",
+      "providers": [
+        "arxiv",
+        "openreview"
+      ],
+      "is_control": false,
+      "viewer_checks": [],
+      "raw_entry_sha256": "dd9f3275bfb897c066219dd5d9f454ed6ec489e7546eb930f34d61beb55d634d",
+      "required_sources": {
+        "arxiv": {
+          "status": "found",
+          "authority": true
+        },
+        "openreview": {
+          "status": "found",
+          "authority": true
+        }
+      },
+      "consensus_checks": {
+        "canonical_source": null
+      },
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_consensus_pal_common_year_error",
+      "base_record": "pal_accepted",
+      "source_reference": "gao2022pal",
+      "intended_changes": {
+        "year": "2032 (digit transposition of accepted 2023 year)",
+        "retained_locators": "valid preprint and accepted publication IDs"
+      },
+      "independent_expected_behavior": "Expose the year discrepancy against every retrieved primary version, even though the primary records disagree with one another about 2022 versus 2023. No Correct verdict and no unique-year suggestion from this conflict.",
+      "acceptable_statuses": [
+        "Needs review",
+        "Invalid"
+      ],
+      "field_checks": [
+        {
+          "field": "year",
+          "source": "all_authoritative_found",
+          "results": [
+            "mismatch"
+          ]
+        }
+      ],
+      "severity": "high",
+      "code_paths": [
+        "verification/consensus.py",
+        "verification/__init__.py",
+        "verification/matching.py",
+        "status.py",
+        "viewer/data.py"
+      ],
+      "why_tricky": "Primary-version disagreement must not hide an error shared by every candidate comparison; a reader needs both field-level evidence and overall uncertainty.",
+      "scope_boundary": "implemented core metadata",
+      "controlled_source_scenario": false,
+      "designer": "consensus",
+      "providers": [
+        "arxiv",
+        "openreview"
+      ],
+      "is_control": false,
+      "viewer_checks": [
+        {
+          "suggestions": "no_unique_year_if_conflicting_primaries"
+        }
+      ],
+      "raw_entry_sha256": "4ce482945c93c50a9b22928e937a11ea687a95941befa97f2e2dcc8e728d775b",
+      "required_sources": {
+        "arxiv": {
+          "status": "found",
+          "authority": true
+        },
+        "openreview": {
+          "status": "found",
+          "authority": true
+        }
+      },
+      "consensus_checks": {
+        "canonical_source": null
+      },
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_consensus_kim_unlinked_primaries",
+      "base_record": "kim_neurips",
+      "source_reference": "kimLanguageModelsCan2023a",
+      "intended_changes": {
+        "input": "canonical NeurIPS title, full authors, year, venue and DOI",
+        "source_set": "real arXiv, NeurIPS and accepted OpenReview records"
+      },
+      "independent_expected_behavior": "Keep unlinked primary records and differing middle-name/venue facts visible; no source count or canonical priority should suppress the conflict.",
+      "acceptable_statuses": [
+        "Needs review"
+      ],
+      "field_checks": [],
+      "severity": "medium",
+      "code_paths": [
+        "verification/consensus.py",
+        "verification/__init__.py",
+        "verification/matching.py",
+        "status.py",
+        "viewer/data.py"
+      ],
+      "why_tricky": "The proceedings input is clean against one source; other primary records have no shared identity locator and an expanded given name. This is a false-certainty trap rather than an ordinary typo.",
+      "scope_boundary": "implemented core metadata",
+      "controlled_source_scenario": false,
+      "designer": "consensus",
+      "providers": [
+        "arxiv",
+        "neurips",
+        "openreview"
+      ],
+      "is_control": false,
+      "viewer_checks": [],
+      "raw_entry_sha256": "f123f04ba64a28830256e065a0571607c0820c35d4034467786c102791486c18",
+      "required_sources": {
+        "arxiv": {
+          "status": "found",
+          "authority": true
+        },
+        "neurips": {
+          "status": "found",
+          "authority": true
+        },
+        "openreview": {
+          "status": "found",
+          "authority": true
+        }
+      },
+      "consensus_checks": {
+        "canonical_source": null
+      },
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_consensus_datawise_primary_control",
+      "base_record": "datawise",
+      "source_reference": "you2025datawiseagentnotebookcentricllmagent",
+      "intended_changes": {
+        "input": "canonical ACL publication",
+        "source_set": "official ACL plus unqualified public OpenReview note"
+      },
+      "independent_expected_behavior": "Accept the official complete primary match; the unqualified note with unknown year/venue must not create a fake primary conflict.",
+      "acceptable_statuses": [
+        "Correct"
+      ],
+      "field_checks": [],
+      "severity": "control",
+      "code_paths": [
+        "verification/consensus.py",
+        "verification/__init__.py",
+        "verification/matching.py",
+        "status.py",
+        "viewer/data.py"
+      ],
+      "why_tricky": "Negative control against indiscriminate Needs review for every multi-provider result.",
+      "scope_boundary": "implemented core metadata",
+      "controlled_source_scenario": false,
+      "designer": "consensus",
+      "providers": [
+        "acl_anthology",
+        "openreview"
+      ],
+      "is_control": true,
+      "viewer_checks": [],
+      "raw_entry_sha256": "b06c5c1eedd4e5bbacb55de63c5fac9be8a66b147c98de17de758eea5dbc800b",
+      "required_sources": {
+        "acl_anthology": {
+          "status": "found",
+          "authority": true
+        },
+        "openreview": {
+          "status": "found",
+          "authority": false
+        }
+      },
+      "consensus_checks": {
+        "canonical_source": "https://aclanthology.org/2025.emnlp-main.58/"
+      },
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_consensus_tulu_ambiguous_truncation",
+      "base_record": "tulu",
+      "source_reference": "lambert2024tulu",
+      "intended_changes": {
+        "author": "correct first-author prefix followed by others",
+        "year": "correct pinned preprint first-publication 2024",
+        "source_set": "arXiv primary and two distinct unqualified public OpenReview notes"
+      },
+      "independent_expected_behavior": "Retain ambiguity and inspect the omitted authors; do not promote a locally valid prefix match to an unqualified global confirmation.",
+      "acceptable_statuses": [
+        "Needs review"
+      ],
+      "field_checks": [
+        {
+          "field": "authors",
+          "source": "arxiv",
+          "results": [
+            "partial_match"
+          ]
+        }
+      ],
+      "severity": "medium",
+      "code_paths": [
+        "verification/consensus.py",
+        "verification/__init__.py",
+        "verification/matching.py",
+        "status.py",
+        "viewer/data.py"
+      ],
+      "why_tricky": "A valid partial author list combines with two public records whose full names differ. It tests partial-match presentation and ambiguity together.",
+      "scope_boundary": "implemented core metadata",
+      "controlled_source_scenario": false,
+      "designer": "consensus",
+      "providers": [
+        "arxiv",
+        "openreview"
+      ],
+      "is_control": false,
+      "viewer_checks": [],
+      "raw_entry_sha256": "0c6642640d66a63fc38f95380fe7bd083a6b2d08da5a6b226da861629a23fab7",
+      "required_sources": {
+        "arxiv": {
+          "status": "found",
+          "authority": true
+        },
+        "openreview": {
+          "status": "ambiguous",
+          "authority": false,
+          "min_candidates": 2
+        }
+      },
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_consensus_ſb3",
+      "base_record": "sb3",
+      "source_reference": "JMLR:v22:20-1364",
+      "intended_changes": {
+        "citation_key": "adv_consensus_ſb3",
+        "paired_key": "adv_consensus_sb3"
+      },
+      "independent_expected_behavior": "A full audit may verify the metadata, but key selection and AUX usage must use one consistent equivalence policy. Do not silently merge or make either key impossible to select.",
+      "acceptable_statuses": [
+        "Correct"
+      ],
+      "field_checks": [],
+      "severity": "medium",
+      "code_paths": [
+        "verification/consensus.py",
+        "verification/__init__.py",
+        "verification/matching.py",
+        "status.py",
+        "viewer/data.py"
+      ],
+      "why_tricky": "Unicode long-s casefolds to ASCII s while lowercase does not; BibTeX parsing, usage selection and --key matching use inconsistent key equivalence.",
+      "scope_boundary": "metadata control plus an explicit selection/AUX scenario",
+      "controlled_source_scenario": false,
+      "selection_scenario": {
+        "paired_keys": [
+          "adv_consensus_ſb3",
+          "adv_consensus_sb3"
+        ],
+        "select_key": "adv_consensus_sb3",
+        "acceptable_behavior": "Either reject the collision consistently at input parsing, or permit exact-key selection and preserve separate usage; do not accept both then make --key ambiguous."
+      },
+      "designer": "consensus",
+      "providers": [
+        "jmlr"
+      ],
+      "is_control": false,
+      "viewer_checks": [],
+      "raw_entry_sha256": "84f561787ff1c8b290286aa2ee3112539ef8546cde760e825ed22363877bd543",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_consensus_sb3",
+      "base_record": "sb3",
+      "source_reference": "JMLR:v22:20-1364",
+      "intended_changes": {
+        "citation_key": "adv_consensus_sb3",
+        "paired_key": "adv_consensus_ſb3"
+      },
+      "independent_expected_behavior": "A full audit may verify the metadata, but key selection and AUX usage must use one consistent equivalence policy. Do not silently merge or make either key impossible to select.",
+      "acceptable_statuses": [
+        "Correct"
+      ],
+      "field_checks": [],
+      "severity": "medium",
+      "code_paths": [
+        "verification/consensus.py",
+        "verification/__init__.py",
+        "verification/matching.py",
+        "status.py",
+        "viewer/data.py"
+      ],
+      "why_tricky": "Unicode long-s casefolds to ASCII s while lowercase does not; BibTeX parsing, usage selection and --key matching use inconsistent key equivalence.",
+      "scope_boundary": "metadata control plus an explicit selection/AUX scenario",
+      "controlled_source_scenario": false,
+      "selection_scenario": {
+        "paired_keys": [
+          "adv_consensus_ſb3",
+          "adv_consensus_sb3"
+        ],
+        "select_key": "adv_consensus_sb3",
+        "acceptable_behavior": "Either reject the collision consistently at input parsing, or permit exact-key selection and preserve separate usage; do not accept both then make --key ambiguous."
+      },
+      "designer": "consensus",
+      "providers": [
+        "jmlr"
+      ],
+      "is_control": false,
+      "viewer_checks": [],
+      "raw_entry_sha256": "e0410157d723abf3621ca2f5ab7eef2e89974e41f413a1c1d89627f4fe75d138",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_flow_CodeNav/../%2E%2E",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "citation_key": "adv_flow_CodeNav/../%2E%2E"
+      },
+      "independent_expected_behavior": "Treat path-like citation keys as literal identities; keep checksum files inside the audit cache and preserve exact UI/select-key identity.",
+      "acceptable_statuses": [
+        "Correct"
+      ],
+      "field_checks": [
+        {
+          "field": "authors",
+          "results": [
+            "match"
+          ]
+        },
+        {
+          "field": "arxiv",
+          "results": [
+            "match"
+          ]
+        }
+      ],
+      "severity": "medium",
+      "code_paths": [
+        "verification/cache.py",
+        "scope.py",
+        "models.py",
+        "audit.py",
+        "viewer/static/app.js"
+      ],
+      "why_tricky": "Treat path-like citation keys as literal identities; keep checksum files inside the audit cache and preserve exact UI/select-key identity.",
+      "scope_boundary": "workflow_invariant",
+      "is_control": true,
+      "providers": [
+        "arxiv"
+      ],
+      "designer": "parent",
+      "raw_entry_sha256": "ac2b312101e60c660b185b87241917060964db0a4a4402d116724138b54948d3",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_flow_<script>alert(1)</script>",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "citation_key": "adv_flow_<script>alert(1)</script>"
+      },
+      "independent_expected_behavior": "Render hostile-looking key text literally and preserve it through report, cache and viewer APIs; it must not execute markup.",
+      "acceptable_statuses": [
+        "Correct"
+      ],
+      "field_checks": [
+        {
+          "field": "authors",
+          "results": [
+            "match"
+          ]
+        },
+        {
+          "field": "arxiv",
+          "results": [
+            "match"
+          ]
+        }
+      ],
+      "severity": "medium",
+      "code_paths": [
+        "verification/cache.py",
+        "scope.py",
+        "models.py",
+        "audit.py",
+        "viewer/static/app.js"
+      ],
+      "why_tricky": "Render hostile-looking key text literally and preserve it through report, cache and viewer APIs; it must not execute markup.",
+      "scope_boundary": "workflow_invariant",
+      "is_control": true,
+      "providers": [
+        "arxiv"
+      ],
+      "designer": "parent",
+      "raw_entry_sha256": "6b2e8080ffc10271d52a800bb552f3ee8531a524043c3d898428bea109f9c268",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    },
+    {
+      "citation_key": "adv_flow_ſingle",
+      "base_record": "codenav",
+      "source_reference": "gupta2024codenavtooluseusingrealworld",
+      "intended_changes": {
+        "citation_key": "adv_flow_ſingle"
+      },
+      "independent_expected_behavior": "Recognize the same Unicode casefold alias consistently for missing-key warnings and citation usage. A cited reference must not silently become unused.",
+      "acceptable_statuses": [
+        "Correct"
+      ],
+      "field_checks": [
+        {
+          "field": "authors",
+          "results": [
+            "match"
+          ]
+        },
+        {
+          "field": "arxiv",
+          "results": [
+            "match"
+          ]
+        }
+      ],
+      "severity": "high",
+      "code_paths": [
+        "verification/cache.py",
+        "scope.py",
+        "models.py",
+        "audit.py",
+        "viewer/static/app.js"
+      ],
+      "why_tricky": "Recognize the same Unicode casefold alias consistently for missing-key warnings and citation usage. A cited reference must not silently become unused.",
+      "scope_boundary": "workflow_invariant",
+      "is_control": false,
+      "providers": [
+        "arxiv"
+      ],
+      "designer": "parent",
+      "workflow_scenario": {
+        "kind": "aux_casefold",
+        "aux_key": "adv_flow_single",
+        "file": "adversarial-alias.aux",
+        "expected_eligible_key": "adv_flow_ſingle"
+      },
+      "raw_entry_sha256": "87326e4ca763f89fc73b0ff87eaed7e3bd8fbb1b8d16976a961dca944e3db6f6",
+      "required_sources": {},
+      "expectation_class": "metadata_or_workflow_consistency",
+      "regression_family": null
+    }
+  ],
+  "coverage_limitations": [
+    "The fixed source universe is intentionally small; an absent replay paper is not evidence about live search coverage.",
+    "A bibliography cannot encode timeout, cache corruption or concurrency state; those remain supporting regression scenarios.",
+    "The key controls test cache containment and server-side literal-data round trips. DOM rendering safety is separately inspected in the viewer source; the evaluator does not execute a browser."
+  ],
+  "run_command": {
+    "working_directory": "tools/bib-lint",
+    "command": "PYTHONPATH=src uv run --group dev python -m evaluation.adversarial --output ../../.local/bib-lint-adversarial",
+    "exit_status": "1 means a challenge expectation remains unmet; a completed audit can still fail the challenge."
+  },
+  "workflow_regression_families": {
+    "exact_key_selection": "unicode_key_selection",
+    "aux_casefold_usage": "unicode_aux_usage"
+  },
+  "scope_note": "Scope-boundary classifications record the original challenge design; all listed desired behaviors are now mandatory regression checks."
+}

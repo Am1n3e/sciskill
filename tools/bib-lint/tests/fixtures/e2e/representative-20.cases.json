@@ -1,0 +1,232 @@
+{
+  "schema_version": 2,
+  "source": {
+    "kind": "19 user-supplied entries plus 1 official related-paper citation",
+    "user_bibliography": {
+      "kind": "user-provided bibliography",
+      "entry_count": 147,
+      "sha256": "d0e2cb6a50b88e6b33cff6b7dd1595e42c8308887dca4b650cac6df0af755c1b"
+    },
+    "additional_reference": {
+      "key": "JMLR:v22:20-1364",
+      "paper_url": "https://jmlr.org/papers/v22/20-1364.html",
+      "bibtex_url": "https://jmlr.org/papers/v22/20-1364.bib"
+    }
+  },
+  "bibliography": "representative-20.bib",
+  "entry_count": 20,
+  "selection_policy": "Preserve 19 selected user entries unchanged; replace ROBULA+ with official Stable-Baselines3 metadata to supply a positive JMLR control.",
+  "bibtex_types": {
+    "misc": 6,
+    "article": 6,
+    "inproceedings": 7,
+    "book": 1
+  },
+  "providers_to_run": [
+    "arxiv",
+    "pmlr",
+    "jmlr",
+    "acl_anthology",
+    "neurips",
+    "openreview"
+  ],
+  "provider_focus_counts": {
+    "arxiv": 10,
+    "jmlr": 1,
+    "pmlr": 2,
+    "acl_anthology": 4,
+    "neurips": 2,
+    "openreview": 4
+  },
+  "expectation_policy": "Coverage intents are not frozen live-service verdicts. Confirmed source matches, version differences and source failures must be reported separately.",
+  "coverage_gaps": [],
+  "cases": [
+    {
+      "citation_key": "lambert2024tulu",
+      "bibtex_type": "misc",
+      "case": "revision_year_review",
+      "provider_focus": [
+        "arxiv"
+      ],
+      "purpose": "First-submission year versus revised-version year; retain the supplied 2025."
+    },
+    {
+      "citation_key": "guo2025deepseek",
+      "bibtex_type": "article",
+      "case": "publisher_journal_long_authors",
+      "provider_focus": [],
+      "purpose": "Nature DOI with a very long author list; configured archives do not directly verify Nature."
+    },
+    {
+      "citation_key": "JMLR:v22:20-1364",
+      "bibtex_type": "article",
+      "case": "clean_jmlr_direct",
+      "provider_focus": [
+        "jmlr"
+      ],
+      "purpose": "Related reinforcement-learning software paper with official complete JMLR metadata and direct paper URL.",
+      "source": "https://jmlr.org/papers/v22/20-1364.html"
+    },
+    {
+      "citation_key": "thomas2015hcpi",
+      "bibtex_type": "inproceedings",
+      "case": "pmlr_catalog_regression",
+      "provider_focus": [
+        "pmlr"
+      ],
+      "purpose": "Title/venue discovery without a direct URL; exercises the fixed abs-link catalog bug."
+    },
+    {
+      "citation_key": "levine2020offline",
+      "bibtex_type": "article",
+      "case": "identifier_in_journal",
+      "provider_focus": [
+        "arxiv"
+      ],
+      "purpose": "An article whose arXiv identifier appears in its journal field."
+    },
+    {
+      "citation_key": "gelman2013bayesian",
+      "bibtex_type": "book",
+      "case": "book_and_edition",
+      "provider_focus": [],
+      "purpose": "Book, six authors, publisher and third-edition metadata; expect an archive coverage gap."
+    },
+    {
+      "citation_key": "chengSeeClickHarnessingGUI2024",
+      "bibtex_type": "inproceedings",
+      "case": "acl_author_and_title_encoding",
+      "provider_focus": [
+        "acl_anthology"
+      ],
+      "purpose": "Direct ACL URL with damaged author names and escaped title casing."
+    },
+    {
+      "citation_key": "cho2024caapcontextawareactionplanning",
+      "bibtex_type": "misc",
+      "case": "merged_author_names",
+      "provider_focus": [
+        "arxiv"
+      ],
+      "purpose": "A protected and separator merges Youngjune Gwon and Yeong-Dae Kwon."
+    },
+    {
+      "citation_key": "gupta2024codenavtooluseusingrealworld",
+      "bibtex_type": "misc",
+      "case": "clean_preprint_url",
+      "provider_focus": [
+        "arxiv"
+      ],
+      "purpose": "Clean preprint resolved from an arXiv URL without an eprint field."
+    },
+    {
+      "citation_key": "he-etal-2024-webvoyager",
+      "bibtex_type": "inproceedings",
+      "case": "escaped_title_only",
+      "provider_focus": [
+        "acl_anthology"
+      ],
+      "purpose": "Title normalization issue while the author list is otherwise unchanged."
+    },
+    {
+      "citation_key": "kimLanguageModelsCan2023a",
+      "bibtex_type": "article",
+      "case": "multiple_primary_sources",
+      "provider_focus": [
+        "neurips",
+        "openreview",
+        "arxiv"
+      ],
+      "purpose": "Title discovery reaches NeurIPS and an accepted OpenReview record as well as arXiv."
+    },
+    {
+      "citation_key": "mialon2024gaia",
+      "bibtex_type": "inproceedings",
+      "case": "direct_openreview_note",
+      "provider_focus": [
+        "openreview",
+        "arxiv"
+      ],
+      "purpose": "A direct OpenReview forum ID; exercise source access handling and publication/preprint differences."
+    },
+    {
+      "citation_key": "noauthor_measuring_2025",
+      "bibtex_type": "article",
+      "case": "blog_without_author",
+      "provider_focus": [],
+      "purpose": "A blog URL stored as article, with no author field; do not infer fabrication."
+    },
+    {
+      "citation_key": "pmlr-v70-shi17a",
+      "bibtex_type": "inproceedings",
+      "case": "pmlr_direct_author_mismatch",
+      "provider_focus": [
+        "pmlr"
+      ],
+      "purpose": "Direct publication URL with a merged Jonathan Hernandez/Percy Liang author."
+    },
+    {
+      "citation_key": "shinnReflexionLanguageAgents2023",
+      "bibtex_type": "article",
+      "case": "multiple_source_author_difference",
+      "provider_focus": [
+        "neurips",
+        "openreview",
+        "arxiv"
+      ],
+      "purpose": "Cross-source author/version comparison with a NeurIPS publication."
+    },
+    {
+      "citation_key": "songTrialErrorExplorationBased2024",
+      "bibtex_type": "inproceedings",
+      "case": "acl_catalog_discovery",
+      "provider_focus": [
+        "acl_anthology",
+        "arxiv"
+      ],
+      "purpose": "ACL venue discovery with a DOI but no direct URL, escaped title and cross-source differences."
+    },
+    {
+      "citation_key": "you2025datawiseagentnotebookcentricllmagent",
+      "bibtex_type": "inproceedings",
+      "case": "clean_acl_direct",
+      "provider_focus": [
+        "acl_anthology"
+      ],
+      "purpose": "Clean ACL record with direct URL and DOI."
+    },
+    {
+      "citation_key": "tanEnhancingWebAgents2026",
+      "bibtex_type": "misc",
+      "case": "clean_preprint_eprint",
+      "provider_focus": [
+        "arxiv"
+      ],
+      "purpose": "Clean preprint with an eprint identifier and no URL."
+    },
+    {
+      "citation_key": "iso25010_2023",
+      "bibtex_type": "misc",
+      "case": "institutional_standard",
+      "provider_focus": [],
+      "purpose": "Standard with a brace-protected institutional author and no paper identifier."
+    },
+    {
+      "citation_key": "gao2022pal",
+      "bibtex_type": "misc",
+      "case": "accepted_review_and_preprint",
+      "provider_focus": [
+        "openreview",
+        "arxiv"
+      ],
+      "purpose": "Accepted OpenReview publication versus arXiv preprint year/identifier metadata."
+    }
+  ],
+  "coverage_notes": [
+    "The core bibliography supplies all six providers; controlled metadata checks are in rule-variants.bib.",
+    "Parser, AUX, transport and lifecycle cases use explicit fixtures/scenarios listed in coverage-matrix.json.",
+    "Live lookup outcomes are observations, not gold labels; protocol replays use source-linked metadata excerpts."
+  ],
+  "variants": "rule-variants.bib",
+  "coverage_matrix": "coverage-matrix.json"
+}

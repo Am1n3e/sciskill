@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bib_lint.aux import read_aux
+from bib_lint.citation_keys import resolve_citation_usage
 from bib_lint.parser import parse_file
 from bib_lint.scope import eligible_items, fingerprint, selected_items, validate_report
 from bib_lint.status import reference_status
@@ -54,8 +55,7 @@ def prepare_input(source, *, aux=None, encoding=None, include_source=False):
         citations = read_aux(aux, encoding=encoding or "utf-8") if aux is not None else None
         if citations:
             inputs.extend(citations.files)
-            known = {key.casefold() for key in bib.entries}
-            missing = sorted(k for k in citations.keys if k.casefold() not in known | {"*"})
+            missing = resolve_citation_usage(bib.entries, citations.keys).missing_keys
             if missing:
                 warnings.append("Missing citation keys: " + ", ".join(missing))
         report = bib.to_dict(

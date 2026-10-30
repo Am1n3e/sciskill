@@ -1,5 +1,6 @@
 import copy
 import json
+from contextlib import ExitStack
 from dataclasses import replace
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from support import ENTRY, FakeClient
 
 from bib_lint.audit import run_audit
 from bib_lint.scope import validate_report
+from bib_lint.storage import report_lock, write_json
 from bib_lint.verification import verify_file, verify_reference
 from bib_lint.verification.http import MetadataClient
 from bib_lint.verification.providers import METHODS
@@ -68,13 +70,72 @@ def test_seventh_provider_audit_checkpoint_resume_and_json(bib):
     workspace, report, _ = run_audit(bib, methods=[p], client=FakeClient())
     assert report["items"][0]["validations"]["correctness"]["is_correct"] is True
     assert report["verification_run"]["provider_protocol_version"] == 1
-    assert report["verification_run"]["orchestration_version"] == 2
-    assert report["verification_run"]["policy_version"] == 5
+    assert report["verification_run"]["orchestration_version"] == 4
+    assert report["verification_run"]["policy_version"] == 6
     assert report["verification_run"]["providers"] == [p.descriptor.serialize()]
     assert json.loads(workspace.final.read_text()) == json.loads(json.dumps(report))
     p.retrieval = lambda *_: pytest.fail("Compatible completed source rerun")
     _, resumed, _ = run_audit(bib, methods=[p], client=FakeClient())
     assert resumed["items"][0]["validations"] == report["items"][0]["validations"]
+
+
+@pytest.mark.parametrize("phase", ["read", "write"])
+def test_cache_lock_failure_aborts_audit_without_saving_source_failure(bib, tmp_path, phase):
+    output = tmp_path / "audit"
+    cache = output / "cache"
+    cache.mkdir(parents=True)
+    calls = []
+
+    def lookup(query, context):
+        context.get("https://fixture.test/paper")
+        return FixtureProvider(payload=PAYLOAD).lookup(query, context)
+
+    provider = FixtureProvider(lookup=lookup)
+    with ExitStack() as stack:
+
+        def respond(request):
+            calls.append(request)
+            if phase == "write":
+                stack.enter_context(report_lock(cache / "checksum.json"))
+            return httpx.Response(200, text="Saved source")
+
+        client = MetadataClient(cache, transport=httpx.MockTransport(respond))
+        stack.callback(client.close)
+        if phase == "read":
+            stack.enter_context(report_lock(cache / "checksum.json"))
+        with pytest.raises(ValueError, match="already in use"):
+            run_audit(bib, output=output, methods=[provider], client=client)
+    assert len(calls) == (0 if phase == "read" else 1)
+    assert not (output / "report.json").exists()
+    checkpoint = json.loads((output / "report.tmp.json").read_text())
+    assert "correctness" not in checkpoint["items"][0]["validations"]
+    client = MetadataClient(
+        cache, transport=httpx.MockTransport(lambda _: httpx.Response(200, text="Saved source"))
+    )
+    try:
+        _, resumed, _ = run_audit(bib, output=output, methods=[provider], client=client)
+        assert resumed["verification_run"]["complete"]
+        assert resumed["items"][0]["validations"]["correctness"]["is_correct"] is True
+    finally:
+        client.close()
+
+
+def test_v2_misclassified_lock_failure_is_rechecked_on_resume(bib):
+    def legacy_failure(*_):
+        raise ValueError("Report is already in use: checksum.json")
+
+    provider = FixtureProvider(lookup=legacy_failure)
+    workspace, report, _ = run_audit(bib, methods=[provider], client=FakeClient())
+    assert report["items"][0]["validations"]["correctness"]["methods"][0]["error"] == {
+        "code": "invalid_response",
+        "message": "ValueError",
+    }
+    report["verification_run"]["orchestration_version"] = 2
+    write_json(workspace.final, report)
+    provider.retrieval = None
+    provider.payload = PAYLOAD
+    _, resumed, _ = run_audit(bib, methods=[provider], client=FakeClient())
+    assert resumed["items"][0]["validations"]["correctness"]["is_correct"] is True
 
 
 @pytest.mark.parametrize("change", ["revision", "policy", "configuration", "order"])
@@ -224,7 +285,7 @@ def test_default_sources_no_retired_network_requests(tmp_path):
     assert [m["name"] for m in result["methods"]] == list(METHODS)
     allowed = {h for p in METHODS.values() for h in p.descriptor.allowed_hosts}
     assert all(request.url.host in allowed for request in calls)
-    assert result["policy_version"] == 5
+    assert result["policy_version"] == 6
     client.close()
 
 

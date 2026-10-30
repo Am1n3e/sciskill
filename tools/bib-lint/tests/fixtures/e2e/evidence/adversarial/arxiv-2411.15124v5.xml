@@ -1,0 +1,76 @@
+<ns0:feed xmlns:ns0="http://www.w3.org/2005/Atom"><ns0:entry>
+    <ns0:id>http://arxiv.org/abs/2411.15124v5</ns0:id>
+    <ns0:title>Tulu 3: Pushing Frontiers in Open Language Model Post-Training</ns0:title>
+    <ns0:updated>2025-04-14T22:39:09Z</ns0:updated>
+    <ns0:published>2024-11-22T18:44:04Z</ns0:published>
+    <ns0:author>
+      <ns0:name>Nathan Lambert</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Jacob Morrison</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Valentina Pyatkin</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Shengyi Huang</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Hamish Ivison</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Faeze Brahman</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Lester James V. Miranda</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Alisa Liu</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Nouha Dziri</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Shane Lyu</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Yuling Gu</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Saumya Malik</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Victoria Graf</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Jena D. Hwang</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Jiangjiang Yang</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Ronan Le Bras</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Oyvind Tafjord</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Chris Wilhelm</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Luca Soldaini</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Noah A. Smith</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Yizhong Wang</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Pradeep Dasigi</ns0:name>
+    </ns0:author>
+    <ns0:author>
+      <ns0:name>Hannaneh Hajishirzi</ns0:name>
+    </ns0:author>
+  </ns0:entry>
+</ns0:feed>

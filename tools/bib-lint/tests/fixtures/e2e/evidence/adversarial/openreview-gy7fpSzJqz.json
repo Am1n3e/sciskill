@@ -1,0 +1,59 @@
+{
+  "content": {
+    "venue": {
+      "value": "EMNLP 2025"
+    },
+    "venueid": {
+      "value": "OpenReview.net/Public_Article"
+    },
+    "title": {
+      "value": "DatawiseAgent: A Notebook-Centric LLM Agent Framework for Adaptive and Robust Data Science Automation"
+    },
+    "authors": {
+      "value": [
+        {
+          "fullname": "Ziming You",
+          "username": ""
+        },
+        {
+          "fullname": "Yumiao Zhang",
+          "username": ""
+        },
+        {
+          "fullname": "Dexuan Xu",
+          "username": ""
+        },
+        {
+          "fullname": "Yiwei Lou",
+          "username": "~Yiwei_Lou1"
+        },
+        {
+          "fullname": "Yandong Yan",
+          "username": ""
+        },
+        {
+          "fullname": "Wei Wang",
+          "username": ""
+        },
+        {
+          "fullname": "Huamin Zhang",
+          "username": ""
+        },
+        {
+          "fullname": "Yu Huang",
+          "username": ""
+        }
+      ]
+    }
+  },
+  "pdate": 1767139200000,
+  "forum": "gy7fpSzJqz",
+  "cdate": 1735689600000,
+  "invitations": [
+    "OpenReview.net/Public_Article/DBLP.org/-/Record",
+    "OpenReview.net/Public_Article/-/Edit"
+  ],
+  "mdate": 1789284805678,
+  "id": "gy7fpSzJqz",
+  "version": 2
+}

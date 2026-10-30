@@ -8,6 +8,10 @@ from contextlib import contextmanager
 from pathlib import Path
 
 
+class ReportLockError(ValueError):
+    """A local report or response-cache manifest is locked by another operation."""
+
+
 def report_paths(path):
     path = Path(path)
     final = path.with_name(path.name[:-9] + ".json") if path.name.endswith(".tmp.json") else path
@@ -22,7 +26,7 @@ def report_lock(final):
         try:
             fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError as exc:
-            raise ValueError(f"Report is already in use: {final}") from exc
+            raise ReportLockError(f"Report is already in use: {final}") from exc
         try:
             yield
         finally:

@@ -4,6 +4,13 @@ Audit local BibTeX metadata against independent scholarly sources, then inspect
 comparisons and raw evidence in a local UI. Source bibliographies and compiled AUX
 files are never edited. Requires Python 3.12+ and macOS/Linux.
 
+Verification preserves structured author names and checks every supplied scholarly
+locator, including secondary aliases and version pins. Conflicting `journal` and
+`booktitle` fields, malformed locators, and unverified secondary identifiers remain
+visible as findings. Local contradictions still require review when sources are
+unavailable. Metadata checks do not assess scientific claim support, pages, volume,
+or edition.
+
 Run with UVX, which keeps tool dependencies outside your paper's environment:
 
 ```sh
@@ -35,3 +42,13 @@ source links, and checksum-verified cached responses; it does not edit the
 bibliography.
 
 For source development and checks, see [Contributing](../../CONTRIBUTING.md).
+
+The adversarial bibliography has independent expectations and fixed public-paper
+metadata excerpts. From `tools/bib-lint`, run its deterministic audit with:
+
+```sh
+PYTHONPATH=src uv run --group dev python -m evaluation.adversarial --output ../../.local/bib-lint-adversarial
+```
+
+This command checks both all-source and focused-provider outcomes, plus citation-key
+and AUX invariants. It exits with status 1 if any challenge expectation remains unmet.

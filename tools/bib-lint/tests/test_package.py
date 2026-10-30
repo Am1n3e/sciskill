@@ -40,6 +40,8 @@ def test_installed_wheel_and_local_install_modes(tmp_path):
         "bib_lint/cli.py",
         "bib_lint/audit.py",
         "bib_lint/scope.py",
+        "bib_lint/citation_keys.py",
+        "bib_lint/verification/input_checks.py",
         "bib_lint/viewer/app.py",
         "bib_lint/viewer/server.py",
         "bib_lint/viewer/presentation.py",

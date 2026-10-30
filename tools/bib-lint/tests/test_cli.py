@@ -1,13 +1,17 @@
 import json
 from pathlib import Path
 
+import httpx
 import pytest
 from provider_support import fixture_registry
 from support import FakeClient
 
 from bib_lint.audit import run_audit
 from bib_lint.cli import main
+from bib_lint.storage import report_lock
+from bib_lint.verification.http import MetadataClient
 from bib_lint.verification.matching import select_result
+from bib_lint.verification.providers import METHODS
 
 
 @pytest.fixture
@@ -208,6 +212,44 @@ def test_lock_error_and_secret_redaction(source, monkeypatch, capsys):
     assert main(["verify", str(source), "--json"]) == 2
     envelope, err = result(capsys)
     assert "VERYSECRET" not in json.dumps(envelope) + err
+
+
+def test_cache_lock_failure_json_is_failed_and_resumable(tmp_path, monkeypatch, capsys):
+    bib = tmp_path / "references.bib"
+    original = (
+        "@article{A,title={An Example Paper},author={Smith, Jane},year={2025},"
+        "journal={Example Journal},url={https://proceedings.mlr.press/v267/example25a.html}}"
+    )
+    bib.write_text(original)
+    output = tmp_path / "audit"
+    cache = output / "cache"
+    cache.mkdir(parents=True)
+    calls = []
+    body = (Path(__file__).parent / "fixtures/providers/publication.html").read_text()
+    client = MetadataClient(
+        cache,
+        transport=httpx.MockTransport(lambda r: calls.append(r) or httpx.Response(200, text=body)),
+    )
+
+    def run(*args, **kwargs):
+        return run_audit(*args, **kwargs, client=client, methods=[METHODS["pmlr"]])
+
+    monkeypatch.setattr("bib_lint.cli.run_audit", run)
+    try:
+        with report_lock(cache / "checksum.json"):
+            assert main(["verify", str(bib), "--output", str(output), "--json"]) == 2
+        envelope, err = result(capsys)
+        assert envelope["status"] == "failed" and not envelope["complete"]
+        assert envelope["error"]["code"] == "audit_failed" and "already in use" in err
+        assert envelope["summary"]["source_failures"] == 0
+        assert envelope["report_path"] is None and Path(envelope["checkpoint_path"]).exists()
+        assert not calls
+        assert main(["verify", str(bib), "--output", str(output), "--json"]) == 0
+        envelope, _ = result(capsys)
+        assert envelope["complete"] and envelope["summary"]["correct"] == 1
+        assert len(calls) == 1 and bib.read_text() == original
+    finally:
+        client.close()
 
 
 def test_source_failure_warning_survives_resume_and_partial_output(tmp_path, capsys, monkeypatch):

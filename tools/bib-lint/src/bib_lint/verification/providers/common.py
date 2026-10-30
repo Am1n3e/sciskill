@@ -74,7 +74,7 @@ def source_identifier(query, name, *aliases):
     return None
 
 
-def supported_url(query, hosts):
+def supported_url(query, hosts, *, allow_pdf=False):
     parsed = urlsplit(query.input_url)
     if parsed.hostname in hosts:
         if (
@@ -84,7 +84,7 @@ def supported_url(query, hosts):
             or parsed.port not in {None, 80, 443}
         ):
             raise LookupFailure("unsupported_url", "Nonstandard source URL")
-        if parsed.path.lower().endswith(".pdf"):
+        if parsed.path.lower().endswith(".pdf") and not allow_pdf:
             return None
         return query.input_url
     return None

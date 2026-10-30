@@ -1,0 +1,1057 @@
+{
+  "schema_version": 1,
+  "policy": "Fixed public-paper source facts, independent of mutated bibliography inputs. XML/JSON files are metadata-only excerpts of actual archived responses. Catalog pages and citation-meta HTML are controlled protocol envelopes of these fixed facts, not live-service snapshots. Unknown papers are absent only within this limited replay universe.",
+  "records": {
+    "codenav": {
+      "provider": "arxiv",
+      "record": {
+        "title": "CodeNav: Beyond tool-use to using real-world codebases with LLM agents",
+        "authors": [
+          {
+            "given": "Tanmay",
+            "family": "Gupta",
+            "suffix": ""
+          },
+          {
+            "given": "Luca",
+            "family": "Weihs",
+            "suffix": ""
+          },
+          {
+            "given": "Aniruddha",
+            "family": "Kembhavi",
+            "suffix": ""
+          }
+        ],
+        "year": "2024",
+        "venue": "arXiv",
+        "identifiers": {
+          "arxiv": "2406.12276v1"
+        },
+        "url": "https://arxiv.org/abs/2406.12276v1",
+        "record_type": "preprint",
+        "publication_status": "published",
+        "version": "2406.12276v1",
+        "provenance": {
+          "source": "http://arxiv.org/abs/2406.12276v1",
+          "year": "published",
+          "metadata": "arxiv_atom"
+        }
+      },
+      "source": "https://arxiv.org/abs/2406.12276v1",
+      "origin": "Official archive metadata checked against the source; no decision labels copied."
+    },
+    "gaia": {
+      "provider": "arxiv",
+      "record": {
+        "title": "GAIA: a benchmark for General AI Assistants",
+        "authors": [
+          {
+            "given": "Grégoire",
+            "family": "Mialon",
+            "suffix": ""
+          },
+          {
+            "given": "Clémentine",
+            "family": "Fourrier",
+            "suffix": ""
+          },
+          {
+            "given": "Craig",
+            "family": "Swift",
+            "suffix": ""
+          },
+          {
+            "given": "Thomas",
+            "family": "Wolf",
+            "suffix": ""
+          },
+          {
+            "given": "Yann",
+            "family": "LeCun",
+            "suffix": ""
+          },
+          {
+            "given": "Thomas",
+            "family": "Scialom",
+            "suffix": ""
+          }
+        ],
+        "year": "2023",
+        "venue": "arXiv",
+        "identifiers": {
+          "arxiv": "2311.12983v1"
+        },
+        "url": "https://arxiv.org/abs/2311.12983v1",
+        "record_type": "preprint",
+        "publication_status": "published",
+        "version": "2311.12983v1",
+        "provenance": {
+          "source": "http://arxiv.org/abs/2311.12983v1",
+          "year": "published",
+          "metadata": "arxiv_atom"
+        }
+      },
+      "source": "https://arxiv.org/abs/2311.12983v1",
+      "origin": "Official archive metadata checked against the source; no decision labels copied."
+    },
+    "tulu": {
+      "provider": "arxiv",
+      "record": {
+        "title": "Tulu 3: Pushing Frontiers in Open Language Model Post-Training",
+        "authors": [
+          {
+            "given": "Nathan",
+            "family": "Lambert",
+            "suffix": ""
+          },
+          {
+            "given": "Jacob",
+            "family": "Morrison",
+            "suffix": ""
+          },
+          {
+            "given": "Valentina",
+            "family": "Pyatkin",
+            "suffix": ""
+          },
+          {
+            "given": "Shengyi",
+            "family": "Huang",
+            "suffix": ""
+          },
+          {
+            "given": "Hamish",
+            "family": "Ivison",
+            "suffix": ""
+          },
+          {
+            "given": "Faeze",
+            "family": "Brahman",
+            "suffix": ""
+          },
+          {
+            "given": "Lester James V.",
+            "family": "Miranda",
+            "suffix": ""
+          },
+          {
+            "given": "Alisa",
+            "family": "Liu",
+            "suffix": ""
+          },
+          {
+            "given": "Nouha",
+            "family": "Dziri",
+            "suffix": ""
+          },
+          {
+            "given": "Shane",
+            "family": "Lyu",
+            "suffix": ""
+          },
+          {
+            "given": "Yuling",
+            "family": "Gu",
+            "suffix": ""
+          },
+          {
+            "given": "Saumya",
+            "family": "Malik",
+            "suffix": ""
+          },
+          {
+            "given": "Victoria",
+            "family": "Graf",
+            "suffix": ""
+          },
+          {
+            "given": "Jena D.",
+            "family": "Hwang",
+            "suffix": ""
+          },
+          {
+            "given": "Jiangjiang",
+            "family": "Yang",
+            "suffix": ""
+          },
+          {
+            "given": "Ronan Le",
+            "family": "Bras",
+            "suffix": ""
+          },
+          {
+            "given": "Oyvind",
+            "family": "Tafjord",
+            "suffix": ""
+          },
+          {
+            "given": "Chris",
+            "family": "Wilhelm",
+            "suffix": ""
+          },
+          {
+            "given": "Luca",
+            "family": "Soldaini",
+            "suffix": ""
+          },
+          {
+            "given": "Noah A.",
+            "family": "Smith",
+            "suffix": ""
+          },
+          {
+            "given": "Yizhong",
+            "family": "Wang",
+            "suffix": ""
+          },
+          {
+            "given": "Pradeep",
+            "family": "Dasigi",
+            "suffix": ""
+          },
+          {
+            "given": "Hannaneh",
+            "family": "Hajishirzi",
+            "suffix": ""
+          }
+        ],
+        "year": "2024",
+        "venue": "arXiv",
+        "identifiers": {
+          "arxiv": "2411.15124v5"
+        },
+        "url": "https://arxiv.org/abs/2411.15124v5",
+        "record_type": "preprint",
+        "publication_status": "published",
+        "version": "2411.15124v5",
+        "provenance": {
+          "source": "http://arxiv.org/abs/2411.15124v5",
+          "year": "published",
+          "metadata": "arxiv_atom"
+        }
+      },
+      "source": "https://arxiv.org/abs/2411.15124v5",
+      "origin": "Official archive metadata checked against the source; no decision labels copied."
+    },
+    "datawise": {
+      "provider": "acl_anthology",
+      "record": {
+        "title": "DatawiseAgent: A Notebook-Centric LLM Agent Framework for Adaptive and Robust Data Science Automation",
+        "authors": [
+          {
+            "given": "Ziming",
+            "family": "You",
+            "suffix": ""
+          },
+          {
+            "given": "Yumiao",
+            "family": "Zhang",
+            "suffix": ""
+          },
+          {
+            "given": "Dexuan",
+            "family": "Xu",
+            "suffix": ""
+          },
+          {
+            "given": "Yiwei",
+            "family": "Lou",
+            "suffix": ""
+          },
+          {
+            "given": "Yandong",
+            "family": "Yan",
+            "suffix": ""
+          },
+          {
+            "given": "Wei",
+            "family": "Wang",
+            "suffix": ""
+          },
+          {
+            "given": "Huamin",
+            "family": "Zhang",
+            "suffix": ""
+          },
+          {
+            "given": "Yu",
+            "family": "Huang",
+            "suffix": ""
+          }
+        ],
+        "year": "2025",
+        "venue": "Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing",
+        "identifiers": {
+          "acl": "2025.emnlp-main.58",
+          "doi": "10.18653/v1/2025.emnlp-main.58"
+        },
+        "url": "https://aclanthology.org/2025.emnlp-main.58/",
+        "record_type": "publication",
+        "publication_status": "published",
+        "version": null,
+        "provenance": {
+          "source": "https://aclanthology.org/2025.emnlp-main.58/",
+          "metadata": "citation_meta",
+          "publication_status": "archive_record"
+        }
+      },
+      "source": "https://aclanthology.org/2025.emnlp-main.58/",
+      "origin": "Official archive metadata checked against the source; no decision labels copied."
+    },
+    "kim_neurips": {
+      "provider": "neurips",
+      "record": {
+        "title": "Language Models can Solve Computer Tasks",
+        "authors": [
+          {
+            "given": "Geunwoo",
+            "family": "Kim",
+            "suffix": ""
+          },
+          {
+            "given": "Pierre",
+            "family": "Baldi",
+            "suffix": ""
+          },
+          {
+            "given": "Stephen",
+            "family": "McAleer",
+            "suffix": ""
+          }
+        ],
+        "year": "2023",
+        "venue": "Advances in Neural Information Processing Systems",
+        "identifiers": {
+          "neurips": "paper_files/paper/2023/hash/7cc1005ec73cfbaac9fa21192b622507-Abstract-Conference",
+          "doi": "10.52202/075280-1723"
+        },
+        "url": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/7cc1005ec73cfbaac9fa21192b622507-Abstract-Conference.html",
+        "record_type": "publication",
+        "publication_status": "published",
+        "version": null,
+        "provenance": {
+          "source": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/7cc1005ec73cfbaac9fa21192b622507-Abstract-Conference.html",
+          "metadata": "citation_meta",
+          "publication_status": "archive_record"
+        }
+      },
+      "source": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/7cc1005ec73cfbaac9fa21192b622507-Abstract-Conference.html",
+      "origin": "Official archive metadata checked against the source; no decision labels copied."
+    },
+    "pal_accepted": {
+      "provider": "openreview",
+      "record": {
+        "title": "PAL: Program-aided Language Models",
+        "authors": [
+          {
+            "given": "Luyu",
+            "family": "Gao",
+            "suffix": ""
+          },
+          {
+            "given": "Aman",
+            "family": "Madaan",
+            "suffix": ""
+          },
+          {
+            "given": "Shuyan",
+            "family": "Zhou",
+            "suffix": ""
+          },
+          {
+            "given": "Uri",
+            "family": "Alon",
+            "suffix": ""
+          },
+          {
+            "given": "Pengfei",
+            "family": "Liu",
+            "suffix": ""
+          },
+          {
+            "given": "Yiming",
+            "family": "Yang",
+            "suffix": ""
+          },
+          {
+            "given": "Jamie",
+            "family": "Callan",
+            "suffix": ""
+          },
+          {
+            "given": "Graham",
+            "family": "Neubig",
+            "suffix": ""
+          }
+        ],
+        "year": "2023",
+        "venue": "ICML 2023 Poster",
+        "identifiers": {
+          "openreview": "M1fd9Z00sj"
+        },
+        "url": "https://openreview.net/forum?id=M1fd9Z00sj",
+        "record_type": "publication",
+        "publication_status": "accepted",
+        "version": "2",
+        "provenance": {
+          "source": "https://openreview.net/forum?id=M1fd9Z00sj",
+          "publication_status": "accepted venueid: ICML.cc/2023/Conference",
+          "venueid": "ICML.cc/2023/Conference",
+          "cdate": "1674752622892",
+          "mdate": "1686841481071",
+          "pdate": "1682373323661",
+          "odate": "1686841481058",
+          "version": "2"
+        }
+      },
+      "source": "https://openreview.net/forum?id=M1fd9Z00sj",
+      "origin": "Official archive metadata checked against the source; no decision labels copied."
+    },
+    "sb3": {
+      "provider": "jmlr",
+      "record": {
+        "title": "Stable-Baselines3: Reliable Reinforcement Learning Implementations",
+        "authors": [
+          {
+            "given": "Antonin",
+            "family": "Raffin",
+            "suffix": ""
+          },
+          {
+            "given": "Ashley",
+            "family": "Hill",
+            "suffix": ""
+          },
+          {
+            "given": "Adam",
+            "family": "Gleave",
+            "suffix": ""
+          },
+          {
+            "given": "Anssi",
+            "family": "Kanervisto",
+            "suffix": ""
+          },
+          {
+            "given": "Maximilian",
+            "family": "Ernestus",
+            "suffix": ""
+          },
+          {
+            "given": "Noah",
+            "family": "Dormann",
+            "suffix": ""
+          }
+        ],
+        "year": "2021",
+        "venue": "Journal of Machine Learning Research",
+        "identifiers": {
+          "jmlr": "v22/20-1364"
+        },
+        "url": "https://jmlr.org/papers/v22/20-1364.html",
+        "record_type": "publication",
+        "publication_status": "published",
+        "version": null,
+        "provenance": {
+          "source": "https://jmlr.org/papers/v22/20-1364.html",
+          "metadata": "citation_meta",
+          "publication_status": "archive_record"
+        }
+      },
+      "source": "https://jmlr.org/papers/v22/20-1364.html",
+      "bibtex_source": "https://jmlr.org/papers/v22/20-1364.bib",
+      "origin": "Official JMLR paper metadata and official BibTeX independently retrieved."
+    },
+    "hcpi": {
+      "provider": "pmlr",
+      "source": "https://proceedings.mlr.press/v37/thomas15.html",
+      "record": {
+        "title": "High Confidence Policy Improvement",
+        "authors": [
+          {
+            "given": "Philip",
+            "family": "Thomas",
+            "suffix": ""
+          },
+          {
+            "given": "Georgios",
+            "family": "Theocharous",
+            "suffix": ""
+          },
+          {
+            "given": "Mohammad",
+            "family": "Ghavamzadeh",
+            "suffix": ""
+          }
+        ],
+        "year": "2015",
+        "venue": "International Conference on Machine Learning",
+        "url": "https://proceedings.mlr.press/v37/thomas15.html",
+        "identifiers": {
+          "pmlr": "v37/thomas15"
+        },
+        "record_type": "publication",
+        "publication_status": "published"
+      }
+    },
+    "arxiv_8": {
+      "provider": "arxiv",
+      "source": "https://arxiv.org/abs/2211.10435v2",
+      "record": {
+        "title": "PAL: Program-aided Language Models",
+        "authors": [
+          {
+            "given": "Luyu",
+            "family": "Gao",
+            "suffix": ""
+          },
+          {
+            "given": "Aman",
+            "family": "Madaan",
+            "suffix": ""
+          },
+          {
+            "given": "Shuyan",
+            "family": "Zhou",
+            "suffix": ""
+          },
+          {
+            "given": "Uri",
+            "family": "Alon",
+            "suffix": ""
+          },
+          {
+            "given": "Pengfei",
+            "family": "Liu",
+            "suffix": ""
+          },
+          {
+            "given": "Yiming",
+            "family": "Yang",
+            "suffix": ""
+          },
+          {
+            "given": "Jamie",
+            "family": "Callan",
+            "suffix": ""
+          },
+          {
+            "given": "Graham",
+            "family": "Neubig",
+            "suffix": ""
+          }
+        ],
+        "year": "2022",
+        "venue": "arXiv",
+        "identifiers": {
+          "arxiv": "2211.10435v2"
+        },
+        "url": "https://arxiv.org/abs/2211.10435v2",
+        "record_type": "preprint",
+        "publication_status": "published",
+        "version": "2211.10435v2",
+        "provenance": {
+          "source": "http://arxiv.org/abs/2211.10435v2",
+          "year": "published",
+          "metadata": "arxiv_atom"
+        }
+      }
+    },
+    "arxiv_9": {
+      "provider": "arxiv",
+      "source": "https://arxiv.org/abs/2303.17491v3",
+      "record": {
+        "title": "Language Models can Solve Computer Tasks",
+        "authors": [
+          {
+            "given": "Geunwoo",
+            "family": "Kim",
+            "suffix": ""
+          },
+          {
+            "given": "Pierre",
+            "family": "Baldi",
+            "suffix": ""
+          },
+          {
+            "given": "Stephen",
+            "family": "McAleer",
+            "suffix": ""
+          }
+        ],
+        "year": "2023",
+        "venue": "arXiv",
+        "identifiers": {
+          "arxiv": "2303.17491v3"
+        },
+        "url": "https://arxiv.org/abs/2303.17491v3",
+        "record_type": "preprint",
+        "publication_status": "published",
+        "version": "2303.17491v3",
+        "provenance": {
+          "source": "http://arxiv.org/abs/2303.17491v3",
+          "year": "published",
+          "metadata": "arxiv_atom"
+        }
+      }
+    },
+    "openreview_10": {
+      "provider": "openreview",
+      "source": "https://openreview.net/forum?id=M6OmjAZ4CX",
+      "record": {
+        "title": "Language Models can Solve Computer Tasks",
+        "authors": [
+          {
+            "given": "Geunwoo",
+            "family": "Kim",
+            "suffix": ""
+          },
+          {
+            "given": "Pierre",
+            "family": "Baldi",
+            "suffix": ""
+          },
+          {
+            "given": "Stephen Marcus",
+            "family": "McAleer",
+            "suffix": ""
+          }
+        ],
+        "year": "2023",
+        "venue": "NeurIPS 2023 poster",
+        "identifiers": {
+          "openreview": "M6OmjAZ4CX"
+        },
+        "url": "https://openreview.net/forum?id=M6OmjAZ4CX",
+        "record_type": "publication",
+        "publication_status": "accepted",
+        "version": "2",
+        "provenance": {
+          "source": "https://openreview.net/forum?id=M6OmjAZ4CX",
+          "publication_status": "accepted venueid: NeurIPS.cc/2023/Conference",
+          "venueid": "NeurIPS.cc/2023/Conference",
+          "cdate": "1683520016746",
+          "mdate": "1698949711842",
+          "pdate": "1695325814885",
+          "odate": "1698949711825",
+          "version": "2"
+        }
+      }
+    },
+    "openreview_11": {
+      "provider": "openreview",
+      "source": "https://openreview.net/forum?id=gy7fpSzJqz",
+      "record": {
+        "title": "DatawiseAgent: A Notebook-Centric LLM Agent Framework for Adaptive and Robust Data Science Automation",
+        "authors": [
+          {
+            "given": "Ziming",
+            "family": "You",
+            "suffix": ""
+          },
+          {
+            "given": "Yumiao",
+            "family": "Zhang",
+            "suffix": ""
+          },
+          {
+            "given": "Dexuan",
+            "family": "Xu",
+            "suffix": ""
+          },
+          {
+            "given": "Yiwei",
+            "family": "Lou",
+            "suffix": ""
+          },
+          {
+            "given": "Yandong",
+            "family": "Yan",
+            "suffix": ""
+          },
+          {
+            "given": "Wei",
+            "family": "Wang",
+            "suffix": ""
+          },
+          {
+            "given": "Huamin",
+            "family": "Zhang",
+            "suffix": ""
+          },
+          {
+            "given": "Yu",
+            "family": "Huang",
+            "suffix": ""
+          }
+        ],
+        "year": null,
+        "venue": null,
+        "identifiers": {
+          "openreview": "gy7fpSzJqz"
+        },
+        "url": "https://openreview.net/forum?id=gy7fpSzJqz",
+        "record_type": "unknown",
+        "publication_status": "unknown",
+        "version": "2",
+        "provenance": {
+          "source": "https://openreview.net/forum?id=gy7fpSzJqz",
+          "publication_status": "No explicit publication qualification",
+          "venueid": "OpenReview.net/Public_Article",
+          "cdate": "1735689600000",
+          "mdate": "1789284805678",
+          "pdate": "1767139200000",
+          "version": "2"
+        }
+      }
+    },
+    "openreview_12": {
+      "provider": "openreview",
+      "source": "https://openreview.net/forum?id=i1uGbfHHpH",
+      "record": {
+        "title": "Tulu 3: Pushing Frontiers in Open Language Model Post-Training",
+        "authors": [
+          {
+            "given": "Nathan",
+            "family": "Lambert",
+            "suffix": ""
+          },
+          {
+            "given": "Jacob",
+            "family": "Morrison",
+            "suffix": ""
+          },
+          {
+            "given": "Valentina",
+            "family": "Pyatkin",
+            "suffix": ""
+          },
+          {
+            "given": "Shengyi",
+            "family": "Huang",
+            "suffix": ""
+          },
+          {
+            "given": "Hamish",
+            "family": "Ivison",
+            "suffix": ""
+          },
+          {
+            "given": "Faeze",
+            "family": "Brahman",
+            "suffix": ""
+          },
+          {
+            "given": "Lester James Validad",
+            "family": "Miranda",
+            "suffix": ""
+          },
+          {
+            "given": "Alisa",
+            "family": "Liu",
+            "suffix": ""
+          },
+          {
+            "given": "Nouha",
+            "family": "Dziri",
+            "suffix": ""
+          },
+          {
+            "given": "Xinxi",
+            "family": "Lyu",
+            "suffix": ""
+          },
+          {
+            "given": "Yuling",
+            "family": "Gu",
+            "suffix": ""
+          },
+          {
+            "given": "Saumya",
+            "family": "Malik",
+            "suffix": ""
+          },
+          {
+            "given": "Victoria",
+            "family": "Graf",
+            "suffix": ""
+          },
+          {
+            "given": "Jena D.",
+            "family": "Hwang",
+            "suffix": ""
+          },
+          {
+            "given": "Jiangjiang",
+            "family": "Yang",
+            "suffix": ""
+          },
+          {
+            "given": "Ronan Le",
+            "family": "Bras",
+            "suffix": ""
+          },
+          {
+            "given": "Oyvind",
+            "family": "Tafjord",
+            "suffix": ""
+          },
+          {
+            "given": "Christopher",
+            "family": "Wilhelm",
+            "suffix": ""
+          },
+          {
+            "given": "Luca",
+            "family": "Soldaini",
+            "suffix": ""
+          },
+          {
+            "given": "Noah A.",
+            "family": "Smith",
+            "suffix": ""
+          },
+          {
+            "given": "Yizhong",
+            "family": "Wang",
+            "suffix": ""
+          },
+          {
+            "given": "Pradeep",
+            "family": "Dasigi",
+            "suffix": ""
+          },
+          {
+            "given": "Hannaneh",
+            "family": "Hajishirzi",
+            "suffix": ""
+          }
+        ],
+        "year": null,
+        "venue": null,
+        "identifiers": {
+          "openreview": "i1uGbfHHpH"
+        },
+        "url": "https://openreview.net/forum?id=i1uGbfHHpH",
+        "record_type": "unknown",
+        "publication_status": "unknown",
+        "version": "2",
+        "provenance": {
+          "source": "https://openreview.net/forum?id=i1uGbfHHpH",
+          "publication_status": "No explicit publication qualification",
+          "venueid": "colmweb.org/COLM/2025/Conference",
+          "cdate": "1742410502973",
+          "mdate": "1756169214945",
+          "pdate": "1751944447542",
+          "odate": "1756169214930",
+          "version": "2"
+        }
+      }
+    },
+    "openreview_13": {
+      "provider": "openreview",
+      "source": "https://openreview.net/forum?id=UdD1Ppvs8X",
+      "record": {
+        "title": "TÜLU 3: Pushing Frontiers in Open Language Model Post-Training",
+        "authors": [
+          {
+            "given": "Nathan",
+            "family": "Lambert",
+            "suffix": ""
+          },
+          {
+            "given": "Jacob",
+            "family": "Morrison",
+            "suffix": ""
+          },
+          {
+            "given": "Valentina",
+            "family": "Pyatkin",
+            "suffix": ""
+          },
+          {
+            "given": "Shengyi",
+            "family": "Huang",
+            "suffix": ""
+          },
+          {
+            "given": "Hamish",
+            "family": "Ivison",
+            "suffix": ""
+          },
+          {
+            "given": "Faeze",
+            "family": "Brahman",
+            "suffix": ""
+          },
+          {
+            "given": "Lester James V.",
+            "family": "Miranda",
+            "suffix": ""
+          },
+          {
+            "given": "Alisa",
+            "family": "Liu",
+            "suffix": ""
+          },
+          {
+            "given": "Nouha",
+            "family": "Dziri",
+            "suffix": ""
+          },
+          {
+            "given": "Shane",
+            "family": "Lyu",
+            "suffix": ""
+          },
+          {
+            "given": "Yuling",
+            "family": "Gu",
+            "suffix": ""
+          },
+          {
+            "given": "Saumya",
+            "family": "Malik",
+            "suffix": ""
+          },
+          {
+            "given": "Victoria",
+            "family": "Graf",
+            "suffix": ""
+          },
+          {
+            "given": "Jena D.",
+            "family": "Hwang",
+            "suffix": ""
+          },
+          {
+            "given": "Jiangjiang",
+            "family": "Yang",
+            "suffix": ""
+          },
+          {
+            "given": "Ronan Le",
+            "family": "Bras",
+            "suffix": ""
+          },
+          {
+            "given": "Oyvind",
+            "family": "Tafjord",
+            "suffix": ""
+          },
+          {
+            "given": "Chris",
+            "family": "Wilhelm",
+            "suffix": ""
+          },
+          {
+            "given": "Luca",
+            "family": "Soldaini",
+            "suffix": ""
+          },
+          {
+            "given": "Noah A.",
+            "family": "Smith",
+            "suffix": ""
+          },
+          {
+            "given": "Yizhong",
+            "family": "Wang",
+            "suffix": ""
+          },
+          {
+            "given": "Pradeep",
+            "family": "Dasigi",
+            "suffix": ""
+          },
+          {
+            "given": "Hannaneh",
+            "family": "Hajishirzi",
+            "suffix": ""
+          }
+        ],
+        "year": null,
+        "venue": null,
+        "identifiers": {
+          "openreview": "UdD1Ppvs8X"
+        },
+        "url": "https://openreview.net/forum?id=UdD1Ppvs8X",
+        "record_type": "unknown",
+        "publication_status": "unknown",
+        "version": "2",
+        "provenance": {
+          "source": "https://openreview.net/forum?id=UdD1Ppvs8X",
+          "publication_status": "No explicit publication qualification",
+          "venueid": "dblp.org/journals/CORR/2024",
+          "cdate": "1704067200000",
+          "mdate": "1747669210565",
+          "pdate": "1704067200000",
+          "version": "2"
+        }
+      }
+    }
+  },
+  "excerpts": {
+    "https://arxiv.org/abs/2411.15124v5": {
+      "path": "evidence/adversarial/arxiv-2411.15124v5.xml",
+      "retrieved_at": "2026-10-30T08:44:12.652104+00:00",
+      "raw_source_sha256": "4a1931d03ca1513c309139c423124def4b280d52e92715a09d710fa7b8054c6d",
+      "excerpt_sha256": "e0889d707e23df74c6966e31c7028e0f474931dbdbcec046e349da02c3bb6ff6"
+    },
+    "https://openreview.net/forum?id=i1uGbfHHpH": {
+      "path": "evidence/adversarial/openreview-i1uGbfHHpH.json",
+      "retrieved_at": "2026-10-30T08:45:06.262961+00:00",
+      "raw_source_sha256": "b0a61a39edd27269f318c8c5823bd1e3d4db20e3abd174b617401548027fbabb",
+      "excerpt_sha256": "3aa598ac01324aababdd44dde4e7b2efa2b52e1675c5fe28e6a2b047611062a1"
+    },
+    "https://openreview.net/forum?id=UdD1Ppvs8X": {
+      "path": "evidence/adversarial/openreview-UdD1Ppvs8X.json",
+      "retrieved_at": "2026-10-30T08:45:06.262961+00:00",
+      "raw_source_sha256": "b0a61a39edd27269f318c8c5823bd1e3d4db20e3abd174b617401548027fbabb",
+      "excerpt_sha256": "253ea6e965afc731b8f313292e9e941b55e66825bb60a479fdb09a3850fb3e60"
+    },
+    "https://arxiv.org/abs/2406.12276v1": {
+      "path": "evidence/adversarial/arxiv-2406.12276v1.xml",
+      "retrieved_at": "2026-10-30T08:54:39.531096+00:00",
+      "raw_source_sha256": "fb8800e723cc9735785378241876b2bed80b26875293e44a91fe7e63ac3be4f2",
+      "excerpt_sha256": "a3aba5827938fd2616be1849e7ae0bdf06878f33ad7ca2b43090b6aa288074b2"
+    },
+    "https://openreview.net/forum?id=M6OmjAZ4CX": {
+      "path": "evidence/adversarial/openreview-M6OmjAZ4CX.json",
+      "retrieved_at": "2026-10-30T08:58:11.949085+00:00",
+      "raw_source_sha256": "8272d9a9c89b4e03d51a02d0de113ca9abf2dd0eecb6d480cf217f0b60ea19e2",
+      "excerpt_sha256": "a2cbc697a46db470a87d2e162cc201babb68fb2e2fac66a185db9f1864ca6c80"
+    },
+    "https://arxiv.org/abs/2303.17491v3": {
+      "path": "evidence/adversarial/arxiv-2303.17491v3.xml",
+      "retrieved_at": "2026-10-30T09:00:51.866002+00:00",
+      "raw_source_sha256": "766716e00d5aee7a7086a7fd01d4a6592eba9e60878b69d05518f23695794c57",
+      "excerpt_sha256": "6c6cc28326a28b17998c5d71644bed5fe498a36c97e5a2bf6ef0ffbb9f8eb7b7"
+    },
+    "https://arxiv.org/abs/2311.12983v1": {
+      "path": "evidence/adversarial/arxiv-2311.12983v1.xml",
+      "retrieved_at": "2026-10-30T09:02:23.711326+00:00",
+      "raw_source_sha256": "9cebbec71096b24ebe4a692797f6bfec2aed6273c7b1a2199e354e27d650ef6b",
+      "excerpt_sha256": "0053b1454b6acb94d75e00bca5996e17e6867fe5f1f9a09048f5fee50eeac5bb"
+    },
+    "https://openreview.net/forum?id=gy7fpSzJqz": {
+      "path": "evidence/adversarial/openreview-gy7fpSzJqz.json",
+      "retrieved_at": "2026-10-30T09:15:05.214651+00:00",
+      "raw_source_sha256": "374a480503627fdaa95a6f5be9ea0e4d75f67e593a8f0c92246210e2121d3401",
+      "excerpt_sha256": "0d761d6de8c148d3a9a75793efecf53c95df6c0d5a8118391df99ab61ef91bef"
+    },
+    "https://arxiv.org/abs/2211.10435v2": {
+      "path": "evidence/adversarial/arxiv-2211.10435v2.xml",
+      "retrieved_at": "2026-10-30T09:25:12.161426+00:00",
+      "raw_source_sha256": "8df4e9adccb7d1544327433772888a03e6f0a91cc13a32021722940e78d9b83b",
+      "excerpt_sha256": "5c00cd0dec25bde9ca184d378a74f35d5cbc9e6a1eb85efdd75ee3b0bc48044b"
+    },
+    "https://openreview.net/forum?id=M1fd9Z00sj": {
+      "path": "evidence/adversarial/openreview-M1fd9Z00sj.json",
+      "retrieved_at": "2026-10-30T09:26:18.075488+00:00",
+      "raw_source_sha256": "3325e854da0a32b7d326f19b2a825430cd18aa508f5c2e6debc99b9c73e53b4b",
+      "excerpt_sha256": "ba0cbf8dc162742e060246f999da1099d0a4774b85e28cceec571b0cea054275"
+    }
+  }
+}

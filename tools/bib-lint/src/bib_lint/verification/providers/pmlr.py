@@ -1,13 +1,14 @@
 """PMLR paper records and official volume-catalog discovery."""
 
 import re
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit
 
 from bib_lint.verification.http import LookupFailure
 from bib_lint.verification.matching import normalize
 from bib_lint.verification.providers.archive import ArchiveProvider
 from bib_lint.verification.providers.common import (
     catalog_links,
+    html,
     shortlisted,
     source_identifier,
     years,
@@ -27,7 +28,7 @@ VENUES = {
 
 class PmlrProvider(ArchiveProvider):
     descriptor = ProviderDescriptor(
-        "pmlr", "PMLR", "2", "publication_archive", ("proceedings.mlr.press",)
+        "pmlr", "PMLR", "3", "publication_archive", ("proceedings.mlr.press",)
     )
 
     def direct_url(self, query):
@@ -76,8 +77,14 @@ class PmlrProvider(ArchiveProvider):
         return ROOT + "v" + volume + "/" if re.fullmatch(r"\d+", volume) else None
 
     def paper_links(self, text, url, query):
-        for target, title, _ in catalog_links(
-            text, url, lambda u: bool(re.fullmatch(r"/v\d+/[^/]+\.html", urlsplit(u).path))
-        ):
+        seen = set()
+        for anchor in html(text).find_all("a", href=True):
+            target = urljoin(url, anchor["href"])
+            if target in seen or not re.fullmatch(r"/v\d+/[^/]+\.html", urlsplit(target).path):
+                continue
+            paper = anchor.find_parent("div", class_="paper")
+            heading = paper.find("p", class_="title") if paper else None
+            title = (heading or anchor).get_text(" ", strip=True)
             if shortlisted(query, title):
+                seen.add(target)
                 yield target

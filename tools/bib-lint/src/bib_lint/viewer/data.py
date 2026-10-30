@@ -143,6 +143,16 @@ def display(value):
 def comparison_rows(item, show_matches=False):
     original = input_record(item["entry"])
     rows = []
+    for comparison in item["validations"].get("correctness", {}).get("input_findings", []):
+        rows.append(
+            {
+                "Source": "input",
+                "Field": comparison["field"],
+                "Status": field_status(comparison["result"]),
+                "Your value": display(comparison.get("input")),
+                "Source's value": comparison.get("message", "Input metadata is inconsistent"),
+            }
+        )
     for method in item["validations"].get("correctness", {}).get("methods", []):
         if not method.get("found_ref"):
             continue

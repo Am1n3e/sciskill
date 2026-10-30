@@ -8,6 +8,7 @@ import pytest
 from provider_support import assert_contract
 from support import ENTRY
 
+from bib_lint.audit import run_audit
 from bib_lint.verification import verify_reference
 from bib_lint.verification.http import LookupFailure, MetadataClient
 from bib_lint.verification.providers import METHODS
@@ -122,6 +123,62 @@ def test_title_discovery_without_url(tmp_path, name):
     assert any(a.strategy in {"title", "catalog"} for a in result.attempts)
     assert all(r.url.host in provider.descriptor.allowed_hosts for r in calls)
     client.close()
+
+
+@pytest.fixture
+def pmlr_catalog(tmp_path):
+    bib = tmp_path / "references.bib"
+    bib.write_text(
+        "@inproceedings{thomas2015hcpi,title={High Confidence Policy Improvement},"
+        "author={Thomas, Philip and Theocharous, Georgios and Ghavamzadeh, Mohammad},"
+        "year={2015},booktitle={ICML}}"
+    )
+    output = tmp_path / "audit"
+    calls = []
+    responses = {
+        "/": '<li><a href="v37">Volume 37</a> Proceedings of ICML 2015</li>',
+        "/v37/": (FIXTURES / "pmlr-volume.html").read_text(),
+        "/v37/thomas15.html": (FIXTURES / "pmlr-paper.html").read_text(),
+    }
+
+    def respond(request):
+        calls.append(request.url.path)
+        assert request.url.path in responses, "Unrelated paper or PDF requested"
+        return httpx.Response(200, text=responses[request.url.path])
+
+    client = MetadataClient(output / "cache", transport=httpx.MockTransport(respond))
+    yield bib, output, client, calls
+    client.close()
+
+
+def test_pmlr_discovers_paper_from_real_volume_layout(pmlr_catalog):
+    bib, output, client, calls = pmlr_catalog
+    _, report, _ = run_audit(bib, output=output, client=client, methods=[METHODS["pmlr"]])
+    source = report["items"][0]["validations"]["correctness"]["methods"][0]
+    assert source["status"] == "found"
+    assert source["found_ref"]["title"] == "High Confidence Policy Improvement"
+    assert source["source_url"] == "https://proceedings.mlr.press/v37/thomas15.html"
+    assert calls == ["/", "/v37/", "/v37/thomas15.html"]
+
+
+def test_pmlr_rechecks_saved_v2_miss_with_cached_catalog(pmlr_catalog):
+    bib, output, client, calls = pmlr_catalog
+    legacy = copy.copy(METHODS["pmlr"])
+    legacy.descriptor = replace(legacy.descriptor, adapter_version="2")
+    legacy.paper_links = lambda *_: iter(())
+    workspace, report, _ = run_audit(bib, output=output, client=client, methods=[legacy])
+    assert report["items"][0]["validations"]["correctness"]["methods"][0]["status"] == "not_found"
+    raw = {
+        path: path.read_bytes()
+        for path in workspace.cache.rglob("*")
+        if path.is_file() and path.name != "checksum.json" and path.suffix != ".lock"
+    }
+    _, report, _ = run_audit(bib, output=output, client=client, methods=[METHODS["pmlr"]])
+    source = report["items"][0]["validations"]["correctness"]["methods"][0]
+    assert source["status"] == "found"
+    assert calls == ["/", "/v37/", "/v37/thomas15.html"]
+    assert [request["cached"] for request in source["requests"]] == [True, True, False]
+    assert all(path.read_bytes() == body for path, body in raw.items())
 
 
 @pytest.mark.parametrize("name", list(METHODS))

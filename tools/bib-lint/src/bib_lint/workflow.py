@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from bib_lint.aux import read_aux
+from bib_lint.citation_keys import resolve_citation_usage
 from bib_lint.parser import parse_file
 from bib_lint.storage import report_lock, report_paths
 from bib_lint.storage import write_json as _write_json
@@ -58,11 +59,10 @@ def parse_bib(
             citations = read_aux(aux_file, encoding=encoding)
             _protect(final, citations.files)
             _protect(checkpoint, citations.files)
-            cited = {key.lower() for key in citations.keys}
-            known = {key.lower() for key in bibliography.entries}
-            aux.total = len(cited - {"*"})
-            aux.unused = 0 if "*" in cited else len(known - cited)
-            aux.missing = sorted(key for key in citations.keys if key.lower() not in known | {"*"})
+            usage = resolve_citation_usage(bibliography.entries, citations.keys)
+            aux.total = usage.citation_count
+            aux.unused = len(bibliography.entries) - len(usage.used_keys)
+            aux.missing = list(usage.missing_keys)
         except (OSError, ValueError, LookupError) as exc:
             aux.error = str(exc)
             return bib, aux

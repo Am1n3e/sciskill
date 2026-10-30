@@ -18,7 +18,14 @@ def pytest_collection_modifyitems(items):
             if name in {"test_viewer.py", "test_agent_review.py", "test_jobs.py", "test_ui.py"}
             else "workflow"
             if name
-            in {"test_resume.py", "test_audit.py", "test_cli.py", "test_provider_workflow.py"}
+            in {
+                "test_resume.py",
+                "test_audit.py",
+                "test_cli.py",
+                "test_provider_workflow.py",
+                "test_e2e_corpus.py",
+                "test_adversarial_corpus.py",
+            }
             else "unit"
         )
         item.add_marker(getattr(pytest.mark, category))

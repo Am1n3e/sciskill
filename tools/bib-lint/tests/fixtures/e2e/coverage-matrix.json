@@ -1,0 +1,1746 @@
+{
+  "schema_version": 1,
+  "bibliography": "representative-20.bib",
+  "variants": "rule-variants.bib",
+  "scope": "User-facing bibliography metadata checks plus supporting parser, citation-usage, retrieval, evidence, resume and review invariants. This is an explicit case catalog, not a statement of exhaustive code branch coverage.",
+  "coverage_layers": {
+    "corpus_replay": "Executable tests consume the supplied real-paper corpus, labelled variants or parser/AUX fixtures; real provider adapters and audit orchestration run with controlled HTTP.",
+    "existing_regression": "Existing regression exercises the invariant using its own inputs. A related real-paper context is listed for exploration, not claimed as a new end-to-end replay.",
+    "corpus_consensus": "Shared matching and consensus run against normalized source-linked real-paper facts. Controlled duplicated sources and failures are labelled; HTTP parsing is exercised separately by corpus_replay."
+  },
+  "excluded": [
+    "Scientific claim support, pages, volume and edition are outside automated metadata verdicts.",
+    "External benchmark acquisition/evaluator internals, packaging and every UI layout detail are outside this bibliography case catalog.",
+    "Live services can fail or change; live verdicts are observations and are not frozen gold labels."
+  ],
+  "scenarios": [
+    {
+      "id": "denied",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Replay denied while retrieving pinned CodeNav metadata.",
+      "expected": "403 is an access failure, not an invalid citation.",
+      "execution": "test_real_paper_transport_faults"
+    },
+    {
+      "id": "rate_limit",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Replay rate_limit while retrieving pinned CodeNav metadata.",
+      "expected": "A large Retry-After is bounded and recorded as rate limiting.",
+      "execution": "test_real_paper_transport_faults"
+    },
+    {
+      "id": "server_error",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Replay server_error while retrieving pinned CodeNav metadata.",
+      "expected": "503 retries stop within the attempt budget.",
+      "execution": "test_real_paper_transport_faults"
+    },
+    {
+      "id": "timeout",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Replay timeout while retrieving pinned CodeNav metadata.",
+      "expected": "Read timeouts remain source failures after bounded retries.",
+      "execution": "test_real_paper_transport_faults"
+    },
+    {
+      "id": "malformed",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Replay malformed while retrieving pinned CodeNav metadata.",
+      "expected": "Malformed successful HTTP payloads remain source failures.",
+      "execution": "test_real_paper_transport_faults"
+    },
+    {
+      "id": "missing",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Replay missing while retrieving pinned CodeNav metadata.",
+      "expected": "404 is a missing record, not proof of invalid metadata.",
+      "execution": "test_real_paper_transport_faults"
+    },
+    {
+      "id": "retry_success",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Replay retry_success while retrieving pinned CodeNav metadata.",
+      "expected": "Transient 503 responses can recover to a verified match.",
+      "execution": "test_real_paper_transport_faults"
+    },
+    {
+      "id": "primary_required",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Agreement between indexes cannot establish correctness.",
+      "execution": "test_real_paper_consensus_scenarios",
+      "test": "test_verification.py::test_shared_error_is_not_truth",
+      "note": "Executed against normalized real-paper facts in consensus-cases.json, with controlled duplicated sources/failures explicitly labelled; this layer tests shared matching and consensus rather than HTTP parsing."
+    },
+    {
+      "id": "primary_conflict",
+      "reference": "kimLanguageModelsCan2023a",
+      "operation": "Conflicting authoritative years require review.",
+      "execution": "test_real_paper_consensus_scenarios",
+      "test": "test_verification.py::test_conflicting_authoritative_years",
+      "note": "Executed against normalized real-paper facts in consensus-cases.json, with controlled duplicated sources/failures explicitly labelled; this layer tests shared matching and consensus rather than HTTP parsing."
+    },
+    {
+      "id": "multiple_versions",
+      "reference": "lambert2024tulu",
+      "operation": "Multiple matching versions are ambiguous.",
+      "execution": "test_real_paper_consensus_scenarios",
+      "test": "test_verification.py::test_two_versions_ambiguous",
+      "note": "Executed against normalized real-paper facts in consensus-cases.json, with controlled duplicated sources/failures explicitly labelled; this layer tests shared matching and consensus rather than HTTP parsing."
+    },
+    {
+      "id": "no_majority_override",
+      "reference": "kimLanguageModelsCan2023a",
+      "operation": "Index majority cannot override conflicting primary versions.",
+      "execution": "existing_regression",
+      "test": "test_verification.py::test_versions_from_authorities_not_voted_away",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "preprint_publication",
+      "reference": "gao2022pal",
+      "operation": "A preprint year does not disprove a later publication year.",
+      "execution": "test_real_paper_consensus_scenarios",
+      "test": "test_verification.py::test_preprint_year_does_not_disprove_publication_year",
+      "note": "Executed against normalized real-paper facts in consensus-cases.json, with controlled duplicated sources/failures explicitly labelled; this layer tests shared matching and consensus rather than HTTP parsing."
+    },
+    {
+      "id": "source_denominator",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Unavailable and inapplicable lookups do not inflate records found.",
+      "execution": "test_real_paper_consensus_scenarios",
+      "test": "test_verification.py::test_unavailable_and_not_applicable_denominator",
+      "note": "Executed against normalized real-paper facts in consensus-cases.json, with controlled duplicated sources/failures explicitly labelled; this layer tests shared matching and consensus rather than HTTP parsing."
+    },
+    {
+      "id": "independent_sources",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Continue independent adapters after one source fails.",
+      "execution": "existing_regression",
+      "test": "test_verification.py::test_all_adapters_run_after_failure",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "unqualified_review",
+      "reference": "gao2022pal",
+      "operation": "An unqualified review-platform note cannot confirm publication.",
+      "execution": "test_real_paper_consensus_scenarios",
+      "test": "test_provider_workflow.py::test_unqualified_review_record_cannot_confirm_publication",
+      "note": "Executed against normalized real-paper facts in consensus-cases.json, with controlled duplicated sources/failures explicitly labelled; this layer tests shared matching and consensus rather than HTTP parsing."
+    },
+    {
+      "id": "anonymous_submission",
+      "reference": "gao2022pal",
+      "operation": "Anonymous and unpublished notes retain uncertain authors/year/status.",
+      "execution": "existing_regression",
+      "test": "test_provider_sources.py::test_openreview_unpublished_anonymous_timestamps",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "review_reply_exclusion",
+      "reference": "gao2022pal",
+      "operation": "Exclude review replies and scope acceptance decisions to the paper.",
+      "execution": "existing_regression",
+      "test": "test_provider_sources.py::test_openreview_api1_decision_and_reply_exclusion",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "source_facts_only",
+      "reference": "JMLR:v22:20-1364",
+      "operation": "Never copy a query hint into normalized source facts.",
+      "execution": "existing_regression",
+      "test": "test_provider_sources.py::test_no_query_hint_is_normalized_as_source_fact",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "partial_search_evidence",
+      "reference": "JMLR:v22:20-1364",
+      "operation": "Retain retrieved candidates when discovery runs out of budget.",
+      "execution": "existing_regression",
+      "test": "test_provider_workflow.py::test_partial_discovery_and_independent_success",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "direct_404_fallback",
+      "reference": "JMLR:v22:20-1364",
+      "operation": "After a direct URL returns 404, try a scoped catalog.",
+      "execution": "existing_regression",
+      "test": "test_provider_sources.py::test_archive_direct_404_falls_back_to_catalog",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "legacy_identifiers",
+      "reference": "JMLR:v22:20-1364",
+      "operation": "Accept supported historical JMLR identifiers and official redirects.",
+      "execution": "existing_regression",
+      "test": "test_provider_sources.py::test_jmlr_old_identifier_and_allowed_redirect",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "pmlr_abs_title",
+      "reference": "thomas2015hcpi",
+      "operation": "Read the neighboring paper title instead of the abs anchor label.",
+      "execution": "existing_regression",
+      "test": "test_provider_sources.py::test_pmlr_discovers_paper_from_real_volume_layout",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "pmlr_adapter_refresh",
+      "reference": "thomas2015hcpi",
+      "operation": "Recheck a saved PMLR v2 miss using cached primary evidence.",
+      "execution": "existing_regression",
+      "test": "test_provider_sources.py::test_pmlr_rechecks_saved_v2_miss_with_cached_catalog",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "arxiv_journal_locator",
+      "reference": "levine2020offline",
+      "operation": "Extract an arXiv identifier from a journal field.",
+      "execution": "existing_regression",
+      "test": "test_verification.py::test_identifiers_from_journal_and_url",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "corporate_author",
+      "reference": "iso25010_2023",
+      "operation": "Preserve institutional names and normalize accents.",
+      "execution": "existing_regression",
+      "test": "test_core_edges.py::test_corporate_names_accents_and_identifier_identity",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "source_url_policy",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Reject unsafe schemes, credentials, hosts, ports and redirects.",
+      "execution": "existing_regression",
+      "test": "test_provider_context.py::test_redirect_hosts_credentials_and_https",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "request_budgets",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Bound fetch, attempt, page and candidate counts.",
+      "execution": "existing_regression",
+      "test": "test_provider_context.py::test_budgets",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "candidate_budget",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Bound candidate accumulation and propagate storage failures.",
+      "execution": "existing_regression",
+      "test": "test_provider_context.py::test_candidate_budget_and_storage_failure",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "pacing_timeout",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Enforce configured host pacing, retry timing and request timeout.",
+      "execution": "existing_regression",
+      "test": "test_provider_context.py::test_configured_pacing_retries_and_timeout",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "input_unchanged",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Preserve the source bibliography and unrelated validation fields.",
+      "execution": "existing_regression",
+      "test": "test_verification.py::test_verify_report_preserves_input_and_validations",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "resume_checkpoint",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Checkpoint each provider and resume unfinished work.",
+      "execution": "existing_regression",
+      "test": "test_resume.py::test_interrupt_checkpoints_each_method_and_resumes",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "unused_no_network",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Never query providers for unused references.",
+      "execution": "existing_regression",
+      "test": "test_resume.py::test_unused_entries_never_call_providers",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "resume_failure_refresh",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Preserve saved source failures on resume; refresh retries them.",
+      "execution": "existing_regression",
+      "test": "test_resume.py::test_errors_preserved_on_resume_and_retried_on_refresh",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "selective_key",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Rechecking one key preserves other results and pending state.",
+      "execution": "existing_regression",
+      "test": "test_resume.py::test_verify_single_key_preserves_other_results_and_pending_state",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "changed_input",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Reject stale checkpoints when input metadata changes.",
+      "execution": "existing_regression",
+      "test": "test_resume.py::test_changed_source_rejects_stale_checkpoint",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "changed_provider",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Recompute decisions after provider policy or revision changes.",
+      "execution": "existing_regression",
+      "test": "test_provider_workflow.py::test_descriptor_change_invalidates_all_decisions_preserving_final",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "cache_lock_execution",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Cache contention aborts the run instead of becoming bad provider evidence.",
+      "execution": "existing_regression",
+      "test": "test_provider_workflow.py::test_cache_lock_failure_aborts_audit_without_saving_source_failure",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "cache_lock_upgrade",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Recompute an old misclassified lock failure on resume.",
+      "execution": "existing_regression",
+      "test": "test_provider_workflow.py::test_v2_misclassified_lock_failure_is_rechecked_on_resume",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "atomic_outputs",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "A failed atomic replace cleans up its temporary file.",
+      "execution": "existing_regression",
+      "test": "test_audit.py::test_atomic_writer_cleans_up_failed_replace",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "input_aliases",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Never overwrite bibliography inputs through an output alias.",
+      "execution": "existing_regression",
+      "test": "test_audit.py::test_input_alias_protection",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "cache_bytes",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Archive raw bytes and checksum manifest entries.",
+      "execution": "existing_regression",
+      "test": "test_response_cache.py::test_raw_body_and_manifest",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "cache_corruption",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Detect damaged cache data and fetch it again.",
+      "execution": "existing_regression",
+      "test": "test_response_cache.py::test_damaged_cache_is_removed_and_refetched",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "cache_errors",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Archive HTTP errors without reusing them as successful evidence.",
+      "execution": "existing_regression",
+      "test": "test_response_cache.py::test_error_responses_archived_but_not_reused",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "cache_expiry",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Expire old evidence and honor refresh.",
+      "execution": "existing_regression",
+      "test": "test_core_edges.py::test_expiry_refresh_and_failed_response_never_success",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "credential_redaction",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Redact credentials from logs, evidence and cached request metadata.",
+      "execution": "existing_regression",
+      "test": "test_verification.py::test_cache_redacts_credentials",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "unsafe_keys",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Keep unsafe citation keys within the cache directory.",
+      "execution": "existing_regression",
+      "test": "test_response_cache.py::test_unsafe_citation_keys_and_request_identity",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "overlay_separate",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Agent overlays never alter automated consensus.",
+      "execution": "existing_regression",
+      "test": "test_agent_review.py::test_overlay_never_changes_automated_results_or_files",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "overlay_stale",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Quarantine agent evidence after the entry hash changes.",
+      "execution": "existing_regression",
+      "test": "test_agent_review.py::test_changed_entry_quarantines_stale_evidence",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "overlay_invalid",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Reject malformed agent evidence before attachment.",
+      "execution": "existing_regression",
+      "test": "test_agent_review.py::test_malformed_evidence_rejected_before_attachment",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "json_completion",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Distinguish partial and complete JSON results.",
+      "execution": "existing_regression",
+      "test": "test_cli.py::test_json_complete_and_partial_streams",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "pending_skipped",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Keep pending and unused references out of completed unresolved counts.",
+      "execution": "existing_regression",
+      "test": "test_status.py::test_partial_check_is_not_counted_as_completed_unresolved",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "viewer_integrity",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Verify cached evidence checksums before showing response contents.",
+      "execution": "existing_regression",
+      "test": "test_viewer.py::test_cache_read_checks_integrity_without_modifying_files",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    },
+    {
+      "id": "viewer_proposals",
+      "reference": "gupta2024codenavtooluseusingrealworld",
+      "operation": "Derive proposed corrections only from evidence.",
+      "execution": "existing_regression",
+      "test": "test_viewer.py::test_comparisons_and_evidence_based_proposals",
+      "note": "The reference identifies a relevant real-paper context. This engineering regression still uses its own purpose-built inputs; it is not a new corpus replay."
+    }
+  ],
+  "rules": [
+    {
+      "id": "clean",
+      "category": "metadata_and_identity",
+      "description": "Pinned, complete preprint control.",
+      "witnesses": [
+        "variant:case_clean"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "authors_partial",
+      "category": "metadata_and_identity",
+      "description": "Valid first-author prefix followed by the BibTeX others sentinel.",
+      "witnesses": [
+        "variant:case_authors_partial"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "authors_reordered",
+      "category": "metadata_and_identity",
+      "description": "Swap the first two real authors.",
+      "witnesses": [
+        "variant:case_authors_reordered"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "authors_wrong_given",
+      "category": "metadata_and_identity",
+      "description": "Wrong first given name while preserving the real family name.",
+      "witnesses": [
+        "variant:case_authors_wrong_given"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "authors_initials",
+      "category": "metadata_and_identity",
+      "description": "Compatible initials remain insufficient to confirm full given names.",
+      "witnesses": [
+        "variant:case_authors_initials"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "authors_missing",
+      "category": "metadata_and_identity",
+      "description": "Missing input authors with an exact pinned source identifier.",
+      "witnesses": [
+        "variant:case_authors_missing"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "authors_short_without_others",
+      "category": "metadata_and_identity",
+      "description": "Truncation without an others marker is a mismatch.",
+      "witnesses": [
+        "variant:case_authors_short_without_others"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "authors_wrong_prefix",
+      "category": "metadata_and_identity",
+      "description": "An incorrect author prefix cannot be a partial match.",
+      "witnesses": [
+        "variant:case_authors_wrong_prefix"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "authors_only_others",
+      "category": "metadata_and_identity",
+      "description": "A bare others sentinel confirms no named author prefix.",
+      "witnesses": [
+        "variant:case_authors_only_others"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "year_wrong",
+      "category": "metadata_and_identity",
+      "description": "Deliberately change 2024 to 2023.",
+      "witnesses": [
+        "variant:case_year_wrong"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "year_missing",
+      "category": "metadata_and_identity",
+      "description": "A missing input year remains unverified.",
+      "witnesses": [
+        "variant:case_year_missing"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "title_typo",
+      "category": "metadata_and_identity",
+      "description": "A small title change still identifies the paper but is flagged.",
+      "witnesses": [
+        "variant:case_title_typo"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "title_missing",
+      "category": "metadata_and_identity",
+      "description": "An identifier alone cannot validate a citation with no title.",
+      "witnesses": [
+        "variant:case_title_missing"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "title_unrelated",
+      "category": "metadata_and_identity",
+      "description": "Correct DOI cannot validate a wholly unrelated title.",
+      "witnesses": [
+        "variant:case_title_unrelated"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "arxiv_unversioned",
+      "category": "metadata_and_identity",
+      "description": "An unversioned input accepts the corresponding pinned source version.",
+      "witnesses": [
+        "variant:case_arxiv_unversioned"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "arxiv_wrong_identifier",
+      "category": "metadata_and_identity",
+      "description": "A different real arXiv ID must be rejected before title fallback rediscovers CodeNav.",
+      "witnesses": [
+        "variant:case_arxiv_wrong_identifier"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "doi_wrapped",
+      "category": "metadata_and_identity",
+      "description": "Normalize an HTTPS DOI wrapper and DOI letter case.",
+      "witnesses": [
+        "variant:case_doi_wrapped"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "doi_wrong",
+      "category": "metadata_and_identity",
+      "description": "Another real ACL DOI is an explicit mismatch, not proof of identity.",
+      "witnesses": [
+        "variant:case_doi_wrong"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "doi_in_url",
+      "category": "metadata_and_identity",
+      "description": "Extract DOI from its URL, then discover the publication through the venue catalog.",
+      "witnesses": [
+        "variant:case_doi_in_url"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "venue_abbreviated",
+      "category": "metadata_and_identity",
+      "description": "A venue abbreviation produces review rather than an invented venue correction.",
+      "witnesses": [
+        "variant:case_venue_abbreviated"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "venue_missing",
+      "category": "metadata_and_identity",
+      "description": "An omitted venue is explicitly not checked.",
+      "witnesses": [
+        "variant:case_venue_missing"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "gaia_unicode",
+      "category": "metadata_and_identity",
+      "description": "Real accented names are preserved.",
+      "witnesses": [
+        "variant:case_gaia_unicode"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "gaia_tex_accents",
+      "category": "metadata_and_identity",
+      "description": "Equivalent LaTeX and Unicode accent spellings compare equal.",
+      "witnesses": [
+        "variant:case_gaia_tex_accents"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "jmlr_clean",
+      "category": "metadata_and_identity",
+      "description": "Complete direct JMLR control.",
+      "witnesses": [
+        "variant:case_jmlr_clean"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "jmlr_title_discovery",
+      "category": "metadata_and_identity",
+      "description": "JMLR year/catalog discovery without a direct URL or volume.",
+      "witnesses": [
+        "variant:case_jmlr_title_discovery"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "jmlr_volume_only",
+      "category": "metadata_and_identity",
+      "description": "Volume routing works without a year; the absent year remains unknown.",
+      "witnesses": [
+        "variant:case_jmlr_volume_only"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "jmlr_identifier_only",
+      "category": "metadata_and_identity",
+      "description": "Retrieve by the explicit JMLR locator while refusing to confirm a missing title.",
+      "witnesses": [
+        "variant:case_jmlr_identifier_only"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "scope_unchecked",
+      "category": "metadata_and_identity",
+      "description": "Pages, volume, edition and a test claim are outside the metadata decision scope.",
+      "witnesses": [
+        "variant:case_scope_unchecked"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "openreview_accepted_direct",
+      "category": "metadata_and_identity",
+      "description": "Verify a public accepted OpenReview forum record using its note ID.",
+      "witnesses": [
+        "variant:case_openreview_accepted_direct"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "not_applicable",
+      "category": "metadata_and_identity",
+      "description": "No title, locator or other metadata: all six sources are inapplicable.",
+      "witnesses": [
+        "variant:case_not_applicable"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "missing_routing_context",
+      "category": "metadata_and_identity",
+      "description": "Archive discovery without year, volume or direct locator must request context.",
+      "witnesses": [
+        "variant:case_missing_routing_context"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_controlled_reference_audit"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "provider_arxiv",
+      "category": "provider",
+      "description": "Retrieve an authoritative real-paper record through the arxiv adapter.",
+      "witnesses": [
+        "reference:gupta2024codenavtooluseusingrealworld"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_provider_replay"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "provider_pmlr",
+      "category": "provider",
+      "description": "Retrieve an authoritative real-paper record through the pmlr adapter.",
+      "witnesses": [
+        "reference:thomas2015hcpi"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_provider_replay"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "provider_jmlr",
+      "category": "provider",
+      "description": "Retrieve an authoritative real-paper record through the jmlr adapter.",
+      "witnesses": [
+        "reference:JMLR:v22:20-1364"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_provider_replay"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "provider_acl_anthology",
+      "category": "provider",
+      "description": "Retrieve an authoritative real-paper record through the acl_anthology adapter.",
+      "witnesses": [
+        "reference:you2025datawiseagentnotebookcentricllmagent"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_provider_replay"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "provider_neurips",
+      "category": "provider",
+      "description": "Retrieve an authoritative real-paper record through the neurips adapter.",
+      "witnesses": [
+        "reference:kimLanguageModelsCan2023a"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_provider_replay"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "provider_openreview",
+      "category": "provider",
+      "description": "Retrieve an authoritative real-paper record through the openreview adapter.",
+      "witnesses": [
+        "reference:gao2022pal"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_provider_replay"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "parser_malformed",
+      "category": "parser",
+      "description": "Reject malformed without producing a partial parsed bibliography.",
+      "witnesses": [
+        "file:parser/malformed.bib"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_parser_rejections"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "parser_duplicate_keys",
+      "category": "parser",
+      "description": "Reject duplicate-keys without producing a partial parsed bibliography.",
+      "witnesses": [
+        "file:parser/duplicate-keys.bib"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_parser_rejections"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "parser_duplicate_fields",
+      "category": "parser",
+      "description": "Reject duplicate-fields without producing a partial parsed bibliography.",
+      "witnesses": [
+        "file:parser/duplicate-fields.bib"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_parser_rejections"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "parser_undefined_macro",
+      "category": "parser",
+      "description": "Reject undefined-macro without producing a partial parsed bibliography.",
+      "witnesses": [
+        "file:parser/undefined-macro.bib"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_parser_rejections"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "parser_invalid_author",
+      "category": "parser",
+      "description": "Reject invalid-author without producing a partial parsed bibliography.",
+      "witnesses": [
+        "file:parser/invalid-author.bib"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_parser_rejections"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "parser_encoding",
+      "category": "parser",
+      "description": "Explicit Latin-1 decoding succeeds; UTF-8 fails; original bytes survive.",
+      "witnesses": [
+        "file:parser/latin1.bib"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_encoding_macros_empty_and_custom_fields"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "parser_macros",
+      "category": "parser",
+      "description": "Expand string macros and retain preambles, custom fields and crossref locators.",
+      "witnesses": [
+        "file:parser/macros.bib"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_encoding_macros_empty_and_custom_fields"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "parser_empty",
+      "category": "parser",
+      "description": "Accept an empty bibliography with no fabricated entries.",
+      "witnesses": [
+        "file:parser/empty.bib"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_encoding_macros_empty_and_custom_fields"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "aux_selected",
+      "category": "citation_usage",
+      "description": "Scope verification to cited keys.",
+      "witnesses": [
+        "file:aux/selected.aux"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_aux_scope_and_nested_cycles"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "aux_nested",
+      "category": "citation_usage",
+      "description": "Follow nested AUX inputs once, including cycles.",
+      "witnesses": [
+        "file:aux/paper.aux"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_aux_scope_and_nested_cycles"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "aux_case_comments",
+      "category": "citation_usage",
+      "description": "Match keys case-insensitively and ignore commented citations.",
+      "witnesses": [
+        "file:aux/child.aux"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_aux_scope_and_nested_cycles"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "aux_unknown",
+      "category": "citation_usage",
+      "description": "Warn about unknown citation keys.",
+      "witnesses": [
+        "file:aux/child.aux"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_aux_scope_and_nested_cycles"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "aux_wildcard",
+      "category": "citation_usage",
+      "description": "A wildcard selects every reference.",
+      "witnesses": [
+        "file:aux/all.aux"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_aux_scope_and_nested_cycles"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "aux_none",
+      "category": "citation_usage",
+      "description": "No citations leaves no eligible references.",
+      "witnesses": [
+        "file:aux/none.aux"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_aux_scope_and_nested_cycles"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "aux_reject_malformed",
+      "category": "citation_usage",
+      "description": "Reject malformed AUX input before verification.",
+      "witnesses": [
+        "file:aux/malformed.aux"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_aux_rejections"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "aux_reject_biblatex",
+      "category": "citation_usage",
+      "description": "Reject biblatex AUX input before verification.",
+      "witnesses": [
+        "file:aux/biblatex.aux"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_aux_rejections"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "aux_reject_missing_input",
+      "category": "citation_usage",
+      "description": "Reject missing-input AUX input before verification.",
+      "witnesses": [
+        "file:aux/missing-input.aux"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_corpus_aux_rejections"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "transport_denied",
+      "category": "transport",
+      "description": "403 is an access failure, not an invalid citation.",
+      "witnesses": [
+        "scenario:denied"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_transport_faults"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "transport_rate_limit",
+      "category": "transport",
+      "description": "A large Retry-After is bounded and recorded as rate limiting.",
+      "witnesses": [
+        "scenario:rate_limit"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_transport_faults"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "transport_server_error",
+      "category": "transport",
+      "description": "503 retries stop within the attempt budget.",
+      "witnesses": [
+        "scenario:server_error"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_transport_faults"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "transport_timeout",
+      "category": "transport",
+      "description": "Read timeouts remain source failures after bounded retries.",
+      "witnesses": [
+        "scenario:timeout"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_transport_faults"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "transport_malformed",
+      "category": "transport",
+      "description": "Malformed successful HTTP payloads remain source failures.",
+      "witnesses": [
+        "scenario:malformed"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_transport_faults"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "transport_missing",
+      "category": "transport",
+      "description": "404 is a missing record, not proof of invalid metadata.",
+      "witnesses": [
+        "scenario:missing"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_transport_faults"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "transport_retry_success",
+      "category": "transport",
+      "description": "Transient 503 responses can recover to a verified match.",
+      "witnesses": [
+        "scenario:retry_success"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_transport_faults"
+      ],
+      "coverage_layer": "corpus_replay"
+    },
+    {
+      "id": "primary_required",
+      "category": "consensus",
+      "description": "Agreement between indexes cannot establish correctness.",
+      "witnesses": [
+        "file:consensus-cases.json",
+        "reference:you2025datawiseagentnotebookcentricllmagent"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_consensus_scenarios",
+        "test_verification.py::test_shared_error_is_not_truth"
+      ],
+      "coverage_layer": "corpus_consensus"
+    },
+    {
+      "id": "primary_conflict",
+      "category": "consensus",
+      "description": "Conflicting authoritative years require review.",
+      "witnesses": [
+        "file:consensus-cases.json",
+        "reference:kimLanguageModelsCan2023a"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_consensus_scenarios",
+        "test_verification.py::test_conflicting_authoritative_years"
+      ],
+      "coverage_layer": "corpus_consensus"
+    },
+    {
+      "id": "multiple_versions",
+      "category": "consensus",
+      "description": "Multiple matching versions are ambiguous.",
+      "witnesses": [
+        "file:consensus-cases.json",
+        "reference:lambert2024tulu"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_consensus_scenarios",
+        "test_verification.py::test_two_versions_ambiguous"
+      ],
+      "coverage_layer": "corpus_consensus"
+    },
+    {
+      "id": "no_majority_override",
+      "category": "consensus",
+      "description": "Index majority cannot override conflicting primary versions.",
+      "witnesses": [
+        "scenario:no_majority_override"
+      ],
+      "tests": [
+        "test_verification.py::test_versions_from_authorities_not_voted_away"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "preprint_publication",
+      "category": "consensus",
+      "description": "A preprint year does not disprove a later publication year.",
+      "witnesses": [
+        "file:consensus-cases.json",
+        "reference:gao2022pal"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_consensus_scenarios",
+        "test_verification.py::test_preprint_year_does_not_disprove_publication_year"
+      ],
+      "coverage_layer": "corpus_consensus"
+    },
+    {
+      "id": "source_denominator",
+      "category": "consensus",
+      "description": "Unavailable and inapplicable lookups do not inflate records found.",
+      "witnesses": [
+        "file:consensus-cases.json",
+        "reference:gupta2024codenavtooluseusingrealworld"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_consensus_scenarios",
+        "test_verification.py::test_unavailable_and_not_applicable_denominator"
+      ],
+      "coverage_layer": "corpus_consensus"
+    },
+    {
+      "id": "independent_sources",
+      "category": "consensus",
+      "description": "Continue independent adapters after one source fails.",
+      "witnesses": [
+        "scenario:independent_sources"
+      ],
+      "tests": [
+        "test_verification.py::test_all_adapters_run_after_failure"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "unqualified_review",
+      "category": "provider",
+      "description": "An unqualified review-platform note cannot confirm publication.",
+      "witnesses": [
+        "file:consensus-cases.json",
+        "reference:you2025datawiseagentnotebookcentricllmagent"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_consensus_scenarios",
+        "test_provider_workflow.py::test_unqualified_review_record_cannot_confirm_publication"
+      ],
+      "coverage_layer": "corpus_consensus"
+    },
+    {
+      "id": "anonymous_submission",
+      "category": "provider",
+      "description": "Anonymous and unpublished notes retain uncertain authors/year/status.",
+      "witnesses": [
+        "scenario:anonymous_submission"
+      ],
+      "tests": [
+        "test_provider_sources.py::test_openreview_unpublished_anonymous_timestamps"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "review_reply_exclusion",
+      "category": "provider",
+      "description": "Exclude review replies and scope acceptance decisions to the paper.",
+      "witnesses": [
+        "scenario:review_reply_exclusion"
+      ],
+      "tests": [
+        "test_provider_sources.py::test_openreview_api1_decision_and_reply_exclusion"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "source_facts_only",
+      "category": "provider",
+      "description": "Never copy a query hint into normalized source facts.",
+      "witnesses": [
+        "scenario:source_facts_only"
+      ],
+      "tests": [
+        "test_provider_sources.py::test_no_query_hint_is_normalized_as_source_fact"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "partial_search_evidence",
+      "category": "provider",
+      "description": "Retain retrieved candidates when discovery runs out of budget.",
+      "witnesses": [
+        "scenario:partial_search_evidence"
+      ],
+      "tests": [
+        "test_provider_workflow.py::test_partial_discovery_and_independent_success"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "direct_404_fallback",
+      "category": "provider",
+      "description": "After a direct URL returns 404, try a scoped catalog.",
+      "witnesses": [
+        "scenario:direct_404_fallback"
+      ],
+      "tests": [
+        "test_provider_sources.py::test_archive_direct_404_falls_back_to_catalog"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "legacy_identifiers",
+      "category": "provider",
+      "description": "Accept supported historical JMLR identifiers and official redirects.",
+      "witnesses": [
+        "scenario:legacy_identifiers"
+      ],
+      "tests": [
+        "test_provider_sources.py::test_jmlr_old_identifier_and_allowed_redirect"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "pmlr_abs_title",
+      "category": "provider",
+      "description": "Read the neighboring paper title instead of the abs anchor label.",
+      "witnesses": [
+        "scenario:pmlr_abs_title"
+      ],
+      "tests": [
+        "test_provider_sources.py::test_pmlr_discovers_paper_from_real_volume_layout"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "pmlr_adapter_refresh",
+      "category": "lifecycle",
+      "description": "Recheck a saved PMLR v2 miss using cached primary evidence.",
+      "witnesses": [
+        "scenario:pmlr_adapter_refresh"
+      ],
+      "tests": [
+        "test_provider_sources.py::test_pmlr_rechecks_saved_v2_miss_with_cached_catalog"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "arxiv_journal_locator",
+      "category": "metadata_and_identity",
+      "description": "Extract an arXiv identifier from a journal field.",
+      "witnesses": [
+        "scenario:arxiv_journal_locator"
+      ],
+      "tests": [
+        "test_verification.py::test_identifiers_from_journal_and_url"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "corporate_author",
+      "category": "metadata_and_identity",
+      "description": "Preserve institutional names and normalize accents.",
+      "witnesses": [
+        "scenario:corporate_author"
+      ],
+      "tests": [
+        "test_core_edges.py::test_corporate_names_accents_and_identifier_identity"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "source_url_policy",
+      "category": "source_safety",
+      "description": "Reject unsafe schemes, credentials, hosts, ports and redirects.",
+      "witnesses": [
+        "scenario:source_url_policy"
+      ],
+      "tests": [
+        "test_provider_context.py::test_redirect_hosts_credentials_and_https"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "request_budgets",
+      "category": "source_safety",
+      "description": "Bound fetch, attempt, page and candidate counts.",
+      "witnesses": [
+        "scenario:request_budgets"
+      ],
+      "tests": [
+        "test_provider_context.py::test_budgets"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "candidate_budget",
+      "category": "source_safety",
+      "description": "Bound candidate accumulation and propagate storage failures.",
+      "witnesses": [
+        "scenario:candidate_budget"
+      ],
+      "tests": [
+        "test_provider_context.py::test_candidate_budget_and_storage_failure"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "pacing_timeout",
+      "category": "transport",
+      "description": "Enforce configured host pacing, retry timing and request timeout.",
+      "witnesses": [
+        "scenario:pacing_timeout"
+      ],
+      "tests": [
+        "test_provider_context.py::test_configured_pacing_retries_and_timeout"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "input_unchanged",
+      "category": "lifecycle",
+      "description": "Preserve the source bibliography and unrelated validation fields.",
+      "witnesses": [
+        "scenario:input_unchanged"
+      ],
+      "tests": [
+        "test_verification.py::test_verify_report_preserves_input_and_validations"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "resume_checkpoint",
+      "category": "lifecycle",
+      "description": "Checkpoint each provider and resume unfinished work.",
+      "witnesses": [
+        "scenario:resume_checkpoint"
+      ],
+      "tests": [
+        "test_resume.py::test_interrupt_checkpoints_each_method_and_resumes"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "unused_no_network",
+      "category": "citation_usage",
+      "description": "Never query providers for unused references.",
+      "witnesses": [
+        "scenario:unused_no_network"
+      ],
+      "tests": [
+        "test_resume.py::test_unused_entries_never_call_providers"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "resume_failure_refresh",
+      "category": "lifecycle",
+      "description": "Preserve saved source failures on resume; refresh retries them.",
+      "witnesses": [
+        "scenario:resume_failure_refresh"
+      ],
+      "tests": [
+        "test_resume.py::test_errors_preserved_on_resume_and_retried_on_refresh"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "selective_key",
+      "category": "lifecycle",
+      "description": "Rechecking one key preserves other results and pending state.",
+      "witnesses": [
+        "scenario:selective_key"
+      ],
+      "tests": [
+        "test_resume.py::test_verify_single_key_preserves_other_results_and_pending_state"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "changed_input",
+      "category": "lifecycle",
+      "description": "Reject stale checkpoints when input metadata changes.",
+      "witnesses": [
+        "scenario:changed_input"
+      ],
+      "tests": [
+        "test_resume.py::test_changed_source_rejects_stale_checkpoint"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "changed_provider",
+      "category": "lifecycle",
+      "description": "Recompute decisions after provider policy or revision changes.",
+      "witnesses": [
+        "scenario:changed_provider"
+      ],
+      "tests": [
+        "test_provider_workflow.py::test_descriptor_change_invalidates_all_decisions_preserving_final"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "cache_lock_execution",
+      "category": "lifecycle",
+      "description": "Cache contention aborts the run instead of becoming bad provider evidence.",
+      "witnesses": [
+        "scenario:cache_lock_execution"
+      ],
+      "tests": [
+        "test_provider_workflow.py::test_cache_lock_failure_aborts_audit_without_saving_source_failure"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "cache_lock_upgrade",
+      "category": "lifecycle",
+      "description": "Recompute an old misclassified lock failure on resume.",
+      "witnesses": [
+        "scenario:cache_lock_upgrade"
+      ],
+      "tests": [
+        "test_provider_workflow.py::test_v2_misclassified_lock_failure_is_rechecked_on_resume"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "atomic_outputs",
+      "category": "lifecycle",
+      "description": "A failed atomic replace cleans up its temporary file.",
+      "witnesses": [
+        "scenario:atomic_outputs"
+      ],
+      "tests": [
+        "test_audit.py::test_atomic_writer_cleans_up_failed_replace"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "input_aliases",
+      "category": "lifecycle",
+      "description": "Never overwrite bibliography inputs through an output alias.",
+      "witnesses": [
+        "scenario:input_aliases"
+      ],
+      "tests": [
+        "test_audit.py::test_input_alias_protection"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "cache_bytes",
+      "category": "evidence",
+      "description": "Archive raw bytes and checksum manifest entries.",
+      "witnesses": [
+        "scenario:cache_bytes"
+      ],
+      "tests": [
+        "test_response_cache.py::test_raw_body_and_manifest"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "cache_corruption",
+      "category": "evidence",
+      "description": "Detect damaged cache data and fetch it again.",
+      "witnesses": [
+        "scenario:cache_corruption"
+      ],
+      "tests": [
+        "test_response_cache.py::test_damaged_cache_is_removed_and_refetched"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "cache_errors",
+      "category": "evidence",
+      "description": "Archive HTTP errors without reusing them as successful evidence.",
+      "witnesses": [
+        "scenario:cache_errors"
+      ],
+      "tests": [
+        "test_response_cache.py::test_error_responses_archived_but_not_reused"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "cache_expiry",
+      "category": "evidence",
+      "description": "Expire old evidence and honor refresh.",
+      "witnesses": [
+        "scenario:cache_expiry"
+      ],
+      "tests": [
+        "test_core_edges.py::test_expiry_refresh_and_failed_response_never_success"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "credential_redaction",
+      "category": "source_safety",
+      "description": "Redact credentials from logs, evidence and cached request metadata.",
+      "witnesses": [
+        "scenario:credential_redaction"
+      ],
+      "tests": [
+        "test_verification.py::test_cache_redacts_credentials"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "unsafe_keys",
+      "category": "source_safety",
+      "description": "Keep unsafe citation keys within the cache directory.",
+      "witnesses": [
+        "scenario:unsafe_keys"
+      ],
+      "tests": [
+        "test_response_cache.py::test_unsafe_citation_keys_and_request_identity"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "overlay_separate",
+      "category": "agent_review",
+      "description": "Agent overlays never alter automated consensus.",
+      "witnesses": [
+        "scenario:overlay_separate"
+      ],
+      "tests": [
+        "test_agent_review.py::test_overlay_never_changes_automated_results_or_files"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "overlay_stale",
+      "category": "agent_review",
+      "description": "Quarantine agent evidence after the entry hash changes.",
+      "witnesses": [
+        "scenario:overlay_stale"
+      ],
+      "tests": [
+        "test_agent_review.py::test_changed_entry_quarantines_stale_evidence"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "overlay_invalid",
+      "category": "agent_review",
+      "description": "Reject malformed agent evidence before attachment.",
+      "witnesses": [
+        "scenario:overlay_invalid"
+      ],
+      "tests": [
+        "test_agent_review.py::test_malformed_evidence_rejected_before_attachment"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "json_completion",
+      "category": "reporting",
+      "description": "Distinguish partial and complete JSON results.",
+      "witnesses": [
+        "scenario:json_completion"
+      ],
+      "tests": [
+        "test_cli.py::test_json_complete_and_partial_streams"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "pending_skipped",
+      "category": "reporting",
+      "description": "Keep pending and unused references out of completed unresolved counts.",
+      "witnesses": [
+        "scenario:pending_skipped"
+      ],
+      "tests": [
+        "test_status.py::test_partial_check_is_not_counted_as_completed_unresolved"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "viewer_integrity",
+      "category": "reporting",
+      "description": "Verify cached evidence checksums before showing response contents.",
+      "witnesses": [
+        "scenario:viewer_integrity"
+      ],
+      "tests": [
+        "test_viewer.py::test_cache_read_checks_integrity_without_modifying_files"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "viewer_proposals",
+      "category": "reporting",
+      "description": "Derive proposed corrections only from evidence.",
+      "witnesses": [
+        "scenario:viewer_proposals"
+      ],
+      "tests": [
+        "test_viewer.py::test_comparisons_and_evidence_based_proposals"
+      ],
+      "coverage_layer": "existing_regression"
+    },
+    {
+      "id": "supporting_unqualified",
+      "category": "consensus",
+      "description": "An unqualified public note does not replace the authoritative publication record.",
+      "witnesses": [
+        "file:consensus-cases.json",
+        "reference:you2025datawiseagentnotebookcentricllmagent"
+      ],
+      "tests": [
+        "test_e2e_corpus.py::test_real_paper_consensus_scenarios"
+      ],
+      "coverage_layer": "corpus_consensus"
+    }
+  ]
+}
