@@ -42,13 +42,3 @@ source links, and checksum-verified cached responses; it does not edit the
 bibliography.
 
 For source development and checks, see [Contributing](../../CONTRIBUTING.md).
-
-The adversarial bibliography has independent expectations and fixed public-paper
-metadata excerpts. From `tools/bib-lint`, run its deterministic audit with:
-
-```sh
-PYTHONPATH=src uv run --group dev python -m evaluation.adversarial --output ../../.local/bib-lint-adversarial
-```
-
-This command checks both all-source and focused-provider outcomes, plus citation-key
-and AUX invariants. It exits with status 1 if any challenge expectation remains unmet.

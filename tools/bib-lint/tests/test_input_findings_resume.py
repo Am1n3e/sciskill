@@ -1,18 +1,14 @@
 """Local contradictions survive unavailable sources, checkpoints, and policy upgrades."""
 
 import json
-from dataclasses import asdict
-from pathlib import Path
 
 import httpx
 import pytest
+from metadata_support import entry, html_record, write_bib
 from provider_support import FixtureProvider
-from pybtex.database import BibliographyData
-from pybtex.database import parse_file as pybtex_parse_file
 from support import FakeClient
 
 from bib_lint.audit import audit_summary, run_audit
-from bib_lint.parser import parse_file
 from bib_lint.scope import validate_report
 from bib_lint.status import reference_status
 from bib_lint.storage import write_json
@@ -22,8 +18,6 @@ from bib_lint.verification.providers import METHODS
 from bib_lint.viewer.data import load_report
 from bib_lint.viewer.presentation import reference_detail
 
-FIXTURES = Path(__file__).parent / "fixtures/e2e"
-CHALLENGE = FIXTURES / "adversarial.bib"
 VENUE_KEY = "adv_consensus_shadowed_booktitle"
 
 
@@ -32,10 +26,7 @@ def unavailable(*_):
 
 
 def isolated_bibliography(tmp_path, key=VENUE_KEY):
-    entry = pybtex_parse_file(str(CHALLENGE)).entries[key]
-    path = tmp_path / "references.bib"
-    BibliographyData(entries={key: entry}).to_file(str(path))
-    return path
+    return write_bib(tmp_path / "references.bib", key)
 
 
 def has_finding(result, code):
@@ -50,9 +41,8 @@ def has_finding(result, code):
     ],
 )
 def test_local_contradictions_are_visible_when_every_source_fails(key, code):
-    entry = asdict(parse_file(CHALLENGE).entries[key])
     result = verify_reference(
-        entry,
+        entry(key),
         FakeClient(),
         methods=[FixtureProvider("offline_source", lookup=unavailable)],
     )
@@ -116,7 +106,9 @@ def test_partial_checkpoint_retains_local_checks_and_resume_keeps_source_failure
     ]
 
 
-@pytest.mark.parametrize("legacy_run", [{"policy_version": 5}, {"orchestration_version": 3}])
+@pytest.mark.parametrize(
+    "legacy_run", [{"policy_version": 5}, {"policy_version": 6}, {"orchestration_version": 3}]
+)
 def test_old_saved_verdict_recomputes_input_checks_without_rewriting_evidence(tmp_path, legacy_run):
     source = isolated_bibliography(tmp_path)
     calls = []
@@ -124,7 +116,7 @@ def test_old_saved_verdict_recomputes_input_checks_without_rewriting_evidence(tm
     def respond(request):
         calls.append(str(request.url))
         assert str(request.url) == "https://aclanthology.org/2025.emnlp-main.58/"
-        return httpx.Response(200, text=(FIXTURES / "evidence/datawise.html").read_text())
+        return httpx.Response(200, text=html_record("datawise"))
 
     client = MetadataClient(tmp_path / "audit/cache", transport=httpx.MockTransport(respond))
     try:
@@ -136,7 +128,9 @@ def test_old_saved_verdict_recomputes_input_checks_without_rewriting_evidence(tm
             row["path"]: (workspace.cache / row["path"]).read_bytes() for row in manifest["files"]
         }
         legacy = first["items"][0]["validations"]["correctness"]
-        legacy.update(is_correct=True, policy_version=5, input_findings=[])
+        legacy.update(
+            is_correct=True, policy_version=legacy_run.get("policy_version", 5), input_findings=[]
+        )
         for method in legacy["methods"]:
             for comparison in method.get("comparisons", []):
                 if comparison["field"] == "venue":
@@ -151,7 +145,7 @@ def test_old_saved_verdict_recomputes_input_checks_without_rewriting_evidence(tm
     finally:
         client.close()
     result = resumed["items"][0]["validations"]["correctness"]
-    assert result["policy_version"] == resumed["verification_run"]["policy_version"] == 6
+    assert result["policy_version"] == resumed["verification_run"]["policy_version"] == 7
     assert resumed["verification_run"]["orchestration_version"] == 4
     assert reference_status({"correctness": result}) == "Needs review"
     assert has_finding(result, "conflicting_venues")
@@ -167,6 +161,8 @@ def test_old_saved_verdict_recomputes_input_checks_without_rewriting_evidence(tm
         None,
         [None],
         [{"field": "venue", "input": {}, "result": "unknown", "code": 7, "message": "bad"}],
+        [{"field": "venue", "result": [], "code": "conflicting_venues", "message": "bad"}],
+        [{"field": "venue", "result": {}, "code": "conflicting_venues", "message": "bad"}],
         [
             {
                 "field": "venue",

@@ -62,6 +62,7 @@ def reference_status(validations):
     comparisons = [c for s in found for c in s.get("comparisons", [])]
     if (
         any(c.get("result") == "partial_match" for c in comparisons)
+        and not result.get("input_findings")
         and all(c.get("result") in {"match", "partial_match", "not_checked"} for c in comparisons)
         and all(s.get("agrees_with_consensus") is True for s in found)
         and any(s.get("authority") for s in found)

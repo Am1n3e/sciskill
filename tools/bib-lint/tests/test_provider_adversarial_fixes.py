@@ -2,16 +2,15 @@
 
 import copy
 import json
-from dataclasses import asdict, replace
-from pathlib import Path
+from dataclasses import replace
 
 import httpx
 import pytest
+from metadata_support import entry, html_record, write_bib
 from pybtex.database import BibliographyData
 from pybtex.database import parse_file as pybtex_parse_file
 
 from bib_lint.audit import run_audit
-from bib_lint.parser import parse_file
 from bib_lint.status import reference_status
 from bib_lint.verification import verify_reference
 from bib_lint.verification.http import LookupFailure, MetadataClient
@@ -20,24 +19,22 @@ from bib_lint.verification.providers import jmlr as jmlr_module
 from bib_lint.verification.providers.archive import ArchiveProvider
 from bib_lint.verification.providers.protocol import LookupQuery
 
-FIXTURES = Path(__file__).parent / "fixtures/e2e"
-CORE = FIXTURES / "representative-20.bib"
 KEY = "JMLR:v22:20-1364"
 ABSTRACT = "https://jmlr.org/papers/v22/20-1364.html"
 PDF = "https://jmlr.org/papers/volume22/20-1364/20-1364.pdf"
 
 
 def source_entry(url=ABSTRACT):
-    entry = asdict(parse_file(CORE).entries[KEY])
-    entry["fields"]["url"] = url
-    return entry
+    source = entry(KEY)
+    source["fields"]["url"] = url
+    return source
 
 
 def input_bibliography(tmp_path, url=ABSTRACT):
-    entry = copy.deepcopy(pybtex_parse_file(str(CORE)).entries[KEY])
-    entry.fields.update(url=url, volume="999")
-    path = tmp_path / "refs.bib"
-    BibliographyData(entries={KEY: entry}).to_file(str(path))
+    path = write_bib(tmp_path / "refs.bib", KEY)
+    source = pybtex_parse_file(str(path)).entries[KEY]
+    source.fields.update(url=url, volume="999")
+    BibliographyData(entries={KEY: source}).to_file(str(path))
     return path
 
 
@@ -60,7 +57,7 @@ def test_jmlr_official_pdf_locator_precedes_bad_volume(tmp_path, url):
     def respond(request):
         calls.append(str(request.url))
         assert str(request.url) == ABSTRACT, "Do not fetch a PDF or an unrelated volume"
-        return httpx.Response(200, text=(FIXTURES / "evidence/sb3.html").read_text())
+        return httpx.Response(200, text=html_record("sb3"))
 
     client = MetadataClient(tmp_path / "audit/cache", transport=httpx.MockTransport(respond))
     try:
@@ -84,9 +81,11 @@ def test_jmlr_official_pdf_locator_precedes_bad_volume(tmp_path, url):
         "v22/20-1364",
         "volume22/20-1364",
         "v22/20-1364.html",
+        "v22/%32%30-1364",
         "papers/v22/20-1364",
         "/papers/volume22/20-1364.html",
         ABSTRACT,
+        "https://jmlr.org/papers/v22/%32%30-1364.html",
         "http://www.jmlr.org/papers/volume22/20-1364.html",
         PDF,
         "https://jmlr.org/papers/v22/20-1364.pdf",
@@ -101,6 +100,7 @@ def test_jmlr_identifier_equates_official_aliases(value):
     [
         "https://jmlr.org.evil.example/papers/volume22/20-1364/20-1364.pdf",
         "https://evil.example/papers/v22/20-1364.html",
+        "https://%6Amlr.org/papers/v22/20-1364.html",
         "//jmlr.org/papers/v22/20-1364.html",
         "ftp://jmlr.org/papers/v22/20-1364.html",
         "https://user:password@jmlr.org/papers/v22/20-1364.html",
@@ -143,9 +143,7 @@ def test_jmlr_pdf_conversion_does_not_bypass_source_url_policy(url):
 def test_jmlr_retrieved_identifier_is_stable_across_legacy_urls(tmp_path, url):
     client = MetadataClient(
         tmp_path,
-        transport=httpx.MockTransport(
-            lambda _: httpx.Response(200, text=(FIXTURES / "evidence/sb3.html").read_text())
-        ),
+        transport=httpx.MockTransport(lambda _: httpx.Response(200, text=html_record("sb3"))),
     )
     try:
         result = verify_reference(source_entry(url), client, methods=[METHODS["jmlr"]])
@@ -164,7 +162,7 @@ def test_jmlr_adapter_upgrade_reuses_evidence_and_recomputes_locator(tmp_path):
 
     def respond(request):
         calls.append(str(request.url))
-        return httpx.Response(200, text=(FIXTURES / "evidence/sb3.html").read_text())
+        return httpx.Response(200, text=html_record("sb3"))
 
     client = MetadataClient(tmp_path / "audit/cache", transport=httpx.MockTransport(respond))
     try:

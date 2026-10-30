@@ -23,8 +23,6 @@ def pytest_collection_modifyitems(items):
                 "test_audit.py",
                 "test_cli.py",
                 "test_provider_workflow.py",
-                "test_e2e_corpus.py",
-                "test_adversarial_corpus.py",
             }
             else "unit"
         )

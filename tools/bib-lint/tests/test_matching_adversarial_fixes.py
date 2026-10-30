@@ -1,13 +1,12 @@
 """Independent metadata expectations for adversarial representation/identity traps."""
 
 import copy
-import json
 from dataclasses import asdict
-from pathlib import Path
 
 import pytest
+from metadata_support import RECORDS, entry
 
-from bib_lint.parser import parse_file, parse_string
+from bib_lint.parser import parse_string
 from bib_lint.status import reference_status
 from bib_lint.verification.consensus import build_consensus
 from bib_lint.verification.matching import (
@@ -18,9 +17,6 @@ from bib_lint.verification.matching import (
     same_record,
     select_result,
 )
-
-FIXTURES = Path(__file__).parent / "fixtures/e2e"
-RECORDS = json.loads((FIXTURES / "verified-records.json").read_text())["records"]
 
 
 def author_result(left, right):
@@ -56,7 +52,7 @@ def author_result(left, right):
     ],
 )
 def test_source_linked_challenge_expectations(key, base, field, accepted, statuses):
-    original = input_record(asdict(parse_file(FIXTURES / "adversarial.bib").entries[key]))
+    original = input_record(entry(key))
     source = select_result("primary", original, [RECORDS[base]["record"]], authority=True)
     assert source["status"] == "found"
     result = build_consensus([source])

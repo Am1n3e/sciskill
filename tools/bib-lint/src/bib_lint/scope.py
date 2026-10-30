@@ -122,7 +122,7 @@ def _validate_input_findings(correctness):
     if not isinstance(findings, list) or any(
         not isinstance(finding, dict)
         or any(not isinstance(finding.get(key), str) for key in ("field", "code", "message"))
-        or finding.get("result") not in {"unknown", "mismatch"}
+        or finding.get("result") not in ("unknown", "mismatch")
         for finding in findings
     ):
         raise ValueError("Input findings must contain structured metadata diagnostics")

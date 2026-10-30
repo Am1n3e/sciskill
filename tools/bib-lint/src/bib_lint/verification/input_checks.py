@@ -51,7 +51,7 @@ def strict_arxiv(value):
             return None
         if not safe_url(parsed):
             return None
-        match = re.fullmatch(r"/(?:abs|pdf)/(.+?)(?:\.pdf)?/?", parsed.path)
+        match = re.fullmatch(r"/(?:abs|pdf|html)/(.+?)(?:\.pdf)?/?", unquote(parsed.path))
         value = match[1] if match else ""
     return value if re.fullmatch(ARXIV_TOKEN, value, re.I) else None
 
@@ -73,7 +73,7 @@ def locator(provider, value):
         from bib_lint.verification.providers.jmlr import jmlr_identifier
 
         return jmlr_identifier(value)
-    value = str(value).strip()
+    value = unquote(str(value).strip())
     if provider == "pmlr":
         pdf = re.fullmatch(r"(v\d+)/([\w.-]+)/\2\.pdf", value)
         if pdf:

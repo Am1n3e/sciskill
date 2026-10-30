@@ -2,7 +2,7 @@
 
 from bib_lint.verification.matching import compare_fields, same_record
 
-POLICY_VERSION = 6
+POLICY_VERSION = 7
 CHECKED_FIELDS = [
     "title",
     "authors",

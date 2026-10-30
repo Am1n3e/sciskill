@@ -1,7 +1,7 @@
 """JMLR independent volume and paper metadata retrieval."""
 
 import re
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import unquote, urljoin, urlsplit
 
 from bib_lint.verification.providers.archive import ArchiveProvider
 from bib_lint.verification.providers.common import (
@@ -31,10 +31,10 @@ def _official_path(value):
                 or not parsed.path.startswith("/papers/")
             ):
                 return None
-            return parsed.path
+            return unquote(parsed.path)
     except ValueError:
         return None
-    return value
+    return unquote(value)
 
 
 def jmlr_identifier(value):
