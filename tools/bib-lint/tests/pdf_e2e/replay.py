@@ -34,10 +34,39 @@ def _record_html(record):
         _meta("citation_publication_date", record.get("year")),
         _meta("citation_journal_title", record.get("venue")),
     ]
-    tags.extend(_meta("citation_author", _name(author)) for author in record.get("authors", []))
+    names = [_name(author) for author in record.get("authors", [])]
+    displayed = record.get("source_author_names") or names
+    tags.extend(_meta("citation_author", name) for name in displayed)
     if record.get("identifiers", {}).get("doi"):
         tags.append(_meta("citation_doi", record["identifiers"]["doi"]))
-    return "<html><head>" + "".join(tags) + "</head><body></body></html>"
+    citation = ""
+    if record["provider"] == "acl_anthology" and displayed != names:
+        citation = '<pre id="citeBibtexContent">' + html.escape(_bibtex(record)) + "</pre>"
+    return "<html><head>" + "".join(tags) + "</head><body>" + citation + "</body></html>"
+
+
+def _bibtex(record):
+    """The primary archive's explicit citation uses curated names, not display aliases."""
+    authors = []
+    for author in record.get("authors", []):
+        parts = [author.get("family", "")]
+        if author.get("suffix"):
+            parts.append(author["suffix"])
+        parts.append(author.get("given", ""))
+        authors.append(", ".join(parts))
+    fields = {
+        "title": record["title"],
+        "author": " and ".join(authors),
+        "year": record.get("year"),
+        "booktitle": record.get("venue"),
+        "doi": record.get("identifiers", {}).get("doi"),
+        "url": record["url"],
+    }
+    return (
+        "@inproceedings{canonical,\n"
+        + ",\n".join(key + "={" + str(value) + "}" for key, value in fields.items() if value)
+        + "\n}"
+    )
 
 
 def _link(url, label):
@@ -49,7 +78,12 @@ class ScholarlyReplay:
 
     def __init__(self, canonical):
         self.records = [
-            dict(source["metadata"], provider=source["provider"]) for source in canonical.values()
+            dict(
+                source["metadata"],
+                provider=source["provider"],
+                source_author_names=source.get("source_author_names"),
+            )
+            for source in canonical.values()
         ]
         self.unexpected = []
         self.requests = []

@@ -31,7 +31,7 @@ VENUES = {
 
 class AclAnthologyProvider(ArchiveProvider):
     descriptor = ProviderDescriptor(
-        "acl_anthology", "ACL Anthology", "2", "publication_archive", ("aclanthology.org",)
+        "acl_anthology", "ACL Anthology", "3", "publication_archive", ("aclanthology.org",)
     )
 
     def direct_url(self, query):
@@ -46,11 +46,17 @@ class AclAnthologyProvider(ArchiveProvider):
 
     def fetch_record(self, context, url):
         text = context.get(url)
+        soup = html(text)
+        explicit = soup.find("pre", id="citeBibtexContent")
+        if explicit:
+            candidate = bibtex_candidate(explicit.get_text(), url, self.identifiers(url))
+            if candidate:
+                yield candidate
+                return
         candidate = citation_candidate(text, url, self.identifiers(url))
         if candidate:
             yield candidate
             return
-        soup = html(text)
         for anchor in soup.find_all("a", href=True):
             if anchor["href"].endswith(".bib"):
                 candidate = bibtex_candidate(
