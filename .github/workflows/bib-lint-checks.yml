@@ -1,0 +1,101 @@
+name: Bibliography and PDF checks
+
+on:
+  pull_request:
+    paths:
+      - 'tools/bib-lint/**'
+      - 'tools/sciskill/**'
+      - 'pyproject.toml'
+      - '.github/workflows/bib-lint-checks.yml'
+      - '.github/workflows/publish.yml'
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  fast:
+    name: Offline bibliography and PDF regressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tools/bib-lint
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: '0.12.1'
+          python-version: '3.12'
+      - run: uv run --locked --group dev pytest -q -m 'not package and not pdf_e2e'
+      - run: uv run --locked --group dev ruff check .
+      - run: uv run --locked --group dev ruff format --check .
+      - run: uv run --locked --group dev ruff check . --select C901 --ignore-noqa
+
+  package:
+    name: Installed standalone and shared packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: '0.12.1'
+          python-version: '3.12'
+      - run: uv run --project tools/bib-lint --locked --group dev pytest -q tools/bib-lint/tests/test_package.py
+      - run: uv run --no-project --with 'PyYAML>=6,<7' python -m unittest discover -s tools/sciskill/tests -v
+      - run: uv build --out-dir dist
+
+  pdf:
+    name: Compiled conference PDF acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: tools/bib-lint
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: '0.12.1'
+          python-version: '3.12'
+      - name: Pull immutable test compiler
+        run: |
+          image=$(uv run --locked --group dev python -c 'import json; print(json.load(open("tests/fixtures/pdf/templates.json"))["toolchain"]["image"])')
+          docker pull --platform linux/amd64 "$image"
+      - name: Verify frozen inputs and prepare official templates
+        run: |
+          PYTHONPATH=tests uv run --locked --group dev python -m pdf_e2e.build --check-inputs
+          PYTHONPATH=tests uv run --locked --group dev python -m pdf_e2e.build --prepare-assets
+      - name: Compile the required matrix and test the PDF-only product path
+        run: |
+          PYTHONPATH=tests uv run --locked --group dev python -m pdf_e2e.build --compile --matrix baseline
+          uv run --locked --group dev pytest -q -m pdf_e2e --pdf-matrix baseline --basetemp ../../.local/pdf-e2e/pytest-baseline --junitxml ../../.local/pdf-e2e/junit-baseline.xml
+          uv run --locked --group dev pytest -q -m pdf_e2e --pdf-matrix stress --basetemp ../../.local/pdf-e2e/pytest-stress --junitxml ../../.local/pdf-e2e/junit-stress.xml
+      - name: Retain failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pdf-build-diagnostics
+          include-hidden-files: true
+          path: |
+            .local/pdf-e2e/projects/baseline.json
+            .local/pdf-e2e/projects/acceptance.json
+            .local/pdf-e2e/projects/**/build.json
+            .local/pdf-e2e/projects/**/pass-*.log
+            .local/pdf-e2e/projects/**/container.log
+            .local/pdf-e2e/projects/**/main.log
+            .local/pdf-e2e/projects/**/main.blg
+            .local/pdf-e2e/projects/**/main.pdf
+            .local/pdf-e2e/junit-baseline.xml
+            .local/pdf-e2e/junit-stress.xml
+            .local/pdf-e2e/pytest-*/**/report.json
+            .local/pdf-e2e/pytest-*/**/report.tmp.json
+          retention-days: 7
+          if-no-files-found: warn
