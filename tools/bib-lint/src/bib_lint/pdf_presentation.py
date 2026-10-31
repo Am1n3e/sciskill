@@ -36,7 +36,20 @@ def _field_source(item, field):
         separator = "" if not text or contiguous or wrapped else " "
         text += separator + part
         previous = mapping
-    return _normalized(text), [len(_normalized(text[:index])) for index in breaks]
+    return _normalize_breaks(text, breaks)
+
+
+def _normalize_breaks(text, breaks):
+    pieces, positions, start, length = [], [], 0, 0
+    for index in breaks:
+        piece = _normalized(text[start:index])
+        pieces.extend((piece, _normalized(text[index])))
+        length += len(piece)
+        positions.append(length)
+        length += 1
+        start = index + 1
+    pieces.append(_normalized(text[start:]))
+    return "".join(pieces), positions
 
 
 def _wrapped(pdf, previous, following, part):
@@ -50,24 +63,47 @@ def _wrapped(pdf, previous, following, part):
     )
 
 
-def _variants(value, source, breaks):
+def _positions(value, source, breaks):
     normalized = _normalized(value)
     start = source.find(normalized)
     if start < 0 or source.find(normalized, start + 1) >= 0:
-        return (value,)
-    positions = [index - start for index in breaks if start <= index < start + len(normalized)]
-    positions = positions[
-        : MAX_VARIANTS.bit_length() - 1
-    ]  # At most 16 interpretations per field/name part.
+        return normalized, []
+    positions = [index - start for index in breaks if start < index < start + len(normalized) - 1]
+    return normalized, positions
+
+
+def _variants(value, source, breaks):
+    normalized, positions = _positions(value, source, breaks)
+    positions = positions[: MAX_VARIANTS.bit_length() - 1]
     variants = [value]
     for mask in range(1, 1 << len(positions)):
         removed = {index for bit, index in enumerate(positions) if mask & (1 << bit)}
-        alternate = "".join(
-            character for index, character in enumerate(normalized) if index not in removed
-        )
+        alternate = "".join(c for index, c in enumerate(normalized) if index not in removed)
         if alternate not in variants:
             variants.append(alternate)
     return tuple(variants)
+
+
+def _matching_variant(value, source, breaks, canonical):
+    """Match fixed word spans linearly; only proved hyphens may be absent or present."""
+    normalized, positions = _positions(value, source, breaks)
+    if not positions:
+        return None
+    target, cursor, previous, removed = normalize(canonical), 0, 0, set()
+    for index in positions:
+        fixed = normalize(normalized[previous:index])
+        if not target.startswith(fixed, cursor):
+            return None
+        cursor += len(fixed)
+        if target[cursor : cursor + 1] == " ":
+            cursor += 1
+        else:
+            removed.add(index)
+        previous = index + 1
+    if target[cursor:] != normalize(normalized[previous:]):
+        return None
+    candidate = "".join(c for index, c in enumerate(normalized) if index not in removed)
+    return candidate if normalize(candidate) == target else None
 
 
 def text_variants(item, field, value):
@@ -91,10 +127,7 @@ def _author_presentation(item, original, found):
         name_breaks = [position - start for position in breaks if start <= position < cursor]
         for part in ("given", "family", "suffix"):
             value = authors[index].get(part, "")
-            variants = _variants(value, name, name_breaks)
-            equivalent = next(
-                (v for v in variants if normalize(v) == normalize(found[index].get(part))), None
-            )
+            equivalent = _matching_variant(value, name, name_breaks, found[index].get(part))
             if equivalent is not None:
                 authors[index][part] = equivalent
     return authors
@@ -139,9 +172,8 @@ def _comparison(item, field, original, found):
     if field == "authors":
         return _author_comparison(item, original.get("authors", []), found.get("authors", []))
     if field in {"title", "venue"} and original.get(field) and found.get(field):
-        if any(
-            normalize(variant) == normalize(found[field])
-            for variant in text_variants(item, field, original[field])[1:]
-        ):
+        source, breaks = _field_source(item, field)
+        candidate = _matching_variant(original[field], source, breaks, found[field])
+        if candidate is not None and normalize(candidate) != normalize(original[field]):
             return "match"
     return None

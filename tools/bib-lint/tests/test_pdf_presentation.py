@@ -174,3 +174,41 @@ def test_non_pdf_bibtex_hyphens_are_never_reinterpreted():
     item["validations"].pop("extraction")
     result = _decision(item, title="Study of codebases for agents")
     assert apply_extraction(result, item)["is_correct"] is False
+
+
+def test_many_proved_breaks_match_without_enumerating_exponential_variants():
+    item = _title_item(
+        [
+            "A tool-",
+            "use study of code-",
+            "bases and reinforce-",
+            "ment with multi-",
+            "step memory and bench-",
+            "marks for agents",
+        ]
+    )
+    title = (
+        "A tool-use study of codebases and reinforcement with multi-step memory "
+        "and benchmarks for agents"
+    )
+    result = apply_extraction(_decision(item, title=title), item)
+    assert result["is_correct"] is True
+
+
+def test_many_proved_breaks_do_not_erase_an_unrelated_typo():
+    item = _title_item(
+        [
+            "A tool-",
+            "use study of code-",
+            "bases and reinforce-",
+            "ment with multi-",
+            "step memory and bench-",
+            "marks for agents",
+        ]
+    )
+    title = (
+        "A tool-use study of codebases and reinforcement with multi-step memory "
+        "and benchmarks for agants"
+    )
+    result = apply_extraction(_decision(item, title=title), item)
+    assert result["is_correct"] is False
