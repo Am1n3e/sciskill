@@ -45,6 +45,7 @@ dependencies = [
     { name = "cryptography" },
     { name = "defusedxml" },
     { name = "httpx" },
+    { name = "huey" },
     { name = "pdfplumber" },
     { name = "pybtex" },
 ]
@@ -55,7 +56,6 @@ benchmark = [
 ]
 dev = [
     { name = "coverage" },
-    { name = "huey" },
     { name = "invoke" },
     { name = "lefthook" },
     { name = "pypdf" },
@@ -70,6 +70,7 @@ requires-dist = [
     { name = "cryptography", specifier = ">=48,<49" },
     { name = "defusedxml", specifier = ">=0.7,<1" },
     { name = "httpx", specifier = ">=0.28,<0.29" },
+    { name = "huey", specifier = "==3.5.3" },
     { name = "pdfplumber", specifier = "==0.11.10" },
     { name = "pybtex", specifier = ">=0.26,<0.27" },
 ]
@@ -78,7 +79,6 @@ requires-dist = [
 benchmark = [{ name = "hallmark", git = "https://github.com/rpatrik96/hallmark?rev=f774fa40675daa83eca6201637a94c4536b7bb3e" }]
 dev = [
     { name = "coverage", specifier = ">=7.10,<8" },
-    { name = "huey", specifier = "==3.5.3" },
     { name = "invoke", specifier = ">=2.2,<3" },
     { name = "lefthook", specifier = "==2.2.1" },
     { name = "pypdf", specifier = ">=6,<7" },
