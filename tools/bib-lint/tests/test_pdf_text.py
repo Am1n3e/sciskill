@@ -754,3 +754,32 @@ def test_terminal_doi_followed_by_new_author_sentence_is_not_joined():
         [],
     )
     assert item["entry"]["fields"]["doi"] == "10.1234/example"
+
+
+def test_wrapped_url_extension_followed_by_a_comma_is_retained():
+    item = parse_reference(
+        [
+            line("Jane Smith. Example Paper. Journal, 2025."),
+            line("URL https://proceedings.mlr.press/v70/shi17a.", top=113),
+            line("html, bibTeX Type: inproceedings BibTeX Key: example.", top=126),
+        ],
+        "pdf-ref-0001",
+        [],
+    )
+    assert item["entry"]["fields"]["url"] == "https://proceedings.mlr.press/v70/shi17a.html"
+    evidence = item["pdf"]["field_evidence"]["url"]
+    assert any(m["fragment"] == 2 for m in evidence)
+
+
+@pytest.mark.parametrize("suffix", ["48550/arXiv.2211.10435.", "52202/075280-1723."])
+def test_bare_doi_decimal_prefix_line_wrap_is_retained(suffix):
+    item = parse_reference(
+        [
+            line("Jane Smith. Example Paper. Journal, 2025. doi: 10."),
+            line(suffix, top=113),
+        ],
+        "pdf-ref-0001",
+        [],
+    )
+    assert item["entry"]["fields"]["doi"] == "10." + suffix.rstrip(".")
+    assert not any(d["code"] == "malformed_locator" for d in item["pdf"]["diagnostics"])

@@ -64,6 +64,8 @@ def _join(lines):
 
 
 def _wrapped_locator(text, continuation):
+    if re.search(r"\b10\.$", text) and re.match(r"\d{4,9}(?:/|\\?%2[fF])", continuation):
+        return True
     if not re.search(r"https?://\S*$|\b10\.\d{4,9}/\S*$", text, re.I):
         return text.endswith("/")
     if re.match(r"(?:Accessed|Retrieved|Visited|Available|URL|doi)\b", continuation, re.I):
@@ -76,7 +78,7 @@ def _wrapped_locator(text, continuation):
         r"(?:[A-Za-z0-9]+[._/%\\-]\S*|\d{2,}(?:[.,;]?(?:\s|$)))", continuation
     )
     return not text.endswith(".") or bool(
-        numeric_suffix or doi_suffix or re.match(r"[a-z]{2,}(?:[/.\-_]|$)", continuation)
+        numeric_suffix or doi_suffix or re.match(r"[a-z]{2,}(?:[/.,;\-_]|$)", continuation)
     )
 
 
