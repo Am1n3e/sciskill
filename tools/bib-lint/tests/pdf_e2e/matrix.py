@@ -136,3 +136,59 @@ def complete_matrix(baseline: dict, templates: dict, corpora: list, cache: Path,
     )
     (output / "acceptance.json").write_text(json.dumps(baseline, indent=2) + "\n")
     return baseline
+
+
+def stress_definitions(templates):
+    import copy
+
+    modes = [
+        ("iclr", "final", []),
+        ("icml", "preprint", ["preprint"]),
+        ("neurips", "preprint", ["preprint"]),
+        ("acl", "final", ["final"]),
+        ("cvpr", "pagenumbers", ["pagenumbers"]),
+        ("eccv", "final", []),
+    ]
+    result = []
+    for name, mode, options in modes:
+        venue = copy.deepcopy(next(v for v in templates["venues"] if v["id"] == name))
+        venue["mode"] = mode
+        venue["style_package"]["options"] = options
+        result.append(venue)
+    return result
+
+
+def compile_stress(templates, corpus, cache, output):
+    import subprocess
+    import sys
+
+    builds = []
+    for venue in stress_definitions(templates):
+        cell = {"venue": venue["id"], "mode": venue["mode"], "corpus": corpus["id"]}
+        try:
+            asset = templates["assets"][venue["asset"]]
+            project = create_project(
+                venue,
+                corpus,
+                cache / asset["sha256"],
+                FIXTURES,
+                output,
+                variant="stress-" + venue["mode"],
+            )
+            receipt = compile_project(project)
+            cell.update(status="compiled", project=str(project), pdf_sha256=receipt["pdf_sha256"])
+        except (OSError, ValueError, subprocess.TimeoutExpired) as error:
+            cell.update(status="failed", error=str(error))
+        builds.append(cell)
+        print(
+            f"stress {venue['id']}/{venue['mode']}: {cell['status']}", file=sys.stderr, flush=True
+        )
+    result = {
+        "matrix": "stress",
+        "required_builds": 6,
+        "builds": builds,
+        "complete": len(builds) == 6 and all(cell["status"] == "compiled" for cell in builds),
+    }
+    output.mkdir(parents=True, exist_ok=True)
+    (output / "stress.json").write_text(json.dumps(result, indent=2) + "\n")
+    return result

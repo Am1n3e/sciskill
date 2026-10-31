@@ -11,7 +11,7 @@ from pathlib import Path
 from bib_lint.parser import parse_file
 from pdf_e2e.assets import prepare_asset
 from pdf_e2e.compiler import compile_project
-from pdf_e2e.matrix import complete_matrix
+from pdf_e2e.matrix import compile_stress, complete_matrix
 from pdf_e2e.projects import create_project
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures/pdf"
@@ -116,7 +116,7 @@ def main() -> None:
     actions.add_argument("--check-inputs", action="store_true")
     actions.add_argument("--prepare-assets", action="store_true")
     actions.add_argument("--compile", action="store_true")
-    parser.add_argument("--matrix", choices=["baseline"], default="baseline")
+    parser.add_argument("--matrix", choices=["baseline", "stress"], default="baseline")
     parser.add_argument("--output", type=Path, default=CACHE.parent / "projects")
     parser.add_argument("--cache", type=Path, default=CACHE)
     args = parser.parse_args()
@@ -127,7 +127,14 @@ def main() -> None:
             name: str(prepare_asset(name, pin, args.cache))
             for name, pin in manifest["assets"].items()
         }
-    if args.compile:
+    if args.compile and args.matrix == "stress":
+        result["compilation"] = compile_stress(
+            read_json(FIXTURES / "templates.json"),
+            read_json(FIXTURES / "corpora/manifest.json")["corpora"][0],
+            args.cache,
+            args.output,
+        )
+    elif args.compile:
         baseline = compile_baseline(args.cache, args.output)
         result["compilation"] = complete_matrix(
             baseline,

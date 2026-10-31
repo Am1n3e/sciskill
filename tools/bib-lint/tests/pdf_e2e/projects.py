@@ -97,6 +97,8 @@ def paper_source(venue: dict, keys: list[str]) -> str:
         EXTRAS[venue["family"]],
     ]
     preamble.extend(rf"\def\{name}{{{value}}}" for name, value in venue["macros"].items())
+    if venue["family"] == "iclr" and venue["mode"] == "final":
+        preamble.append(r"\iclrfinalcopy")
     citations = " ".join(
         r"\cite{" + ",".join(keys[i : i + 4]) + "}." for i in range(0, len(keys), 4)
     )
