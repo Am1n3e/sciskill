@@ -1,0 +1,72 @@
+"""Generated projects preserve citations and use native conference formatting."""
+
+import dataclasses
+import re
+
+import pytest
+from pdf_e2e.build import FIXTURES, read_json
+
+from bib_lint.parser import parse_file, parse_string
+
+
+@pytest.mark.parametrize("corpus", ["representative-20", "rule-variants", "adversarial"])
+def test_build_keys_change_no_citation_metadata(corpus):
+    from pdf_e2e.projects import build_bibliography
+
+    source = FIXTURES / "corpora" / f"{corpus}.bib"
+    before = source.read_bytes()
+    text, key_map = build_bibliography(source)
+    original = parse_file(source).entries
+    derived = parse_string(text).entries
+    assert len(key_map) == len(original) == len(derived)
+    assert set(derived) == set(key_map.values())
+    assert all(re.fullmatch(r"ref[0-9]{4}", key) for key in derived)
+    for old, new in key_map.items():
+        assert dataclasses.replace(original[old], key=new) == derived[new]
+    assert source.read_bytes() == before
+
+
+@pytest.mark.parametrize("venue", read_json(FIXTURES / "templates.json")["venues"])
+def test_native_project_cites_every_reference_without_answer_markers(venue):
+    from pdf_e2e.projects import paper_source
+
+    keys = ["ref0001", "ref0002", "ref0003"]
+    text = paper_source(venue, keys)
+    assert all(key in text for key in keys)
+    assert r"\cite{" in text
+    assert r"\bibliography{references}" in text
+    assert venue["style_package"]["name"] in text
+    assert (r"\bibliographystyle{" in text) != venue["bibliography"]["selected_by_style"]
+    assert not any(
+        marker in text.lower() for marker in ("case_", "adversarial", "expected", "corrupt")
+    )
+    if venue["id"] == "aaai":
+        assert "hyperref" not in text
+    if venue["family"] == "cvpr":
+        assert r"\def\confName{" + venue["id"].upper() + "}" in text
+
+
+def test_project_cache_changes_with_body_and_tracks_all_inputs(tmp_path, monkeypatch):
+    import hashlib
+    import json
+
+    from pdf_e2e import projects
+
+    venue = read_json(FIXTURES / "templates.json")["venues"][0]
+    corpus = read_json(FIXTURES / "corpora/manifest.json")["corpora"][0]
+    asset = tmp_path / "asset"
+    asset.mkdir()
+    (asset / "native.sty").write_text("% preserve style notice\n")
+    first = projects.create_project(venue, corpus, asset, FIXTURES, tmp_path / "projects")
+    recipe = read_json(first / "recipe.json")
+    assert len(recipe["key_map"]) == 20
+    assert recipe["files"]["native.sty"] == hashlib.sha256(b"% preserve style notice\n").hexdigest()
+    assert set(recipe["files"]) >= {"main.tex", "references.bib", "native.sty"}
+    assert recipe["corpus"]["sha256"] == corpus["sha256"]
+    body = tmp_path / "body.tex"
+    body.write_text(projects.BODY.read_text() + "\nAdditional discussion.\n")
+    monkeypatch.setattr(projects, "BODY", body)
+    second = projects.create_project(venue, corpus, asset, FIXTURES, tmp_path / "projects")
+    assert second != first
+    assert first.joinpath("main.tex").read_bytes() != second.joinpath("main.tex").read_bytes()
+    assert json.loads(first.joinpath("recipe.json").read_text()) == recipe

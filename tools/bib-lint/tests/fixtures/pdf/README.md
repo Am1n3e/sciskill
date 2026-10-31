@@ -1,6 +1,6 @@
 # PDF audit acceptance fixtures
 
-These inputs support the planned real LaTeX → PDF → reference extraction → metadata audit tests. The production PDF adapter and compiler harness are not implemented yet.
+These inputs support the planned real LaTeX → PDF → reference extraction → metadata audit tests. The production PDF adapter is not implemented yet. The test harness validates inputs, prepares official assets, and generates native-style projects; compiler integration is in progress.
 
 ## Frozen inputs and independent truth
 
