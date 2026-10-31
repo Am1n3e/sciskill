@@ -171,6 +171,12 @@ def locator_identity_findings(fields, original, found, source):
         if name == provider
     ]
     if not inputs:
+        inputs = [
+            {"field": field, "value": value}
+            for name, field, value in supplied_locators(fields)
+            if name == "doi"
+        ]
+    if not inputs:
         return []
     return [
         finding(

@@ -70,7 +70,7 @@ def test_seventh_provider_audit_checkpoint_resume_and_json(bib):
     workspace, report, _ = run_audit(bib, methods=[p], client=FakeClient())
     assert report["items"][0]["validations"]["correctness"]["is_correct"] is True
     assert report["verification_run"]["provider_protocol_version"] == 1
-    assert report["verification_run"]["orchestration_version"] == 6
+    assert report["verification_run"]["orchestration_version"] == 7
     assert report["verification_run"]["policy_version"] == 8
     assert report["verification_run"]["providers"] == [p.descriptor.serialize()]
     assert json.loads(workspace.final.read_text()) == json.loads(json.dumps(report))

@@ -114,6 +114,7 @@ def test_partial_checkpoint_retains_local_checks_and_resume_keeps_source_failure
         {"policy_version": 6},
         {"policy_version": 7},
         {"orchestration_version": 3},
+        {"orchestration_version": 6},
     ],
 )
 def test_old_saved_verdict_recomputes_input_checks_without_rewriting_evidence(tmp_path, legacy_run):
@@ -153,7 +154,7 @@ def test_old_saved_verdict_recomputes_input_checks_without_rewriting_evidence(tm
         client.close()
     result = resumed["items"][0]["validations"]["correctness"]
     assert result["policy_version"] == resumed["verification_run"]["policy_version"] == 8
-    assert resumed["verification_run"]["orchestration_version"] == 6
+    assert resumed["verification_run"]["orchestration_version"] == 7
     assert reference_status({"correctness": result}) == "Needs review"
     assert has_finding(result, "conflicting_venues")
     assert len(calls) == 1

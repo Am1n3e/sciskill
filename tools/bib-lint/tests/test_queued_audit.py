@@ -61,6 +61,53 @@ def test_public_audit_stops_at_a_resolved_url_and_resumes_without_requests(
         client.close()
 
 
+@pytest.mark.parametrize(
+    ("title", "author", "correct"),
+    [
+        ("An Example Paper", "Jane Smith", None),
+        ("The geometry of number theory", "Bob Jones", False),
+    ],
+)
+@pytest.mark.parametrize(
+    "url", ["https://arxiv.org/abs/2401.12345", "https://doi.org/10.48550/arXiv.2401.12345"]
+)
+def test_publication_link_to_a_preprint_distinguishes_identity_from_version(
+    tmp_path, title, author, correct, url
+):
+    bib = tmp_path / "references.bib"
+    bib.write_text(
+        "@inproceedings{pub,title={An Example Paper},author={Jane Smith},year={2024},"
+        "booktitle={ICML},url={" + url + "}}"
+    )
+    requests = []
+
+    def respond(request):
+        requests.append(request)
+        if request.url.host == "doi.org":
+            return httpx.Response(302, headers={"Location": "https://arxiv.org/abs/2401.12345"})
+        assert request.url.host == "export.arxiv.org"
+        return httpx.Response(
+            200,
+            text=(
+                '<feed xmlns="http://www.w3.org/2005/Atom"><entry>'
+                f"<id>https://arxiv.org/abs/2401.12345</id><title>{title}</title>"
+                f"<author><name>{author}</name></author><published>2021-01-01</published>"
+                "</entry></feed>"
+            ),
+        )
+
+    client = MetadataClient(tmp_path / "cache", transport=httpx.MockTransport(respond))
+    try:
+        _, report, _ = run_audit(bib, output=tmp_path / "audit", client=client)
+    finally:
+        client.close()
+    result = report["items"][0]["validations"]["correctness"]
+    assert result["complete"]
+    assert result["is_correct"] is correct
+    assert len(requests) == (2 if "doi.org" in url else 1)
+    assert result["methods"][0].get("version_uncertain", False) is (correct is None)
+
+
 def test_audit_schedules_one_direct_lookup_per_reference(tmp_path):
     bib = source(tmp_path, count=100)
     requests = []

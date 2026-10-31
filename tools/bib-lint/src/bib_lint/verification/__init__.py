@@ -84,6 +84,8 @@ def _source_result(provider, query, context, *, retrieval=None, strategy="search
         result["locator_findings"] = locator_identity_findings(
             dict(query.fields), query.as_record(), result["found_ref"], descriptor.id
         )
+        if result["locator_findings"]:
+            result["version_uncertain"] = False
     if lookup.redirect_url:
         result.update(
             redirect_url=lookup.redirect_url,
@@ -385,7 +387,7 @@ def _prepare_run(report, registry, selected, refresh):
         "fingerprint": input_hash,
         "methods": list(registry),
         "policy_version": POLICY_VERSION,
-        "orchestration_version": 6,
+        "orchestration_version": 7,
         "retrieval_policy": "locator-first-v1",
         "provider_protocol_version": 1,
         "providers": [p.descriptor.serialize() for p in registry.values()],
