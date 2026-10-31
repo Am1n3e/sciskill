@@ -11,7 +11,7 @@ projects, PDFs, compiler logs, caches, and audit reports stay under ignored
 | Task | Implementation and verification | State |
 | --- | --- | --- |
 | T01: Freeze the earlier bibliography cases | Exact 20/31/35-entry inputs, SHA-256 inventory, 86 case designs, 24 independently curated source records | Implemented |
-| T02: Pin official conference templates | 12 venue configurations, nine checksum-verified official assets, immutable TeX image | Implemented |
+| T02: Pin official conference templates | 12 venue configurations, nine checksum-verified official assets vendored under `tests/assets`, immutable TeX image | Implemented |
 | T03: Generate and compile projects | All 36 original cells accounted for; isolated native build negatives, renderable subsets, and positive counterparts | Implemented |
 | T04, T04a–d: Rendering gold | Native bibliography order, field visibility, author presentation, omitted information, and independently measured physical PDF evidence | Implemented |
 | T05: Controlled scholarly HTTP | Protocol-shaped replay for the six real adapters, canonical facts independent of mutations, unexpected requests rejected | Implemented |

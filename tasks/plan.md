@@ -9,7 +9,7 @@ Task list target: [todo.md](todo.md). Use these files as the single plan/task in
 
 Take the earlier bibliography cases, generate research-paper LaTeX projects using official conference templates, compile them, and require the PDF-input workflow to detect every issue that survives into the PDF, for the correct reason. Preserve the existing direct-BibTeX suite for checks whose input information is lost in typesetting.
 
-The first release targets text-based papers, local extraction without a service, CLI auditing, and the existing viewer. OCR is deferred; unreadable reference pages receive explicit diagnostics. Runtime code must not depend on LaTeX, a container, or the template downloader. Those are test-build tools only.
+The first release targets text-based papers, local extraction without a service, CLI auditing, and the existing viewer. OCR is deferred; unreadable reference pages receive explicit diagnostics. Runtime code must not depend on LaTeX, a container, or the template staging utility. Those are test-build tools only.
 
 ## Test architecture
 
@@ -158,9 +158,9 @@ From the root, verify the shared launcher/package with the documented unittest c
 
 ## Artifact policy and performance
 
-Track manifests, generator sources, bibliography fixtures, reviewed gold annotations, compact HTTP response builders/data, and tests. Keep build directories and reports under ignored `.local/pdf-e2e/`. CI stores failures as bounded downloadable artifacts tied to template/corpus/toolchain hashes.
+Track manifests, required unmodified author-kit sources/notices under `tests/assets`, generator sources, bibliography fixtures, reviewed gold annotations, compact HTTP response builders/data, and tests. Keep build directories and reports under ignored `.local/pdf-e2e/`. CI stores failures as bounded downloadable artifacts tied to template/corpus/toolchain hashes.
 
-Cache template assets by checksum and PDFs by the complete build recipe, not by the product commit. A product change must rerun assertions even when a PDF is reused. Compare semantic extraction, not creation timestamps or incidental PDF metadata. Avoid rebasing exact-coordinate annotations onto a different PDF build without review.
+Verify vendored template assets by checksum and cache PDFs by the complete build recipe, not by the product commit. A product change must rerun assertions even when a PDF is reused. Compare semantic extraction, not creation timestamps or incidental PDF metadata. Avoid rebasing exact-coordinate annotations onto a different PDF build without review.
 
 Benchmark extraction on development fixtures before choosing numeric byte/page/content/text/reference/time limits. Define those defaults at C3 and test each limit boundary in T14. Include an oversized/adversarial PDF, not only normal compiler output. CI job timeouts and cache budgets are chosen from measured baseline builds, not guessed now.
 

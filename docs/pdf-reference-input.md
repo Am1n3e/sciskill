@@ -63,9 +63,12 @@ representative references explicitly lack curated primary-source coverage.
 `templates.json` pins official author kits, selected files, bibliography styles,
 and a test-only TeX image by digest. The required baseline contains 12 venue
 configurations and 36 original projects. UAI is deferred by explicit user request.
-Downloaded templates, generated LaTeX, PDFs, logs, previews, and run reports stay
-under ignored `.local/pdf-e2e/`; no vendor archive or response-capture tree belongs
-in the public repository.
+The required unmodified author-kit sources live under
+`tools/bib-lint/tests/assets/pdf/`, with their notices and source provenance.
+Asset preparation verifies their pinned member checksums and stages local copies;
+it does not download templates. This keeps CI independent of conference-site
+access restrictions. Generated LaTeX, PDFs, logs, previews, and run reports stay
+under ignored `.local/pdf-e2e/`; archives and response-capture trees are excluded.
 
 Some deliberately malformed citations prevent a native style from compiling.
 `build_cases.json` records those exact cases or combinations. The build ledger
@@ -102,6 +105,9 @@ uv run --locked --group dev pytest -q -m pdf_e2e --pdf-matrix baseline
 PYTHONPATH=tests uv run --locked --group dev python -m pdf_e2e.build --compile --matrix stress
 uv run --locked --group dev pytest -q -m pdf_e2e --pdf-matrix stress
 ```
+
+Template preparation is offline from a fresh checkout. Docker pulls only the
+immutable compiler image; the compilation containers run with networking disabled.
 
 `--pdf-matrix pilot` runs the ICLR/ICML subset. Without a matrix selection, heavy
 PDF tests are deselected. Once a matrix is selected, missing assets, incomplete

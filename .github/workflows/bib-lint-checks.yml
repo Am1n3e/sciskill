@@ -78,7 +78,7 @@ jobs:
         run: |
           image=$(uv run --locked --group dev python -c 'import json; print(json.load(open("tests/fixtures/pdf/templates.json"))["toolchain"]["image"])')
           docker pull --platform linux/amd64 "$image"
-      - name: Verify frozen inputs and prepare official templates
+      - name: Verify frozen inputs and stage vendored official templates
         run: |
           PYTHONPATH=tests uv run --locked --group dev python -m pdf_e2e.build --check-inputs
           PYTHONPATH=tests uv run --locked --group dev python -m pdf_e2e.build --prepare-assets
