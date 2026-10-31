@@ -272,6 +272,8 @@ def uncertain_uri_fields(item):
         if (
             uri["top"] < min(line["top"] for line in lines) - tolerance
             or uri["bottom"] > max(line["bottom"] for line in lines) + tolerance
+            or uri["x0"] < min(line["x0"] for line in lines) - tolerance
+            or uri["x1"] > max(line["x1"] for line in lines) + tolerance
         ):
             ambiguous.add(index)
     return {

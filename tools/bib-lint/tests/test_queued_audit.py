@@ -315,8 +315,8 @@ def test_page_spanning_pdf_annotation_is_not_a_direct_locator():
             "persons": {},
         },
         "pdf": {
-            "fragments": [{"page": 1, "top": 100, "bottom": 110}],
-            "uris": [{"page": 1, "top": 20, "bottom": 700}],
+            "fragments": [{"page": 1, "x0": 50, "x1": 500, "top": 100, "bottom": 110}],
+            "uris": [{"page": 1, "x0": 50, "x1": 500, "top": 20, "bottom": 700}],
             "field_evidence": {"url": [{"uri": 0}], "arxiv": [{"uri": 0}]},
         },
     }
@@ -330,12 +330,51 @@ def test_local_pdf_annotation_and_printed_locator_remain_usable():
 
     item = {
         "pdf": {
-            "fragments": [{"page": 1, "top": 100, "bottom": 110}],
-            "uris": [{"page": 1, "top": 99, "bottom": 111}],
+            "fragments": [{"page": 1, "x0": 50, "x1": 500, "top": 100, "bottom": 110}],
+            "uris": [{"page": 1, "x0": 49, "x1": 501, "top": 99, "bottom": 111}],
             "field_evidence": {"url": [{"uri": 0}], "doi": [{"fragment": 0}]},
         }
     }
     assert uncertain_uri_fields(item) == set()
+
+
+@pytest.mark.parametrize("right_edge", [150, 550])
+def test_pdf_links_must_not_span_independent_reference_columns(tmp_path, right_edge):
+    from reportlab.pdfgen import canvas
+
+    from bib_lint.pdf_evidence import retrieval_entry, uncertain_uri_fields
+    from bib_lint.pdf_input import extract_pdf
+    from bib_lint.verification.providers import METHODS
+    from bib_lint.verification.routing import plan_lookups
+
+    path = tmp_path / "columns.pdf"
+    page = canvas.Canvas(str(path), pagesize=(612, 792), invariant=1)
+    page.setFont("Times-Bold", 12)
+    page.drawString(50, 720, "References")
+    page.setFont("Times-Roman", 10)
+    for x, y, text in [
+        (325, 700, "[3] Anna Lee. Third Paper."),
+        (341, 687, "Example Journal, 2023."),
+        (325, 650, "[4] Mark Wu. Fourth Paper."),
+        (341, 637, "Example Journal, 2022."),
+        (50, 700, "[1] Jane Smith. First Paper."),
+        (66, 687, "Example Journal, 2025."),
+        (50, 650, "[2] John Doe. Second Paper."),
+        (66, 637, "Example Journal, 2024."),
+    ]:
+        page.drawString(x, y, text)
+    page.linkURL(
+        "https://proceedings.mlr.press/v235/first24a.html", (50, 698, right_edge, 710), relative=0
+    )
+    page.save()
+    items = extract_pdf(path)["items"]
+    linked = [item for item in items if item["pdf"]["uris"]]
+    assert len(linked) == (1 if right_edge == 150 else 2)
+    for item in linked:
+        first = plan_lookups(retrieval_entry(item), METHODS)[0]
+        assert (first.strategy == "url") is (right_edge == 150)
+        assert bool(uncertain_uri_fields(item)) is (right_edge == 550)
+        assert item["entry"]["fields"]["url"]
 
 
 def test_pdf_non_generational_suffix_is_extraction_uncertainty():
