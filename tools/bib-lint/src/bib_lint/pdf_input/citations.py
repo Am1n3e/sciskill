@@ -668,14 +668,18 @@ def parse_reference(lines, key, uris):
         fields["year"] = year
     if title:
         fields["title"] = title.strip(" .,")
-    venue = _venue(tail, styles, text, (label.end() if label else 0) + title_start + len(title))
+    venue = _venue(tail, styles, text, base + title_start + len(title))
     if venue:
         fields["journal"] = venue
     _numeric_context(fields, locator_evidence, content, title_start + len(title))
     persons = _parsed_authors(authors, diagnostics)
-    named_authors = any(person["kind"] != "others" for person in persons.get("author", []))
-    for field in ("title", "authors", "year"):
-        if not (named_authors if field == "authors" else fields.get(field)):
+    required_fields = {
+        "title": fields.get("title"),
+        "authors": any(person["kind"] != "others" for person in persons.get("author", [])),
+        "year": fields.get("year"),
+    }
+    for field, value in required_fields.items():
+        if not value:
             diagnostics.append(
                 diagnostic(
                     "missing_" + field, f"No reliable printed {field} could be recovered", [field]
