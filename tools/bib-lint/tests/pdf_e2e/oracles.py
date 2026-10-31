@@ -231,7 +231,9 @@ def _locator_visible(field, visibility):
     )
 
 
-def expected_statuses(case, family, visibility):
+def expected_statuses(case, family, visibility, *, arxiv_pin_erased=False):
+    if arxiv_pin_erased:
+        return ["Needs review"]
     source = case.get("source_expectation", {})
     status = source.get("reference_status")
     override = _rendering_status(case, family, visibility)
@@ -299,7 +301,12 @@ def typeset_locator_issues(targets, actual_uris):
     return [{"field": "doi", "code": "typeset_nested_doi_url"}] if bad else []
 
 
-def _case_expectation(case, entry, family, body, actual_uris=()):
+def version_pin_visible(text, targets, actual_uris):
+    visible = [text, *(target for target in targets if target in actual_uris)]
+    return any(re.search(r"\b\d{4}\.\d{4,5}v[1-9]\d*", value) for value in visible)
+
+
+def _case_expectation(case, entry, family, body, actual_uris=(), *, arxiv_primary=False):
     text, targets = rendered_text(body)
     visibility, expected = {}, {}
     folded = normalized(text)
@@ -334,6 +341,7 @@ def _case_expectation(case, entry, family, body, actual_uris=()):
         "author_structure_visible": author_structure_visible(
             [_person(person, False) for person in entry.persons.get("author", ())]
         ),
+        "arxiv_pin_erased": arxiv_primary and not version_pin_visible(text, targets, actual_uris),
     }
 
 
@@ -365,7 +373,15 @@ def annotate_project(cell, truth):
         key = inverse[build_key]
         annotations.append(
             _case_expectation(
-                cases[key], entries[key], recipe["venue"]["family"], body, actual_uris
+                cases[key],
+                entries[key],
+                recipe["venue"]["family"],
+                body,
+                actual_uris,
+                arxiv_primary=any(
+                    truth["canonical_records"][record]["provider"] == "arxiv"
+                    for record in cases[key]["canonical_records"]
+                ),
             )
         )
     visible_keys = [
@@ -416,6 +432,11 @@ def compact_oracles(gold):
         "t": "fields printed as text",
         "a": "fields retained only in annotations",
         "o": "empty author-year occurrence omitted from the rendering",
+        "anchor": "independent physical page and tight first-line box in points",
+        "authors_shown": "native style prints this many source authors, followed by others",
+        "author_grouping_erased": "source name groups or suffixes look like author separators",
+        "arxiv_pin_erased": "native text and actual URI actions retain no arXiv version pin",
+        "issues": "native typesetter locator defects confirmed by actual PDF URI actions",
     }
     compact["projects"] = []
     for project in gold["projects"]:
@@ -442,6 +463,8 @@ def compact_oracles(gold):
                 row["authors_shown"] = len(case["expected_authors"]) - 1
             if not case["author_structure_visible"]:
                 row["author_grouping_erased"] = True
+            if case["arxiv_pin_erased"]:
+                row["arxiv_pin_erased"] = True
             result["cases"].append(row)
         compact["projects"].append(result)
     return compact
@@ -489,7 +512,12 @@ def expand_project(project, truth):
                     else []
                 ),
                 "required_checks": visible_checks(case, project["family"], visibility),
-                "expected_statuses": expected_statuses(case, project["family"], visibility),
+                "expected_statuses": expected_statuses(
+                    case,
+                    project["family"],
+                    visibility,
+                    arxiv_pin_erased=row.get("arxiv_pin_erased", False),
+                ),
                 "required_issues": required_issues(case, visibility),
                 "canonical_records": case["canonical_records"],
                 "primary_sources": list(

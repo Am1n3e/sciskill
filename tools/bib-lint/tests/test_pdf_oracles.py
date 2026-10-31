@@ -128,6 +128,25 @@ def test_literal_person_braces_are_erased_but_full_name_survives_initial_styles(
     assert expected_statuses(case, "icml", {"title": "text", "year": "text"}) == ["Partial match"]
 
 
+def test_version_pin_erasure_is_physical_and_changes_verdict_without_dropping_checks():
+    from pdf_e2e.build import FIXTURES, read_json
+    from pdf_e2e.oracles import _required_checks, expected_statuses, version_pin_visible
+
+    uri = "https://arxiv.org/abs/2406.12276v1"
+    assert version_pin_visible("arXiv:2406.12276v1", [], [])
+    assert version_pin_visible("Visible title", [uri], [uri])
+    assert not version_pin_visible("Visible title", [uri], [])
+    case = next(
+        c
+        for c in read_json(FIXTURES / "truth.json")["cases"]
+        if c["citation_key"] == "case_year_wrong"
+    )
+    assert expected_statuses(
+        case, "ijcai", {"title": "text", "year": "text"}, arxiv_pin_erased=True
+    ) == ["Needs review"]
+    assert {"field": "year", "results": ["mismatch"]} in _required_checks(case, "ijcai")
+
+
 def test_all_primary_field_assertion_does_not_accept_one_matching_source():
     import pytest
     from test_pdf_e2e import _assert_checks
