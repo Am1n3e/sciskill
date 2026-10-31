@@ -103,3 +103,21 @@ def test_prepare_assets_rejects_member_path_escape(tmp_path):
     with pytest.raises(ValueError, match="Unsafe"):
         prepare_asset("kit", pin, tmp_path)
     assert not (tmp_path / "escaped.sty").exists()
+
+
+def test_stress_builds_verify_staged_template_members(tmp_path):
+    import hashlib
+
+    from pdf_e2e.assets import verified_asset
+
+    pin = {
+        "sha256": "0" * 64,
+        "files": [{"path": "native.sty", "sha256": hashlib.sha256(b"official").hexdigest()}],
+    }
+    member = tmp_path / pin["sha256"] / "native.sty"
+    member.parent.mkdir()
+    member.write_bytes(b"official")
+    assert verified_asset(pin, tmp_path) == member.parent
+    member.write_bytes(b"changed")
+    with pytest.raises(ValueError, match="checksum.*native.sty"):
+        verified_asset(pin, tmp_path)

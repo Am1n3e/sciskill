@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+from pdf_e2e.assets import verified_asset
 from pdf_e2e.compiler import compile_project
 from pdf_e2e.projects import create_project
 
@@ -170,7 +171,7 @@ def compile_stress(templates, corpus, cache, output):
             project = create_project(
                 venue,
                 corpus,
-                cache / asset["sha256"],
+                verified_asset(asset, cache),
                 FIXTURES,
                 output,
                 variant="stress-" + venue["mode"],

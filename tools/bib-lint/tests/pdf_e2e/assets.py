@@ -66,3 +66,12 @@ def _download(pin: dict) -> bytes:
             if len(chunks) > pin["bytes"]:
                 raise ValueError(f"Unexpected archive size: {pin['url']}")
     return bytes(chunks)
+
+
+def verified_asset(pin: dict, cache: Path) -> Path:
+    """Offline builds verify the staged files too, including cache hits."""
+    destination = cache / pin["sha256"]
+    for member in pin["files"]:
+        path = destination / _member_path(member["path"])
+        _checked(path.read_bytes(), member["sha256"], str(path))
+    return destination
