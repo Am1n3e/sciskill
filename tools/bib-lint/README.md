@@ -30,6 +30,37 @@ including source failures. Use `--refresh` to retry failures (`--key KEY` limits
 recheck to one reference). `--refresh` fetches
 selected evidence again.
 
+## Source lookup and parallelism
+
+For both BibTeX and PDF references, verification first tries supplied URLs at
+supported scholarly providers, then provider identifiers and DOI resolution. A
+resolved locator is compared with the original citation and ends discovery for
+that reference, including when it proves a mismatch. Other supplied identifiers
+remain visible and can require review. Sources that were not queried are not
+claimed as checked. Without a resolved locator, verification retains the
+independent source searches used to detect conflicting records.
+
+Each provider has one embedded Huey worker backed by SQLite. Different providers
+can run concurrently; references using the same provider wait in its queue.
+No separate service is needed. Provider locks, request pacing, and server-requested
+cooldowns are shared between audits under the same user account on one machine.
+Their default location is `$XDG_CACHE_HOME/bib-lint/providers` (or
+`~/.cache/bib-lint/providers`); `BIB_LINT_PROVIDER_STATE` overrides it. Separate
+machines or accounts need their own coordination if they share a provider quota.
+
+Transient network, rate-limit, and server errors receive at most two scheduled
+retries within each provider's total HTTP-attempt budget. Cooldowns remain
+cancellable, and other providers can continue. DOI redirects are handed to
+recognized providers; unsupported publisher destinations use normal fallback
+without fetching that destination. Supported provider PDF URLs resolve to their
+metadata pages.
+
+The checkpoint records completed lookup phases. After interruption, remaining work
+is reconstructed from it and stale queue tasks are discarded. Queue persistence
+does not promise exactly-once requests; completed cached responses can be reused.
+Local storage or queue failures stop the audit with a saved partial checkpoint,
+while unavailable scholarly sources remain source findings.
+
 ## Research-paper PDFs
 
 ```sh
