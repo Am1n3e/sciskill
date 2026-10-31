@@ -185,7 +185,7 @@ def test_pdf_workflow_applies_uncertainty_before_saving_source_outcomes(pdf_inpu
         source, client=FakeClient(), methods=fixture_registry({"test": wrong_year})
     )
     item = report["items"][0]
-    assert report["verification_run"]["orchestration_version"] == 5
+    assert report["verification_run"]["orchestration_version"] == 7
     assert item["validations"]["correctness"]["is_correct"] is None
     assert item["validations"]["correctness"]["input_findings"][0]["code"] == "uncertain_year"
     saved = json.loads(workspace.final.read_text())

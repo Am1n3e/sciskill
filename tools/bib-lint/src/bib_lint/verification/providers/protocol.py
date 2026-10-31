@@ -114,6 +114,7 @@ class ProviderDescriptor:
             "preprint_archive",
             "publication_archive",
             "review_platform",
+            "resolver",
         }:
             raise ValueError(f"Invalid evidence category: {self.id}")
         if type(self.canonical_priority) is not int:
@@ -261,8 +262,27 @@ class LookupResult:
     attempts: tuple[LookupAttempt, ...] = ()
     complete: bool = True
     diagnostic: str = ""
+    redirect_url: str | None = None
+
+    def _validate_redirect(self):
+        if self.redirect_url is None:
+            return
+        from bib_lint.verification.input_checks import invalid_url_characters, safe_url
+
+        if not isinstance(self.redirect_url, str):
+            raise ValueError("Resolver destination must be a URL")
+        parsed = urlsplit(self.redirect_url)
+        if (
+            self.candidates
+            or parsed.scheme not in {"http", "https"}
+            or not parsed.hostname
+            or not safe_url(parsed)
+            or invalid_url_characters(self.redirect_url)
+        ):
+            raise ValueError("A resolver must return a safe URL without invented candidates")
 
     def validate(self):
+        self._validate_redirect()
         if type(self.complete) is not bool or not isinstance(self.diagnostic, str):
             raise ValueError("Invalid lookup completion diagnostic")
         if not isinstance(self.candidates, tuple) or not isinstance(self.attempts, tuple):

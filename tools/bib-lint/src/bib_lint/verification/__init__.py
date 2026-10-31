@@ -15,7 +15,11 @@ from bib_lint.storage import ReportLockError, report_lock, report_paths
 from bib_lint.storage import write_json as _write_json
 from bib_lint.verification.consensus import POLICY_VERSION, build_consensus
 from bib_lint.verification.http import LookupFailure, MetadataClient
-from bib_lint.verification.input_checks import input_findings, unverified_locator_findings
+from bib_lint.verification.input_checks import (
+    input_findings,
+    locator_identity_findings,
+    unverified_locator_findings,
+)
 from bib_lint.verification.matching import select_result
 from bib_lint.verification.providers import METHODS
 from bib_lint.verification.providers.context import RequestContext
@@ -29,9 +33,21 @@ def _attempt_data(attempt):
     return data
 
 
-def _source_result(provider, query, context):
+def _authoritative(descriptor, record):
+    if descriptor.evidence_category == "resolver":
+        return False
+    if descriptor.evidence_category == "preprint_archive":
+        return record.get("record_type") == "preprint"
+    return record.get("record_type") == "publication" and record.get("publication_status") in {
+        "accepted",
+        "published",
+    }
+
+
+def _source_result(provider, query, context, *, retrieval=None, strategy="search"):
     descriptor = provider.descriptor
-    applicable = provider.applicability(query)
+    retrieval = retrieval if retrieval is not None else query
+    applicable = provider.applicability(retrieval)
     if not isinstance(applicable, Applicability):
         raise ValueError("Provider must return Applicability")
     applicable.validate()
@@ -54,29 +70,33 @@ def _source_result(provider, query, context):
             for s in applicable.strategies
         ]
         return result
-    lookup = provider.lookup(query, context)
+    lookup = provider.lookup(retrieval, context)
     if not isinstance(lookup, LookupResult):
         raise ValueError("Provider must return LookupResult")
     lookup.validate()
     if len(lookup.candidates) > descriptor.request_policy.max_candidates:
         raise LookupFailure("incomplete_search", "Candidate budget exceeded")
     records = [c.as_record() for c in lookup.candidates]
-    result = select_result(descriptor.id, query.as_record(), records)
+    result = select_result(descriptor.id, query.as_record(), records, lookup=strategy)
     result["lookup_provenance"] = [_attempt_data(a) for a in lookup.attempts]
     result["lookup_complete"] = lookup.complete
-
-    def authoritative(record):
-        if descriptor.evidence_category == "preprint_archive":
-            return record.get("record_type") == "preprint"
-        return record.get("record_type") == "publication" and record.get("publication_status") in {
-            "accepted",
-            "published",
-        }
+    if strategy in {"url", "identifier"} and result.get("found_ref"):
+        result["locator_findings"] = locator_identity_findings(
+            dict(query.fields), query.as_record(), result["found_ref"], descriptor.id
+        )
+        if result["locator_findings"]:
+            result["version_uncertain"] = False
+    if lookup.redirect_url:
+        result.update(
+            redirect_url=lookup.redirect_url,
+            status="not_applicable",
+            reason="Resolver destination recorded; paper metadata is checked separately",
+        )
 
     result["authority"] = (
-        authoritative(result["found_ref"])
+        _authoritative(descriptor, result["found_ref"])
         if result.get("found_ref")
-        else any(authoritative(r) for r in records)
+        else any(_authoritative(descriptor, r) for r in records)
     )
     if not lookup.complete:
         result.update(
@@ -139,6 +159,22 @@ def verify_reference(
 
 def _consensus_with_input(results, fields):
     findings = input_findings(fields) + unverified_locator_findings(fields, results)
+    findings.extend(finding for method in results for finding in method.get("locator_findings", []))
+    for method in results:
+        for earlier in method.get("lookup_history", [])[:-1]:
+            if earlier.get("authority") and (
+                earlier.get("status") == "ambiguous" or earlier.get("differences")
+            ):
+                findings.append(
+                    {
+                        "field": "url",
+                        "input": earlier.get("value"),
+                        "found": earlier.get("found_ref"),
+                        "result": "unknown",
+                        "code": "earlier_locator_evidence",
+                        "message": "An earlier locator was ambiguous or demonstrated discrepancies",
+                    }
+                )
     return build_consensus(results, input_findings=findings)
 
 
@@ -239,7 +275,9 @@ def verify_report_locked(
     methods=None,
 ):
     """Execute under the caller's report lock; never reacquire it."""
-    registry = validate_registry(METHODS if methods is None else methods)
+    from bib_lint.verification.resolver import with_resolver
+
+    registry = with_resolver(validate_registry(METHODS if methods is None else methods))
     selected = selected_items(report, citation_key)
     used = eligible_items(report)
     _prepare_run(report, registry, selected, refresh)
@@ -248,44 +286,25 @@ def verify_report_locked(
     client = client or MetadataClient(Path(cache_dir), refresh=refresh, verbose=verbose)
     if verbose:
         client.verbose = True
+
+    def save_lookup(item, method, step, complete, retrieval):
+        previous = item["validations"].get("correctness", {}).get("methods", [])
+        methods = _merge_lookup(previous, method, step, registry)
+        result = _consensus_with_input(methods, item["entry"].get("fields", {}))
+        result = apply_extraction(result, item)
+        result.update(complete=complete, retrieval=retrieval)
+        if not complete:
+            result["is_correct"] = None
+        item["validations"]["correctness"] = result
+        report.setdefault("summary", {})["verification"] = _totals(report)
+        _write_json(checkpoint, report)
+
     try:
-        for index, item in enumerate(selected, 1):
-            if progress:
-                progress(f"Verifying {index}/{len(selected)}: {item['entry'].get('key', '?')}")
-            previous = item["validations"].get("correctness", {}).get("methods", [])
+        from bib_lint.verification.workflow import audit_entries
 
-            def save_method(results, item=item, previous=previous):
-                merged = {m["name"]: m for m in previous}
-                merged.update({m["name"]: m for m in results})
-                results = [merged[name] for name in registry if name in merged]
-                result = _consensus_with_input(results, item["entry"].get("fields", {}))
-                result = apply_extraction(result, item)
-                result["complete"] = len(results) == len(registry)
-                if not result["complete"]:
-                    result["is_correct"] = None
-                item["validations"]["correctness"] = result
-                report.setdefault("summary", {})["verification"] = _totals(report)
-                _write_json(checkpoint, report)
-
-            result = verify_reference(
-                item["entry"],
-                client,
-                methods=registry,
-                previous=previous,
-                progress=progress,
-                checkpoint=save_method,
-            )
-            result = apply_extraction(result, item)
-            result["complete"] = True
-            item["validations"]["correctness"] = result
-            report.setdefault("summary", {})["verification"] = _totals(report)
-            _write_json(checkpoint, report)
-            if progress:
-                state = reference_status(item["validations"]).lower()
-                consensus = result["consensus"]
-                progress(f"  status: {state}")
-                progress(f"  found: {consensus['records_found']}/{consensus['applicable']}")
-                progress(f"  consensus: {consensus['display']}")
+        audit_entries(
+            selected, registry, client, checkpoint.with_suffix(".queues"), save_lookup, progress
+        )
     finally:
         if owned:
             client.close()
@@ -303,9 +322,25 @@ def verify_report_locked(
     return destination if complete else checkpoint, totals
 
 
-def _execute_provider(name, provider, query, context):
+def _merge_lookup(previous, method, step, registry):
+    merged = {m["name"]: m for m in previous}
+    prior = merged.get(method["name"], {})
+    method["lookup_history"] = prior.get("lookup_history", []) + [
+        {"strategy": step.strategy, "value": step.value, **copy.deepcopy(method)}
+    ]
+    method["requests"] = prior.get("requests", []) + method.get("requests", [])
+    method["lookup_provenance"] = prior.get("lookup_provenance", []) + method.get(
+        "lookup_provenance", []
+    )
+    if prior.get("found_ref") and not method.get("found_ref"):
+        method.setdefault("candidates", []).append(prior["found_ref"])
+    merged[method["name"]] = method
+    return [merged[name] for name in registry if name in merged]
+
+
+def _execute_provider(name, provider, query, context, *, retrieval=None, strategy="search"):
     try:
-        result = _source_result(provider, query, context)
+        result = _source_result(provider, query, context, retrieval=retrieval, strategy=strategy)
     except (OSError, ReportLockError):
         # Local storage failures are execution errors, not provider findings.
         raise
@@ -324,6 +359,8 @@ def _execute_provider(name, provider, query, context):
                 "code": code,
                 "message": str(exc) if isinstance(exc, LookupFailure) else type(exc).__name__,
             }
+            if isinstance(exc, LookupFailure) and exc.retry_after is not None:
+                result["error"]["retry_after"] = exc.retry_after
         result["lookup_provenance"] = [
             _attempt_data(a) for a in getattr(context, "lookup_attempts", ())
         ]
@@ -350,7 +387,8 @@ def _prepare_run(report, registry, selected, refresh):
         "fingerprint": input_hash,
         "methods": list(registry),
         "policy_version": POLICY_VERSION,
-        "orchestration_version": 5 if report["schema_version"] == 4 else 4,
+        "orchestration_version": 7,
+        "retrieval_policy": "locator-first-v1",
         "provider_protocol_version": 1,
         "providers": [p.descriptor.serialize() for p in registry.values()],
     }

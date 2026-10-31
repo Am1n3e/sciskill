@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import threading
 import time
 from datetime import UTC, datetime
 from pathlib import Path
@@ -54,6 +55,7 @@ class ResponseCache:
     def __init__(self, root):
         self.root = Path(root)
         self.manifest = self.root / "checksum.json"
+        self.guard = threading.RLock()
 
     def _manifest(self):
         try:
@@ -73,7 +75,7 @@ class ResponseCache:
     def load(self, citation_key, method, request_key):
         if not self.root.exists():
             return None
-        with report_lock(self.manifest):
+        with self.guard, report_lock(self.manifest):
             manifest = self._manifest()
             folder = self._folder(citation_key)
             prefix = component(method) + "_"
@@ -106,7 +108,7 @@ class ResponseCache:
                 extension = "json"
             except (ValueError, UnicodeError):
                 extension = "txt"
-        with report_lock(self.manifest):
+        with self.guard, report_lock(self.manifest):
             manifest = self._manifest()
             folder = self._folder(citation_key)
             folder.mkdir(parents=True, exist_ok=True)

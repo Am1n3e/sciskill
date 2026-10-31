@@ -58,6 +58,9 @@ class PackageTests(unittest.TestCase):
                 self.assertIn(f"{package}/static/index.html", names)
             self.assertIn("bib_lint/pdf_input/worker.py", names)
             self.assertIn("bib_lint/pdf_evidence.py", names)
+            self.assertIn("bib_lint/verification/queues.py", names)
+            metadata = wheel.read(next(name for name in names if name.endswith('/METADATA'))).decode()
+            self.assertIn("Requires-Dist: huey", metadata)
             self.assertFalse(
                 any(".local/" in name or "references.json" in name for name in names)
             )

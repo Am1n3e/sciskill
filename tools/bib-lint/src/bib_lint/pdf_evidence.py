@@ -260,6 +260,45 @@ def extraction_summary(report):
     }
 
 
+def uncertain_uri_fields(item):
+    pdf = item.get("pdf", {})
+    ambiguous = set()
+    for index, uri in enumerate(pdf.get("uris", [])):
+        lines = [line for line in pdf["fragments"] if line["page"] == uri["page"]]
+        if not lines:
+            ambiguous.add(index)
+            continue
+        tolerance = max(line["bottom"] - line["top"] for line in lines)
+        if (
+            uri["top"] < min(line["top"] for line in lines) - tolerance
+            or uri["bottom"] > max(line["bottom"] for line in lines) + tolerance
+            or uri["x0"] < min(line["x0"] for line in lines) - tolerance
+            or uri["x1"] > max(line["x1"] for line in lines) + tolerance
+        ):
+            ambiguous.add(index)
+    return {
+        name
+        for name, sources in pdf.get("field_evidence", {}).items()
+        if sources and all(source.get("uri") in ambiguous for source in sources)
+    }
+
+
+def retrieval_entry(item):
+    entry = item["entry"]
+    excluded = uncertain_uri_fields(item)
+    return {**entry, "fields": {k: v for k, v in entry["fields"].items() if k not in excluded}}
+
+
+def _ambiguous_author_grouping(item):
+    suffixes = {"jr", "sr", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"}
+    return any(
+        suffix.casefold().strip(".") not in suffixes
+        for person in item["entry"]["persons"].get("author", [])
+        if person.get("kind", "person") == "person"
+        for suffix in person.get("lineage", [])
+    )
+
+
 def apply_extraction(result, item):
     """Compare proved PDF presentation variants, then exclude uncertain input fields."""
     from bib_lint.pdf_candidates import candidate_findings
@@ -275,10 +314,29 @@ def apply_extraction(result, item):
         for finding in candidate_findings(item, methods)
         if finding not in result.get("input_findings", [])
     ]
-    if extraction["state"] == "complete" and not changed and not candidates:
+    unproven = uncertain_uri_fields(item)
+    if _ambiguous_author_grouping(item):
+        unproven.add("authors")
+    if extraction["state"] == "complete" and not changed and not candidates and not unproven:
         return result
     affected, findings = _extraction_findings(extraction["diagnostics"])
     findings = list(result.get("input_findings", [])) + findings + candidates
+    affected.update(unproven)
+    findings.extend(
+        {
+            "field": name,
+            "code": "ambiguous_author_grouping"
+            if name == "authors"
+            else "uncertain_uri_association",
+            "result": "unknown",
+            "input": item["entry"]["fields"].get(name),
+            "found": None,
+            "message": "Printed author grouping needs review"
+            if name == "authors"
+            else "The hyperlink rectangle extends beyond this reference",
+        }
+        for name in sorted(unproven)
+    )
     for method in methods:
         for comparison in method.get("comparisons", []):
             if comparison["field"] in affected:

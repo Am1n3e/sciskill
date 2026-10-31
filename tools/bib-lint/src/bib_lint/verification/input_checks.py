@@ -7,7 +7,7 @@ locators. These checks never copy input metadata into a retrieved source record.
 import re
 from urllib.parse import parse_qs, unquote, urlsplit
 
-from bib_lint.verification.matching import arxiv_id, doi, normalize
+from bib_lint.verification.matching import arxiv_id, doi, families, normalize, title_similarity
 
 ARXIV_TOKEN = r"(?:\d{4}\.\d{4,5}|[a-z-]+(?:\.[A-Z]{2})?/\d{7})(?:v[1-9]\d*)?"
 ALIASES = {
@@ -158,6 +158,36 @@ def finding(field, inputs, code, message, *, result="unknown", found=None):
         "code": code,
         "message": message,
     }
+
+
+def locator_identity_findings(fields, original, found, source):
+    left, right = families(original), families(found)
+    if not left or not right or left & right or title_similarity(original, found) >= 0.5:
+        return []
+    provider = "acl" if source == "acl_anthology" else source
+    inputs = [
+        {"field": field, "value": value}
+        for name, field, value in supplied_locators(fields)
+        if name == provider
+    ]
+    if not inputs:
+        inputs = [
+            {"field": field, "value": value}
+            for name, field, value in supplied_locators(fields)
+            if name == "doi"
+        ]
+    if not inputs:
+        return []
+    return [
+        finding(
+            provider,
+            inputs,
+            "locator_identity_mismatch",
+            "This locator resolves to a paper with incompatible title and authors",
+            result="mismatch",
+            found=found.get("url"),
+        )
+    ]
 
 
 def identifier_findings(fields, found):

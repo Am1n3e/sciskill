@@ -168,13 +168,74 @@ VENUE_MUTATIONS = {
 }
 
 
+LOCATOR_PRIMARY = {
+    "case_openreview_accepted_direct": ("openreview", "Correct"),
+    "adv_provider_openreview_alias_conflict": ("openreview", "Correct"),
+    "adv_consensus_pal_year_hybrid": ("openreview", "Correct"),
+    "adv_consensus_pal_common_year_error": ("openreview", "Invalid"),
+    "adv_consensus_kim_unlinked_primaries": ("neurips", "Correct"),
+    "adv_consensus_tulu_ambiguous_truncation": ("arxiv", "Partial match"),
+}
+
+
+def _locator_primary(case, visibility):
+    # Independently curated fixture URLs identify these specific primary records.
+    # Locator-first verification does not discover unlinked alternative versions.
+    selected = LOCATOR_PRIMARY.get(case["citation_key"])
+    if not selected:
+        return None
+    if required_issues(case, visibility):
+        return None
+    visible = {field for field, state in visibility.items() if state in {"text", "annotation_only"}}
+    if "url" not in visible:
+        if case["citation_key"] in {
+            "adv_consensus_pal_year_hybrid",
+            "adv_consensus_pal_common_year_error",
+        } and visible & {"doi", "eprint"}:
+            return "arxiv", "Needs review"
+        if selected[0] == "neurips" and "doi" in visible:
+            return selected
+        if selected[0] != "arxiv" or "eprint" not in visible:
+            return None
+    if case["citation_key"] == "adv_consensus_pal_year_hybrid" and any(
+        visibility.get(field) in {"text", "annotation_only"} for field in ("eprint", "doi")
+    ):
+        return selected[0], "Needs review"  # Supplied secondary locators remain unverified.
+    return selected
+
+
 def visible_checks(case, family, visibility):
+    direct_conflicts = {
+        "case_arxiv_wrong_identifier": ("arxiv", "arxiv"),
+        "case_doi_wrong": ("doi", "acl_anthology"),
+    }
+    selected = direct_conflicts.get(case["citation_key"])
+    if case["citation_key"] == "case_doi_wrong" and family not in {"acl", "eccv"}:
+        # Other families print the canonical provider URL as the primary URL.
+        # ACL exposes only the DOI link; ECCV prints that link first.
+        selected = None
+    if selected and _locator_visible(selected[0], visibility):
+        # These valid locators resolve to different papers. Direct verification
+        # proves title conflicts; it cannot infer their intended identifiers.
+        field, source = selected
+        return [
+            {"field": "title", "source": source, "results": ["mismatch"]},
+            {"field": field, "source": source, "results": ["match"]},
+        ]
     changed_venue = VENUE_MUTATIONS.get(case["citation_key"])
     erased = changed_venue and visibility.get(changed_venue) not in {"text", "annotation_only"}
-    return [
+    checks = [
         check
         for check in _required_checks(case, family)
         if not (erased and check["field"] == "venue")
+    ]
+    selected = _locator_primary(case, visibility)
+    if not selected:
+        return checks
+    return [
+        {**check, "source": selected[0]}
+        for check in checks
+        if check.get("source") in {None, selected[0], "all_authoritative_found"}
     ]
 
 
@@ -233,7 +294,7 @@ def _locator_visible(field, visibility):
 
 
 def expected_statuses(case, family, visibility, *, arxiv_locator_erased=False):
-    if arxiv_locator_erased:
+    if arxiv_locator_erased and not _locator_primary(case, visibility):
         return ["Needs review"]
     source = case.get("source_expectation", {})
     status = source.get("reference_status")
@@ -257,6 +318,18 @@ def expected_statuses(case, family, visibility, *, arxiv_locator_erased=False):
 
 def _rendering_status(case, family, visibility):
     source = case.get("source_expectation", {})
+    if case["citation_key"] == "case_title_unrelated" and _locator_visible("doi", visibility):
+        # Its visible source locator identifies the unchanged canonical paper; the
+        # deliberately unrelated title is now disproved instead of left unresolved.
+        return ["Invalid"]
+    selected = _locator_primary(case, visibility)
+    if selected:
+        status = selected[1]
+        return (
+            ["Needs review"]
+            if family in INITIAL_FAMILIES and status in {"Correct", "Partial match"}
+            else [status]
+        )
     if case["citation_key"] == "case_openreview_accepted_direct":
         return ["Needs review"]  # Unlinked arXiv and accepted publication are both authoritative.
     if case["citation_key"] == "adv_match_literal_prefix_collision":
@@ -444,6 +517,7 @@ def compact_oracles(gold):
         "arxiv_locator_erased": "native text and actual URI actions retain no arXiv locator",
         "identity_locator_erased": "no identifier establishes which work has the disputed title",
         "issues": "native typesetter locator defects confirmed by actual PDF URI actions",
+        "printed_mismatches": "Reviewed printed field conflicts with identified sources",
     }
     compact["projects"] = []
     for project in gold["projects"]:
@@ -474,6 +548,8 @@ def compact_oracles(gold):
                 row["arxiv_locator_erased"] = True
             if case["identity_locator_erased"]:
                 row["identity_locator_erased"] = True
+            if case.get("printed_mismatches"):
+                row["printed_mismatches"] = case["printed_mismatches"]
             result["cases"].append(row)
         compact["projects"].append(result)
     return compact
@@ -559,6 +635,12 @@ def expand_project(project, truth):
                 "found": record["metadata"]["title"],
                 "source": record["provider"],
             }
+        if row.get("printed_mismatches"):
+            rendered = expanded["cases"][-1]
+            rendered["required_checks"].extend(
+                {**check, "results": ["mismatch"]} for check in row["printed_mismatches"]
+            )
+            rendered["expected_statuses"] = ["Invalid"]
     return expanded
 
 

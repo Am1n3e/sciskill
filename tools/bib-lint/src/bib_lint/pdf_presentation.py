@@ -135,6 +135,9 @@ def _author_presentation(item, original, found):
 
 def _author_comparison(item, original, found):
     alternate = _author_presentation(item, original, found)
+    source, _ = _field_source(item, "authors")
+    if _ambiguous_adjacent_groups(alternate, found, source):
+        return "unknown"
     if alternate == original:
         return None
     return next(
@@ -142,6 +145,42 @@ def _author_comparison(item, original, found):
         for c in compare_fields({"authors": alternate}, {"authors": found})
         if c["field"] == "authors"
     )
+
+
+def _ambiguous_adjacent_groups(original, found, source):
+    if len(original) != len(found) + 1:
+        return False
+    source = " ".join(source.split())
+    for index, canonical in enumerate(found):
+        first, last = original[index : index + 2]
+        if (
+            first.get("kind") == "literal"
+            or last.get("given")
+            or last.get("suffix")
+            or first.get("suffix")
+            or last.get("kind") == "literal"
+        ):
+            continue
+        given = " ".join(first.get(part, "") for part in ("given", "family"))
+        if normalize(given) != normalize(canonical.get("given")) or normalize(
+            last.get("family")
+        ) != normalize(canonical.get("family")):
+            continue
+        pair = rf"(?<!\w){re.escape(given)}\s*,\s*{re.escape(last['family'])}(?!\w)"
+        occurrences = re.findall(rf"(?<!\w){re.escape(given)}(?!\w)", source, re.IGNORECASE)
+        if len(occurrences) != 1 or not re.search(pair, source, re.IGNORECASE):
+            continue
+        alternate = (
+            original[:index] + [{"given": given, "family": last["family"]}] + original[index + 2 :]
+        )
+        comparison = next(
+            c
+            for c in compare_fields({"authors": alternate}, {"authors": found})
+            if c["field"] == "authors"
+        )
+        if comparison["result"] in {"match", "unknown"}:
+            return True
+    return False
 
 
 def apply_presentation(methods, item):
