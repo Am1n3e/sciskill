@@ -94,9 +94,10 @@ class JmlrProvider(ArchiveProvider):
         )
         for year in years(query):
             for url, _, label in links:
+                url = url.rstrip("/") + "/"
                 if str(year) in label and url not in seen:
                     seen.add(url)
-                    yield url.rstrip("/") + "/"
+                    yield url
 
     def volume_catalog(self, query):
         volume = dict(query.fields).get("volume", "")

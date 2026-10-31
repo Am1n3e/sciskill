@@ -3,6 +3,7 @@
 import copy
 import json
 from dataclasses import replace
+from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -111,6 +112,14 @@ def test_jmlr_unproductive_volume_falls_back_to_independent_year_catalog(tmp_pat
         ABSTRACT,
     ]
     assert source["fields"]["volume"] == "999"
+
+
+def test_jmlr_year_fallback_does_not_repeat_the_supplied_volume_catalog():
+    source = source_entry()
+    source["fields"]["volume"] = "22"
+    context = SimpleNamespace(get=lambda *args, **kwargs: '<a href="v22">Volume 22 (2021)</a>')
+    catalogs = list(METHODS["jmlr"].catalogs(LookupQuery.from_entry(source), context))
+    assert catalogs == ["https://jmlr.org/papers/v22/"]
 
 
 @pytest.mark.parametrize(
