@@ -62,7 +62,7 @@ def jmlr_identifier(value):
 
 
 class JmlrProvider(ArchiveProvider):
-    descriptor = ProviderDescriptor("jmlr", "JMLR", "3", "publication_archive", HOSTS)
+    descriptor = ProviderDescriptor("jmlr", "JMLR", "4", "publication_archive", HOSTS)
 
     def direct_url(self, query):
         url = supported_url(query, self.descriptor.allowed_hosts, allow_pdf=True)
@@ -81,9 +81,10 @@ class JmlrProvider(ArchiveProvider):
         return {"jmlr": identifier} if identifier else super().identifiers(url)
 
     def catalogs(self, query, context):
-        if self.volume_catalog(query):
-            yield self.volume_catalog(query)
-            return
+        volume = self.volume_catalog(query)
+        seen = {volume} if volume else set()
+        if volume:
+            yield volume
         links = list(
             catalog_links(
                 context.get(ROOT, page=True),
@@ -91,7 +92,6 @@ class JmlrProvider(ArchiveProvider):
                 lambda u: bool(re.fullmatch(r"/papers/(?:v|volume)\d+/?", urlsplit(u).path)),
             )
         )
-        seen = set()
         for year in years(query):
             for url, _, label in links:
                 if str(year) in label and url not in seen:
