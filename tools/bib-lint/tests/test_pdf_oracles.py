@@ -393,3 +393,20 @@ def test_locator_first_oracle_attributes_a_wrong_link_to_direct_metadata():
         "Unresolved",
         "Needs review",
     ]
+
+
+def test_resolving_wrong_doi_requires_the_linked_papers_title_conflict():
+    from pdf_e2e.oracles import visible_checks
+
+    case = {
+        "citation_key": "case_doi_wrong",
+        "canonical_records": ["datawise"],
+        "source_expectation": {"comparisons": {"doi": "mismatch"}},
+    }
+    checks = visible_checks(case, "acl", {"title": "text", "doi": "annotation_only"})
+    assert {"field": "title", "source": "acl_anthology", "results": ["mismatch"]} in checks
+    assert {"field": "doi", "source": "acl_anthology", "results": ["match"]} in checks
+    assert visible_checks(case, "neurips", {"title": "text", "doi": "text", "url": "text"}) == [
+        {"field": "doi", "results": ["mismatch"]}
+    ]
+    assert visible_checks(case, "eccv", {"title": "text", "doi": "text", "url": "text"}) == checks

@@ -205,14 +205,22 @@ def _locator_primary(case, visibility):
 
 
 def visible_checks(case, family, visibility):
-    if case["citation_key"] == "case_arxiv_wrong_identifier" and _locator_visible(
-        "arxiv", visibility
-    ):
-        # The supplied ID resolves to Tulu, while the citation names CodeNav. Direct
-        # verification proves a title conflict; it cannot infer the intended ID.
+    direct_conflicts = {
+        "case_arxiv_wrong_identifier": ("arxiv", "arxiv"),
+        "case_doi_wrong": ("doi", "acl_anthology"),
+    }
+    selected = direct_conflicts.get(case["citation_key"])
+    if case["citation_key"] == "case_doi_wrong" and family not in {"acl", "eccv"}:
+        # Other families print the canonical provider URL as the primary URL.
+        # ACL exposes only the DOI link; ECCV prints that link first.
+        selected = None
+    if selected and _locator_visible(selected[0], visibility):
+        # These valid locators resolve to different papers. Direct verification
+        # proves title conflicts; it cannot infer their intended identifiers.
+        field, source = selected
         return [
-            {"field": "title", "source": "arxiv", "results": ["mismatch"]},
-            {"field": "arxiv", "source": "arxiv", "results": ["match"]},
+            {"field": "title", "source": source, "results": ["mismatch"]},
+            {"field": field, "source": source, "results": ["match"]},
         ]
     changed_venue = VENUE_MUTATIONS.get(case["citation_key"])
     erased = changed_venue and visibility.get(changed_venue) not in {"text", "annotation_only"}
