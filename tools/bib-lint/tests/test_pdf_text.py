@@ -852,3 +852,24 @@ def test_parenthesized_publication_year_is_not_part_of_italic_venue():
         )
         == "ICML 2023 Poster"
     )
+
+
+def test_space_separated_journal_volume_precedes_parenthesized_publication_date():
+    item = citation("Jane Smith. Example Paper. Journal of Example Research 22 (2031).")
+    assert item["entry"]["fields"]["journal"] == "Journal of Example Research"
+    assert item["entry"]["fields"]["volume"] == "22"
+    assert item["entry"]["fields"]["year"] == "2031"
+    mappings = item["pdf"]["field_evidence"]["volume"]
+    assert (
+        "".join(
+            item["pdf"]["fragments"][m["fragment"]]["text"][m["start"] : m["end"]] for m in mappings
+        )
+        == "22"
+    )
+
+
+@pytest.mark.parametrize("venue", ["ICML 2023 Poster", "ICML 2023"])
+def test_conference_year_in_venue_name_is_not_a_volume_before_publication_date(venue):
+    item = citation(f"Jane Smith. Example Paper. In {venue} (2023).")
+    assert item["entry"]["fields"]["journal"] == venue
+    assert "volume" not in item["entry"]["fields"]

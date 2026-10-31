@@ -456,6 +456,7 @@ def _title_boundary(content, title, tail, start, styles, base):
 
 def _clean_venue(value):
     value = value.strip(" ,.;")
+    value = re.split(r"\s+(?=\d{1,3}\s+\((?:18|19|20)\d{2}[a-z]?\))", value, maxsplit=1)[0]
     value = re.sub(r"\s+\((?:18|19|20)\d{2}[a-z]?\)$", "", value)
     value = value.strip(" ,.;()")
     if YEAR.fullmatch(value) or re.fullmatch(r"Preprint(?:\s*,?\s*arxiv\s*:.*)?", value, re.I):
@@ -480,7 +481,6 @@ def _venue(tail, styles, text, title_end):
     tail = re.split(
         r"\b(?:doi\s*:|https?\s*:\s*//|URL\b|ISBN\b|BibTeX\b)", tail, maxsplit=1, flags=re.I
     )[0]
-    tail = re.sub(r"\s*\((?:18|19|20)\d{2}[a-z]?\)\.?$", "", tail.strip())
     tail = re.sub(r"^In\s*:?[ \t]+", "", tail)
     return _clean_venue(re.split(r"\.\s|[.;]$", tail, maxsplit=1)[0])
 
