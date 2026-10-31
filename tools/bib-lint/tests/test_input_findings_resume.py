@@ -153,7 +153,7 @@ def test_old_saved_verdict_recomputes_input_checks_without_rewriting_evidence(tm
         client.close()
     result = resumed["items"][0]["validations"]["correctness"]
     assert result["policy_version"] == resumed["verification_run"]["policy_version"] == 8
-    assert resumed["verification_run"]["orchestration_version"] == 4
+    assert resumed["verification_run"]["orchestration_version"] == 6
     assert reference_status({"correctness": result}) == "Needs review"
     assert has_finding(result, "conflicting_venues")
     assert len(calls) == 1

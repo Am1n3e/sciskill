@@ -72,6 +72,8 @@ class MetadataClient:
             if budget is not None:
                 budget.consume_attempt()
             self._pace(method, host, interval)
+            if attempt == 0:
+                self.evidence.append(evidence)
             self.last_request[host] = time.monotonic()
             evidence["attempts"] += 1
             try:
@@ -249,7 +251,6 @@ class MetadataClient:
             "cached": False,
             "attempts": 0,
         }
-        self.evidence.append(evidence)
         response, metadata = self._request_with_retries(
             request, host, method, key, public_url, evidence, policy, budget
         )

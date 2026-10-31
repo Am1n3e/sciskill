@@ -48,8 +48,8 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture(autouse=True)
-def offline_clock(monkeypatch):
-    from bib_lint.verification import http
+def offline_clock(monkeypatch, tmp_path):
+    from bib_lint.verification import http, queues, traffic
 
     clock = [100.0]
     monkeypatch.setattr(
@@ -61,6 +61,15 @@ def offline_clock(monkeypatch):
             time=time.time,
         ),
     )
+    monkeypatch.setenv("BIB_LINT_PROVIDER_STATE", str(tmp_path / "provider-state"))
+    monkeypatch.setattr(traffic, "time", SimpleNamespace(time=lambda: clock[0]))
+
+    def pause(stop, seconds):
+        clock[0] += seconds
+        return stop.is_set()
+
+    monkeypatch.setattr(traffic, "pause", pause)
+    monkeypatch.setattr(queues, "RETRY_DELAY", 0)
     original = socket.socket.connect
 
     def connect(sock, address):

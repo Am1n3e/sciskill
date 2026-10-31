@@ -12,6 +12,8 @@ from bib_lint.storage import report_lock
 from bib_lint.verification.providers import METHODS
 from bib_lint.verification.providers.registry import validate_registry
 
+RETRY_DELAY = 2
+
 
 class RetryLookup(Exception):
     def __init__(self, result, delay=0):
@@ -49,14 +51,13 @@ def _register(queue, lookup, provider, stop, retries, retry_delay):
             stop.set()
             return {"interrupted": True}
         except BaseException as exc:
-            stop.set()
-            return {"fatal": f"{type(exc).__name__}: {exc}"}
+            return {"fatal": f"{type(exc).__name__}: {exc}", "fatal_type": type(exc).__name__}
 
     return execute
 
 
 class ProviderQueues:
-    def __init__(self, root, lookup, *, providers=METHODS, stop=None, retries=2, retry_delay=2):
+    def __init__(self, root, lookup, *, providers=METHODS, stop=None, retries=2, retry_delay=None):
         root.mkdir(parents=True, exist_ok=True)
         self.root, self.lookup = root, lookup
         self.providers = validate_registry(providers)
@@ -76,7 +77,14 @@ class ProviderQueues:
                 cache_mb=1,
             )
             self.queues[name] = queue
-            self.tasks[name] = _register(queue, lookup, name, self.stop, retries, retry_delay)
+            self.tasks[name] = _register(
+                queue,
+                lookup,
+                name,
+                self.stop,
+                retries,
+                RETRY_DELAY if retry_delay is None else retry_delay,
+            )
 
     def submit(self, entry, provider, phase):
         result = self.tasks[provider](entry, phase, {})
