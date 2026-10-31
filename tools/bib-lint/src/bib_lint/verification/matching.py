@@ -219,7 +219,7 @@ def select_result(name, original, candidates, *, authority=False, lookup="search
     matched_candidates = []
     rejected_candidates = []
     for record in candidates:
-        if identity_match(original, record):
+        if lookup in {"url", "identifier"} or identity_match(original, record):
             matched_candidates.append(record)
             if not any(same_record(record, r) for r in matches):
                 matches.append(record)

@@ -29,9 +29,10 @@ def _attempt_data(attempt):
     return data
 
 
-def _source_result(provider, query, context):
+def _source_result(provider, query, context, *, retrieval=None, strategy="search"):
     descriptor = provider.descriptor
-    applicable = provider.applicability(query)
+    retrieval = retrieval if retrieval is not None else query
+    applicable = provider.applicability(retrieval)
     if not isinstance(applicable, Applicability):
         raise ValueError("Provider must return Applicability")
     applicable.validate()
@@ -54,14 +55,14 @@ def _source_result(provider, query, context):
             for s in applicable.strategies
         ]
         return result
-    lookup = provider.lookup(query, context)
+    lookup = provider.lookup(retrieval, context)
     if not isinstance(lookup, LookupResult):
         raise ValueError("Provider must return LookupResult")
     lookup.validate()
     if len(lookup.candidates) > descriptor.request_policy.max_candidates:
         raise LookupFailure("incomplete_search", "Candidate budget exceeded")
     records = [c.as_record() for c in lookup.candidates]
-    result = select_result(descriptor.id, query.as_record(), records)
+    result = select_result(descriptor.id, query.as_record(), records, lookup=strategy)
     result["lookup_provenance"] = [_attempt_data(a) for a in lookup.attempts]
     result["lookup_complete"] = lookup.complete
 
