@@ -58,8 +58,8 @@ def extract_pdf(path, *, limits=None):
     limits = {**DEFAULT_LIMITS, **(limits or {})}
     if set(limits) != set(DEFAULT_LIMITS) or any(
         type(v) not in (int, float)
-        or not math.isfinite(v)
         or not 0 < v < sys.maxsize
+        or not math.isfinite(v)
         or (k != "max_seconds" and type(v) is not int)
         for k, v in limits.items()
     ):
@@ -71,7 +71,7 @@ def extract_pdf(path, *, limits=None):
     )
     command = [
         sys.executable,
-        "-P",
+        "-I",
         "-c",
         bootstrap,
         str(Path(__file__).resolve().parents[2]),

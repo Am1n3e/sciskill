@@ -1,19 +1,17 @@
 """Disposable local parser process; owns no workspace and never retrieves links."""
 
-import base64
 import io
 import json
 import logging
 import sys
 import time
-import zlib
 
 import pdfplumber
-from pdfminer.psparser import literal_name
 
 from bib_lint.pdf_input import PDFExtractionError
 from bib_lint.pdf_input.citations import parse_reference
 from bib_lint.pdf_input.layout import HEADING, _end, bibliography_lines, occurrences, page_lines
+from bib_lint.pdf_input.streams import bounded_streams, decoded_stream_size
 
 
 def _uris(group, hyperlinks):
@@ -31,39 +29,7 @@ def _uris(group, hyperlinks):
     ]
 
 
-def _bounded_filter(raw, name, remaining):
-    if name in ("FlateDecode", "Fl"):
-        decoder = zlib.decompressobj()
-        decoded = decoder.decompress(raw, remaining + 1)
-        if len(decoded) > remaining or decoder.unconsumed_tail:
-            raise ValueError("PDF exceeds max_decoded_bytes resource limit")
-        return decoded
-    if name in ("ASCII85Decode", "A85"):
-        return base64.a85decode(raw.strip().removeprefix(b"<~").removesuffix(b"~>"))
-    if name in ("ASCIIHexDecode", "AHx"):
-        hexadecimal = b"".join(raw.split()).removesuffix(b">")
-        if len(hexadecimal) % 2:
-            hexadecimal += b"0"
-        return bytes.fromhex(hexadecimal.decode("ascii"))
-    raise ValueError(f"Unsupported PDF content compression: {name}")
-
-
-def decoded_stream_size(stream, remaining):
-    """Bound common content filters before the PDF library allocates their full output."""
-    raw = stream.get_rawdata()
-    if raw is None:
-        raw = stream.get_data()  # Already decoded by the document parser.
-    else:
-        for compression, _parameters in stream.get_filters():
-            raw = _bounded_filter(raw, literal_name(compression), remaining)
-            if len(raw) > remaining:
-                raise ValueError("PDF exceeds max_decoded_bytes resource limit")
-    if len(raw) > remaining:
-        raise ValueError("PDF exceeds max_decoded_bytes resource limit")
-    return len(raw)
-
-
-def _page(page, limits, start):
+def _page(page, limits, start, number_styles):
     if time.monotonic() - start > limits["max_seconds"]:
         raise ValueError("PDF extraction exceeds max_seconds resource limit")
     decoded = 0
@@ -71,7 +37,7 @@ def _page(page, limits, start):
         decoded += decoded_stream_size(stream, limits["max_decoded_bytes"] - decoded)
     if decoded > limits["max_decoded_bytes"]:
         raise ValueError("PDF exceeds max_decoded_bytes resource limit")
-    lines = page_lines(page)
+    lines = page_lines(page, number_styles)
     uris = []
     for link in page.hyperlinks:
         if not link.get("uri"):
@@ -90,6 +56,11 @@ def _page(page, limits, start):
 
 
 def extract(raw, limits):
+    with bounded_streams(limits["max_decoded_bytes"]):
+        return _extract(raw, limits)
+
+
+def _extract(raw, limits):
     start = time.monotonic()
     with pdfplumber.open(io.BytesIO(raw)) as document:
         if document.doc.encryption is not None:
@@ -98,8 +69,9 @@ def extract(raw, limits):
             raise ValueError("PDF exceeds max_pages resource limit or has no pages")
         pages, hyperlinks, sizes, image_pages = [], [], [], []
         decoded_total, chars = 0, 0
+        number_styles = set()
         for page in document.pages:
-            lines, uris, decoded = _page(page, limits, start)
+            lines, uris, decoded = _page(page, limits, start, number_styles)
             decoded_total += decoded
             chars += sum(len(line["text"]) for line in lines)
             if decoded_total > limits["max_decoded_bytes"] or chars > limits["max_text_chars"]:
@@ -183,6 +155,8 @@ def _error_message(error):
     while chain is not None:
         if "password" in type(chain).__name__.lower():
             return "Encrypted PDF is unsupported; supply a readable unencrypted PDF"
+        if isinstance(chain, ValueError) and "resource limit" in str(chain):
+            return str(chain)
         chain = chain.__context__
     return (
         str(error)

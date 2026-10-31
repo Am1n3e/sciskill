@@ -151,3 +151,39 @@ def test_worker_does_not_import_a_package_from_the_papers_directory(tmp_path, mo
     report = extract_pdf(source)
     assert len(report["items"]) == 1
     assert not (tmp_path / "unexpected-import").exists()
+
+
+def test_worker_ignores_pythonpath_from_the_papers_directory(tmp_path, monkeypatch):
+    source = _paper(tmp_path / "paper.pdf")
+    (tmp_path / "pdfplumber.py").write_text(
+        "from pathlib import Path\nPath('unexpected-dependency-import').write_text('executed')\n"
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("PYTHONPATH", ".")
+    report = extract_pdf(source)
+    assert len(report["items"]) == 1
+    assert not (tmp_path / "unexpected-dependency-import").exists()
+
+
+def test_nested_form_content_counts_toward_the_decoded_budget(tmp_path):
+    source = tmp_path / "form.pdf"
+    page = canvas.Canvas(str(source), pagesize=(612, 792), invariant=1, pageCompression=1)
+    page.beginForm("references")
+    page.setFont("Times-Bold", 12)
+    page.drawString(50, 700, "References")
+    page.setFont("Times-Roman", 10)
+    for number in range(20):
+        page.drawString(
+            50, 670 - 20 * number, f"[{number + 1}] Jane Smith. An Example Paper. Journal, 2025."
+        )
+    page.endForm()
+    page.doForm("references")
+    page.save()
+    with pytest.raises(PDFExtractionError, match="max_decoded_bytes"):
+        extract_pdf(source, limits={"max_decoded_bytes": 150})
+    assert len(extract_pdf(source)["items"]) == 20
+
+
+def test_enormous_integer_limit_is_a_controlled_failure(tmp_path):
+    with pytest.raises(PDFExtractionError, match="limits"):
+        extract_pdf(tmp_path / "unused.pdf", limits={"max_bytes": 2**10000})
