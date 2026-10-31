@@ -123,6 +123,12 @@ performs new lookups. The interface uses a loopback Python server and bundled
 HTML/CSS/JavaScript with no frontend installation. Use `--port PORT` or
 `--no-browser` when needed.
 
+The overview separates completed verification from findings that still need
+attention and from PDF extraction coverage. Reference details show how each source
+was checked; DOI resolution is identified separately from paper metadata. Full
+paths and raw diagnostics are available in expandable audit details and evidence
+tabs. Saved reports with unknown citation scope retain their known findings.
+
 Agent assessments are read separately from `report.agent.json` inside an audit
 directory (or `<report-stem>.agent.json` for a report file). They are bound to exact
 entry hashes and never replace automated consensus. Evidence paths can be selected
