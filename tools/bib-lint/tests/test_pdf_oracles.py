@@ -10,6 +10,11 @@ def test_href_target_is_not_printed_metadata():
     assert "9999" not in text
 
 
+def test_encoded_url_percent_is_literal_inside_native_url_macros():
+    text, _ = rendered_text(r"\doi{HTTPS://doi.org/10.18653%2Fv1%2F2025.EMNLP-MAIN.58}")
+    assert text == "doi: HTTPS://doi.org/10.18653%2Fv1%2F2025.EMNLP-MAIN.58"
+
+
 def test_native_bibliography_order_includes_empty_occurrences():
     bodies = bibliography_bodies(
         r"\begin{thebibliography}{}\bibitem[ref()]{ref0002}"
@@ -109,6 +114,18 @@ def test_protected_source_name_grouping_is_explicitly_unrecoverable_after_render
     assert author_structure_visible([normal])
     assert not author_structure_visible([{**normal, "given": "Youngjune Gwon and Yeong-Dae"}])
     assert not author_structure_visible([{**normal, "suffix": "Zhiyong"}])
+
+
+def test_literal_person_braces_are_erased_but_full_name_survives_initial_styles():
+    from pdf_e2e.build import FIXTURES, read_json
+    from pdf_e2e.oracles import expected_statuses
+
+    case = next(
+        case
+        for case in read_json(FIXTURES / "truth.json")["cases"]
+        if case["citation_key"] == "adv_match_literal_prefix_collision"
+    )
+    assert expected_statuses(case, "icml", {"title": "text", "year": "text"}) == ["Partial match"]
 
 
 def test_all_primary_field_assertion_does_not_accept_one_matching_source():
@@ -242,3 +259,25 @@ def test_representative_people_require_given_names_not_only_families():
     }
     with pytest.raises(AssertionError, match="given name"):
         _assert_fields(item, expected)
+
+
+def test_printed_doi_must_survive_complete_not_just_prefix_or_annotation():
+    import pytest
+    from test_pdf_e2e import _assert_fields
+
+    expected = {
+        "case_id": "controlled/doi",
+        "expected_fields": {"doi": "HTTPS://doi.org/10.18653%2Fv1%2F2025.EMNLP-MAIN.58"},
+        "expected_authors": [],
+    }
+    item = {
+        "entry": {"fields": {"doi": "10.18653/v1/2025.emnlp-main"}, "persons": {}},
+        "pdf": {
+            "text": "doi:10.18653/v1/2025.emnlp-main.58",
+            "fragments": [{"page": 1, "text": "doi:10.18653/v1/2025.emnlp-main.58"}],
+        },
+    }
+    with pytest.raises(AssertionError, match="doi"):
+        _assert_fields(item, expected)
+    item["entry"]["fields"]["doi"] += ".58"
+    _assert_fields(item, expected)

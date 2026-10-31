@@ -71,8 +71,7 @@ def _group(text, start):
     return text[start + 1 : end - 1], end
 
 
-def rendered_text(text):
-    """Expand only presentation macros in the already-generated bibliography body."""
+def _expanded_tex(text):
     output, targets, index = [], [], 0
     while index < len(text):
         match = re.match(r"\\([A-Za-z]+)", text[index:])
@@ -86,13 +85,15 @@ def rendered_text(text):
             target, index = _group(text, index)
             label, index = _group(text, index)
             targets.append(target)
-            output.append(rendered_text(label)[0])
+            output.append(_expanded_tex(label)[0])
         elif name in {"url", "doi", "emph", "textit", "texttt", "textrm", "natexlab"}:
             argument, index = _group(text, index)
             if name == "doi":
                 targets.append("https://doi.org/" + argument)
                 output.append("doi: ")
-            output.append(rendered_text(argument)[0])
+            if name in {"url", "doi"}:
+                argument = re.sub(r"(?<!\\)%", "\uf000", argument)
+            output.append(_expanded_tex(argument)[0])
         elif name == "penalty":
             digits = re.match(r"\s*-?\d+", text[index:])
             index += len(digits[0]) if digits else 0
@@ -100,7 +101,15 @@ def rendered_text(text):
             output.append(" ")
         else:
             output.append("\\" + name)
-    value = codecs.decode(re.sub(r"\\([{}])", r"\1", "".join(output)), "ulatex")
+    return "".join(output), targets
+
+
+def rendered_text(text):
+    """Expand native presentation macros; locator macro percent signs are literal."""
+    if re.match(r"(?:https?://|10\.)", text, re.I):
+        text = re.sub(r"(?<!\\)%", "\uf000", text)
+    expanded, targets = _expanded_tex(text)
+    value = codecs.decode(re.sub(r"\\([{}])", r"\1", expanded), "ulatex").replace("\uf000", "%")
     return " ".join(value.replace("{", "").replace("}", "").replace("~", " ").split()), targets
 
 
@@ -248,7 +257,7 @@ def _rendering_status(case, family, visibility):
     if case["citation_key"] == "case_openreview_accepted_direct":
         return ["Needs review"]  # Unlinked arXiv and accepted publication are both authoritative.
     if case["citation_key"] == "adv_match_literal_prefix_collision":
-        return ["Needs review"] if family in INITIAL_FAMILIES else ["Partial match"]
+        return ["Partial match"]  # Literal names retain their full given names in initial styles.
     if source.get("required_issue") and not required_issues(case, visibility):
         if any(record.startswith("pal_") for record in case["canonical_records"]):
             return ["Needs review"]

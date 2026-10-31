@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import re
 import shutil
 from pathlib import Path
 from urllib.parse import unquote
@@ -119,6 +120,19 @@ def _assert_anchor(item, expected):
 
 def _assert_fields(item, expected):
     fields = item["entry"]["fields"]
+    if "doi" in expected["expected_fields"] and not any(
+        issue.get("requirement") == "typeset_nested_doi_url"
+        for issue in expected.get("required_issues", [])
+    ):
+        printed = expected["expected_fields"]["doi"]
+        doi = re.sub(r"^https?://(?:dx\.)?doi\.org/", "", printed, flags=re.I)
+        actual = re.sub(r"^https?://(?:dx\.)?doi\.org/", "", fields.get("doi", ""), flags=re.I)
+        assert _equivalent(actual, doi, item["pdf"]["fragments"]), (
+            expected["case_id"],
+            "complete printed doi",
+            fields.get("doi"),
+            doi,
+        )
     for field in expected.get("absent_fields", []):
         assert not fields.get(field), (
             expected["case_id"],
