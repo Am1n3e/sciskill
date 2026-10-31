@@ -1,122 +1,81 @@
-# Locator-first provider queues: implementation checklist
+# PDF reference auditing: implementation checklist
 
-## T01: Managed runtime
-- [x] Promote Huey into both runtime dependency sets and lock it.
-- [x] Embed one SQLite consumer/worker per provider without installing signal handlers.
-- [x] Stop all consumers before joining; preserve worker fatal errors and cancellation.
-Verification: queue serialization/overlap, background invocation, shutdown and build tests.
-Files: verification/queues.py, dependency metadata/lock, tests/test_queues.py.
-Dependencies: none.
+Specification: [PDF reference input](../SPEC-pdf-reference-input.md).
+Architecture and reproducible commands: [PDF guide](../docs/pdf-reference-input.md).
 
-## T02: Locator-first retrieval
-- [x] Plan supplied URLs and valid provider identifiers before title/catalog discovery.
-- [x] Compare direct records with untouched citation fields through existing helpers.
-- [x] Preserve mismatches, missing fields, secondary locators and publication ambiguity.
-Verification: routing, direct success/mismatch, identifier conflicts and fallback tests.
-Files: verification/routing.py, verification/__init__.py, tests/test_routing.py.
-Dependencies: T01.
+The implementation follows the approved thin-slice TDD plan. Automated checks and their current results are attached to [PR #8](https://github.com/Am1n3e/sciskill/pull/8). UAI and OCR are
+explicitly deferred. The earlier bibliography fixtures remain unchanged. Generated
+projects, PDFs, compiler logs, caches, and audit reports stay under ignored
+`.local/pdf-e2e/`.
 
-## T03: Provider traffic and retries
-- [x] Serialize provider execution across independent audits and pace actual requests.
-- [x] Honor shared Retry-After cooldowns; cancel lock and pacing waits promptly.
-- [x] Schedule bounded transient retries through Huey with a shared HTTP-attempt budget.
-- [x] Serialize shared cache operations without changing report-lock failure behavior.
-Verification: controlled clocks, concurrent audits, retry exhaustion, cancellation and cache tests.
-Files: verification/traffic.py, verification/http.py, providers/context.py, verification/cache.py,
-       tests/test_traffic.py (split retry tests into tests/test_queues.py).
-Dependencies: T01.
+| Task | Implementation and verification | State |
+| --- | --- | --- |
+| T01: Freeze the earlier bibliography cases | Exact 20/31/35-entry inputs, SHA-256 inventory, 86 case designs, 24 independently curated source records | Implemented |
+| T02: Pin official conference templates | 12 venue configurations, nine checksum-verified official assets vendored under `tests/assets`, immutable TeX image | Implemented |
+| T03: Generate and compile projects | All 36 original cells accounted for; isolated native build negatives, renderable subsets, and positive counterparts | Implemented |
+| T04, T04a–d: Rendering gold | Native bibliography order, field visibility, author presentation, omitted information, and independently measured physical PDF evidence | Implemented |
+| T05: Controlled scholarly HTTP | Protocol-shaped replay for the six real adapters, canonical facts independent of mutations, unexpected requests rejected | Implemented |
+| T06: PDF-only E2E harness | Public CLI, actual isolated worker, protected source/truth files, real providers and consensus | Implemented |
+| T07: Select the local parser | Pinned pdfplumber, local bounded grammar, documented alternatives and measured limits | Implemented |
+| T08: PDF evidence/report boundary | Strict schema 4, physical page/box/span validation, sealed evidence and content/version/settings identity; schemas 2/3 retained | Implemented |
+| T09: First compiled-PDF CLI slice | Clean and visibly corrupt compiled references through extraction, verification, and persisted report | Implemented |
+| T10: Columns and pages | Unequal columns, hanging indents, cross-page continuations, repeated headers, review gutters and appendix boundaries | Implemented |
+| T11: Names and text | Initials, accents, ligatures, suffixes, corporate names, truncation, proved line-end hyphen presentation; original fragments preserved | Implemented |
+| T12: Locators | Printed and annotation evidence, versions, wrapped IDs, malformed/empty IDs and secondary conflicts | Implemented |
+| T13: Decision precedence | Uncertainty cannot fabricate Correct or Invalid; independent reliable mismatches retained | Implemented |
+| T14: Unsupported/bounded inputs | Corrupt/encrypted/image-only inputs, coverage diagnostics, byte/page/text/reference/time/decoded-stream limits | Implemented |
+| T15: Resume and refresh | Reuse unchanged sealed extraction; refresh lookups only; reject changed bytes/versions/settings/tampering without replacement | Implemented |
+| T16: CLI and packages | Uppercase/spaced paths, generated keys, structured final envelope, standalone/shared installation outside checkout | Implemented |
+| T17: Viewer APIs | Offline parse, same audit semantics, extraction coverage and original evidence | Implemented |
+| T18: Browser presentation | Actual PDF flow, page/field/URI evidence, separate coverage banner, inert untrusted content, keyboard and responsive checks | Implemented |
+| T19: Full matrix | 39 baseline acceptance PDFs and six held-out native modes; exact fields/findings, clean outcomes, occurrences and locations | Implemented |
+| T20: CI/release gate | Offline checks, Linux/macOS packages, pinned compilation and baseline/stress tests; bounded failure artifacts | Implemented |
+| T21: Documentation and final checks | User/skill documentation, decision note, source-only public artifacts, independent review, builds and PR | Implemented |
 
-## Checkpoint C1
-- [x] Routing and runtime contracts pass; each provider owns its mutable request state.
+The independent review found and reproduced worker import isolation, nested-stream
+expansion, unequal-column, malformed-evidence, ambiguous-title and locator-loss
+bugs. Each fix has a focused regression. A second review checks matrix completeness,
+independent gold, source isolation, CI failure gates, and the public artifact scope.
 
-## T04: Checkpoint coordinator
-- [x] Integrate queues into the one shared report verifier for PDF and BibTeX.
-- [x] Save each completed lookup, resume remaining phases, and invalidate old decisions.
-- [x] Reconcile orphaned SQLite tasks from checkpoint state; refresh only selected entries.
-Verification: existing resume/workspace tests plus interruption between lookup phases and recovery.
-Files: verification/__init__.py, verification/workflow.py, tests/test_resume.py,
-       tests/test_provider_workflow.py, tests/test_queued_audit.py.
-Dependencies: T02, T03.
+## Verification commands
 
-## T05: Resolver handoff
-- [x] Resolve DOI redirects without following unknown hosts; hand paper URLs to provider queues.
-- [x] Normalize supported provider PDF links to authoritative metadata records.
-- [x] Preserve all original identifiers and locator diagnostics.
-Verification: redirects, unsafe destinations, chains, PDF-link and conflicting DOI tests.
-Files: verification/routing.py, verification/resolver.py, tests/test_routing.py,
-       tests/test_queued_audit.py.
-Dependencies: T04.
+Run from `tools/bib-lint` unless marked as repository-root commands:
 
-## Checkpoint C2
-- [x] BibTeX and PDF audit through the production CLI, with correct evidence and resume.
+```sh
+uv run --locked --group dev pytest -q -m 'not package and not pdf_e2e'
+uv run --locked --group dev pytest -q tests/test_package.py
+uv run --locked --group dev ruff check .
+uv run --locked --group dev ruff format --check .
+uv run --locked --group dev ruff check . --select C901 --ignore-noqa
+uv build
+```
 
-## T06: Product acceptance
-- [x] Verify CLI/viewer stop/resume, progress and machine envelopes.
-- [x] Verify source errors remain findings while local execution failures stop the audit.
-- [x] Verify installed distributions include Huey and work without development modules.
-Verification: full offline regressions, package tests and shared launcher checks.
-Files: CLI/viewer regression tests, package tests and acceptance harness as required.
-Dependencies: T05.
+Follow the [compiled-matrix commands](../docs/pdf-reference-input.md#reproduce-the-checks)
+for official assets, offline compilation, and baseline/stress acceptance. Selecting
+a matrix makes missing prerequisites, incomplete gold, changed PDF hashes, or
+unaccounted builds failures. Build negatives and source fields lost in typesetting
+are reported separately; neither counts as detecting a PDF citation error.
 
-## T07: Review and simplify
-- [x] Review correctness, lifecycle, concurrency, safety and dependencies.
-- [x] Remove prototype duplication and unnecessary scheduler/verdict abstractions.
-- [x] Document actual retrieval policy, rate scope, recovery and limits.
-- [x] Run mutation check, full regression suite, quality checks and package builds.
-Verification: review findings addressed; tests retain their original strength.
-Files: evaluation prototype files, README/skill docs, affected implementation and tests.
-Dependencies: T06.
+From the repository root:
 
-## Complete
-- [x] All tasks and verification evidence recorded; working tree ready for review.
+```sh
+uv run --no-project --with 'PyYAML>=6,<7' python -m unittest discover -s tools/sciskill/tests -v
+uv build
+git diff --check
+```
 
+## Completion checkpoints
 
-## Final verification
-
-- Offline regressions: 1,456 passed; one existing skip; package tests selected separately.
-- Standalone installed-package test: passed. Shared launcher/package checks: 15 passed.
-- Conference PDFs: all 39 baseline and 6 stress reports satisfy the final frozen
-  field, anchor, required-issue and verdict assertions. Four DOI-primary baseline
-  cells were rerun through the CLI after updating their source-policy expectations.
-  After adversarial review, five baseline author cases and all six stress cases were
-  rerun. Eight independently reviewed gold rows now require explicit printed author
-  mismatches. Bibliographies, canonical facts, PDF hashes and anchors are unchanged.
-- Quality: Ruff lint, formatting (146 files) and McCabe complexity <= 10 passed.
-- Both source distributions and wheels built successfully, including Huey at runtime.
-- Mutation: reversing the direct-lookup early-stop condition failed both public
-  audit cases as expected; the production implementation was restored unchanged.
-- Independent review: queue error propagation and earlier locator evidence retention
-  findings fixed; final review found no further actionable issues.
-- Simplification: removed duplicate prototype scheduler/verifier modules; migrated
-  their acceptance contracts and benchmark to production components; reused JMLR's
-  existing URL normalization rather than maintaining another conversion.
-- Offline 100-citation benchmark: 100 direct tasks versus 600 full-fanout tasks;
-  0.20s versus 0.92s, 12 runtime threads, 240 KiB versus 408 KiB SQLite files.
-  Synthetic no-network measurements describe queue overhead, not provider latency.
-- Generated databases, reports, benchmark output, build artifacts and PDFs remain
-  outside version control.
-
-
-## Adversarial review follow-up
-
-Three independent reviewers challenged runtime recovery, citation/PDF evidence,
-and test validity/complexity. All required findings were reproduced before fixes:
-
-- Partial worker startup now joins only started threads and always releases queue
-  ownership. Four startup boundaries verify immediate reopening with no leaked threads.
-- A failed checkpoint write cannot consume and merge the same worker result twice.
-  Resume uses cached evidence and records one request and one history entry.
-- Unrelated native and DOI-resolved arXiv identities remain Invalid; plausible
-  publication/preprint versions still require review. Orchestration version 7
-  recomputes previous verdicts without rewriting cached source evidence.
-- Cross-column PDF link rectangles remain evidence but cannot route either reference
-  as a certain locator. Real narrow/wide two-column PDFs cover both paths.
-- PDF author uncertainty requires a unique adjacent name occurrence and a proved
-  comma separator. Explicit conjunctions, semicolons, absent evidence and repeated
-  names retain demonstrated mismatches. Native bibliography output independently
-  confirms the eight stronger printed-author gold checks.
-
-The installed-wheel test now performs a complete offline public audit through real
-SQLite workers, then resumes without requests. Compact gold retains reviewed checks.
-A mutation removing occurrence uniqueness fails its repeated-name regression.
-Final reviewer rechecks found no remaining required issues or broader redesign need.
+- C1: Every original build has a compiled result or an attributed native failure;
+  all supported renderable projects compile with unchanged source metadata.
+- C2: Gold comes from source facts and native output, and every required project
+  is represented exactly once; product input contains only the copied PDF.
+- C3: Runtime installation needs Python dependencies only; original BibTeX and
+  legacy-report behavior remain covered.
+- C4: Layout, names, and locators retain original spans and exact intended findings.
+- C5: Uncertainty, resource failures, workspace ownership, and recovery preserve
+  source bytes and valid prior reports.
+- C6: Installed CLI and viewer agree on PDF occurrences and evidence; completed
+  verification cannot hide uncertain extraction coverage.
+- C7: Full baseline/stress, regressions, package/browser/build/lint gates and
+  independent review pass before the PR is reported ready.
