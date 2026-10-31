@@ -15,7 +15,11 @@ from bib_lint.storage import ReportLockError, report_lock, report_paths
 from bib_lint.storage import write_json as _write_json
 from bib_lint.verification.consensus import POLICY_VERSION, build_consensus
 from bib_lint.verification.http import LookupFailure, MetadataClient
-from bib_lint.verification.input_checks import input_findings, unverified_locator_findings
+from bib_lint.verification.input_checks import (
+    input_findings,
+    locator_identity_findings,
+    unverified_locator_findings,
+)
 from bib_lint.verification.matching import select_result
 from bib_lint.verification.providers import METHODS
 from bib_lint.verification.providers.context import RequestContext
@@ -27,6 +31,17 @@ def _attempt_data(attempt):
     data = asdict(attempt)
     data["candidate_urls"] = list(attempt.candidate_urls)
     return data
+
+
+def _authoritative(descriptor, record):
+    if descriptor.evidence_category == "resolver":
+        return False
+    if descriptor.evidence_category == "preprint_archive":
+        return record.get("record_type") == "preprint"
+    return record.get("record_type") == "publication" and record.get("publication_status") in {
+        "accepted",
+        "published",
+    }
 
 
 def _source_result(provider, query, context, *, retrieval=None, strategy="search"):
@@ -65,19 +80,21 @@ def _source_result(provider, query, context, *, retrieval=None, strategy="search
     result = select_result(descriptor.id, query.as_record(), records, lookup=strategy)
     result["lookup_provenance"] = [_attempt_data(a) for a in lookup.attempts]
     result["lookup_complete"] = lookup.complete
-
-    def authoritative(record):
-        if descriptor.evidence_category == "preprint_archive":
-            return record.get("record_type") == "preprint"
-        return record.get("record_type") == "publication" and record.get("publication_status") in {
-            "accepted",
-            "published",
-        }
+    if strategy in {"url", "identifier"} and result.get("found_ref"):
+        result["locator_findings"] = locator_identity_findings(
+            dict(query.fields), query.as_record(), result["found_ref"], descriptor.id
+        )
+    if lookup.redirect_url:
+        result.update(
+            redirect_url=lookup.redirect_url,
+            status="not_applicable",
+            reason="Resolver destination recorded; paper metadata is checked separately",
+        )
 
     result["authority"] = (
-        authoritative(result["found_ref"])
+        _authoritative(descriptor, result["found_ref"])
         if result.get("found_ref")
-        else any(authoritative(r) for r in records)
+        else any(_authoritative(descriptor, r) for r in records)
     )
     if not lookup.complete:
         result.update(
@@ -140,6 +157,22 @@ def verify_reference(
 
 def _consensus_with_input(results, fields):
     findings = input_findings(fields) + unverified_locator_findings(fields, results)
+    findings.extend(finding for method in results for finding in method.get("locator_findings", []))
+    for method in results:
+        for earlier in method.get("lookup_history", [])[:-1]:
+            if earlier.get("authority") and (
+                earlier.get("status") == "ambiguous" or earlier.get("differences")
+            ):
+                findings.append(
+                    {
+                        "field": "url",
+                        "input": earlier.get("value"),
+                        "found": earlier.get("found_ref"),
+                        "result": "unknown",
+                        "code": "earlier_locator_evidence",
+                        "message": "An earlier locator was ambiguous or demonstrated discrepancies",
+                    }
+                )
     return build_consensus(results, input_findings=findings)
 
 
@@ -240,7 +273,9 @@ def verify_report_locked(
     methods=None,
 ):
     """Execute under the caller's report lock; never reacquire it."""
-    registry = validate_registry(METHODS if methods is None else methods)
+    from bib_lint.verification.resolver import with_resolver
+
+    registry = with_resolver(validate_registry(METHODS if methods is None else methods))
     selected = selected_items(report, citation_key)
     used = eligible_items(report)
     _prepare_run(report, registry, selected, refresh)
@@ -250,12 +285,12 @@ def verify_report_locked(
     if verbose:
         client.verbose = True
 
-    def save_lookup(item, method, step, next_index, complete, resolved):
+    def save_lookup(item, method, step, complete, retrieval):
         previous = item["validations"].get("correctness", {}).get("methods", [])
         methods = _merge_lookup(previous, method, step, registry)
         result = _consensus_with_input(methods, item["entry"].get("fields", {}))
         result = apply_extraction(result, item)
-        result.update(complete=complete, retrieval={"next": next_index, "resolved": resolved})
+        result.update(complete=complete, retrieval=retrieval)
         if not complete:
             result["is_correct"] = None
         item["validations"]["correctness"] = result
@@ -289,7 +324,7 @@ def _merge_lookup(previous, method, step, registry):
     merged = {m["name"]: m for m in previous}
     prior = merged.get(method["name"], {})
     method["lookup_history"] = prior.get("lookup_history", []) + [
-        {"strategy": step.strategy, "value": step.value, "status": method["status"]}
+        {"strategy": step.strategy, "value": step.value, **copy.deepcopy(method)}
     ]
     method["requests"] = prior.get("requests", []) + method.get("requests", [])
     method["lookup_provenance"] = prior.get("lookup_provenance", []) + method.get(

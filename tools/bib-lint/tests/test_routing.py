@@ -95,3 +95,78 @@ def test_direct_record_discrepancies_use_shared_comparison_without_search(tmp_pa
     assert result["status"] == "found"
     assert result["differences"]
     assert requests == [item["fields"]["url"]]
+
+
+def test_proven_direct_discrepancy_settles_lookup_even_without_year():
+    assert resolved(
+        {
+            "authority": True,
+            "lookup_complete": True,
+            "found_ref": {"title": "Another Paper", "authors": [{"family": "Smith"}]},
+            "differences": [{"field": "title", "result": "mismatch"}],
+        }
+    )
+
+
+@pytest.mark.parametrize("status", ["ambiguous", "found"])
+def test_fallback_preserves_prior_locator_outcomes_and_gates_correct(status):
+    from support import ENTRY, RECORD
+
+    from bib_lint.verification import _consensus_with_input, _merge_lookup
+    from bib_lint.verification.matching import select_result
+    from bib_lint.verification.routing import LookupStep
+
+    prior = {
+        "name": "pmlr",
+        "status": status,
+        "authority": True,
+        "found_ref": None,
+        "candidates": [{**RECORD, "title": "Other Paper"}],
+        "differences": [
+            {
+                "field": "title",
+                "result": "mismatch",
+                "input": RECORD["title"],
+                "found": "Other Paper",
+            }
+        ],
+    }
+    direct = LookupStep("pmlr", "url", "https://proceedings.mlr.press/v235/other.html")
+    methods = _merge_lookup([], prior, direct, {"pmlr": METHODS["pmlr"]})
+    found = select_result("pmlr", RECORD, [RECORD], authority=True)
+    methods = _merge_lookup(methods, found, LookupStep("pmlr", "search"), {"pmlr": METHODS["pmlr"]})
+    assert methods[0]["lookup_history"][0]["candidates"][0]["title"] == "Other Paper"
+    result = _consensus_with_input(methods, ENTRY["fields"])
+    assert result["is_correct"] is None
+    assert any(f["code"] == "earlier_locator_evidence" for f in result["input_findings"])
+
+
+@pytest.mark.parametrize(
+    ("url", "provider", "expected"),
+    [
+        (
+            "https://proceedings.mlr.press/v235/example24a/example24a.pdf",
+            "pmlr",
+            "https://proceedings.mlr.press/v235/example24a.html",
+        ),
+        (
+            "https://aclanthology.org/2024.acl-long.1.pdf",
+            "acl_anthology",
+            "https://aclanthology.org/2024.acl-long.1/",
+        ),
+        (
+            "https://proceedings.neurips.cc/paper/2024/file/abc-Paper.pdf",
+            "neurips",
+            "https://proceedings.neurips.cc/paper/2024/hash/abc-Abstract.html",
+        ),
+        (
+            "https://jmlr.org/papers/v25/24-001/24-001.pdf",
+            "jmlr",
+            "https://jmlr.org/papers/v25/24-001.html",
+        ),
+    ],
+)
+def test_provider_pdf_urls_route_to_metadata_pages(url, provider, expected):
+    item = citation(url=url)
+    query = plan_lookups(item, METHODS)[0].query(LookupQuery.from_entry(item))
+    assert METHODS[provider].direct_url(query) == expected

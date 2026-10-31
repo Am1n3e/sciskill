@@ -198,6 +198,21 @@ def test_non_pdf_bibtex_hyphens_are_never_reinterpreted():
     assert apply_extraction(result, item)["is_correct"] is False
 
 
+def test_adjacent_name_fragments_are_reviewed_without_rewriting_the_input():
+    item = _author_item()
+    item["entry"]["persons"]["author"] = [
+        {"first": ["Bill"], "last": ["Yuchen"], "lineage": [], "kind": "person"},
+        {"first": [], "last": ["Lin"], "lineage": [], "kind": "person"},
+    ]
+    before = copy.deepcopy(item)
+    original = input_record(item["entry"])
+    found = {**original, "authors": [{"given": "Bill Yuchen", "family": "Lin"}]}
+    method = select_result("primary", original, [found], authority=True, lookup="url")
+    result = apply_extraction(build_consensus([method]), item)
+    assert result["is_correct"] is None
+    assert item == before
+
+
 def test_many_proved_breaks_match_without_enumerating_exponential_variants():
     item = _title_item(
         [

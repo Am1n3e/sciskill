@@ -2,10 +2,11 @@
 
 import copy
 import threading
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from queue import Empty, SimpleQueue
 
+from bib_lint.pdf_evidence import retrieval_entry
 from bib_lint.storage import ReportLockError
 from bib_lint.verification.http import LookupFailure
 from bib_lint.verification.providers.context import RequestContext
@@ -77,6 +78,7 @@ class ReferenceRun:
     steps: list
     index: int = 0
     future: object = None
+    redirects: dict = field(default_factory=dict)
 
     def submit(self, queues, progress):
         step = self.steps[self.index]
@@ -89,21 +91,32 @@ def _result(future):
     result = future.get()
     if result.get("fatal"):
         errors = {"ReportLockError": ReportLockError, "OSError": OSError, "ValueError": ValueError}
-        raise errors.get(result.get("fatal_type"), RuntimeError)(result["fatal"])
+        raise errors.get(result.get("fatal_type"), LookupError)(result["fatal"])
     if result.get("interrupted"):
         raise KeyboardInterrupt
     return result
 
 
-def _ready(reference, save, progress):
+def _ready(reference, providers, save, progress):
     from bib_lint.verification import _source_progress
 
     result = _result(reference.future)
     step = reference.steps[reference.index]
+    if step.strategy == "resolve" and result.get("redirect_url"):
+        reference.redirects[step.value] = result["redirect_url"]
+        reference.steps = plan_lookups(
+            retrieval_entry(reference.item), providers, reference.redirects
+        )
     stop_search = step.strategy != "search" and resolved(result)
     next_index = reference.index + 1
     complete = stop_search or next_index == len(reference.steps)
-    save(reference.item, result, step, next_index, complete, stop_search)
+    save(
+        reference.item,
+        result,
+        step,
+        complete,
+        {"next": next_index, "resolved": stop_search, "redirects": reference.redirects.copy()},
+    )
     reference.index, reference.future = next_index, None
     if progress:
         _source_progress(step.provider, result, progress)
@@ -140,22 +153,28 @@ def _references(items, providers, progress):
                 progress(f"  {method['name']}: Resumed ({source_status(method['status'])})")
         if previous.get("complete"):
             continue
+        retrieval = previous.get("retrieval", {})
+        redirects = retrieval.get("redirects", {}).copy()
+        steps = plan_lookups(retrieval_entry(item), providers, redirects)
+        if retrieval.get("next", 0) >= len(steps):
+            raise ValueError("Saved retrieval position is outside the planned lookups")
         references.append(
             ReferenceRun(
                 item,
-                plan_lookups(item["entry"], providers),
-                previous.get("retrieval", {}).get("next", 0),
+                steps,
+                retrieval.get("next", 0),
+                redirects=redirects,
             )
         )
     return references
 
 
-def _drain(pending, save, progress):
+def _drain(pending, providers, save, progress):
     for reference in pending:
         if reference.future and reference.future.is_ready():
             result = reference.future.get()
             if not result.get("fatal") and not result.get("interrupted"):
-                _ready(reference, save, progress)
+                _ready(reference, providers, save, progress)
 
 
 def audit_entries(items, providers, client, queue_root, save, progress=None):
@@ -174,7 +193,7 @@ def audit_entries(items, providers, client, queue_root, save, progress=None):
                 for reference in pending.copy():
                     if not reference.future.is_ready():
                         continue
-                    if _ready(reference, save, progress):
+                    if _ready(reference, providers, save, progress):
                         pending.remove(reference)
                     else:
                         reference.submit(queues, progress)
@@ -183,4 +202,4 @@ def audit_entries(items, providers, client, queue_root, save, progress=None):
         # Consumers have joined. Preserve finished work even when another task failed
         # or the main thread was interrupted before it consumed a completed result.
         _progress(events, progress)
-        _drain(pending, save, progress)
+        _drain(pending, providers, save, progress)

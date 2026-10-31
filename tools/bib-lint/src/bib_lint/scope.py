@@ -140,6 +140,24 @@ def _validate_input_findings(correctness):
         raise ValueError("Input findings must contain structured metadata diagnostics")
 
 
+def _validate_retrieval(correctness):
+    if "retrieval" not in correctness:
+        return
+    state = correctness["retrieval"]
+    if (
+        not isinstance(state, dict)
+        or type(state.get("next")) is not int
+        or state["next"] < 0
+        or type(state.get("resolved")) is not bool
+    ):
+        raise ValueError("Invalid saved retrieval state")
+    redirects = state.get("redirects", {})
+    if not isinstance(redirects, dict) or any(
+        not isinstance(key, str) or not isinstance(url, str) for key, url in redirects.items()
+    ):
+        raise ValueError("Invalid saved retrieval redirects")
+
+
 def _validate_items(report):
     keys = []
     for item in report["items"]:
@@ -165,6 +183,7 @@ def _validate_items(report):
             raise ValueError("Correctness must contain structured source outcomes")
         if correctness is not None:
             _validate_input_findings(correctness)
+            _validate_retrieval(correctness)
             for method in correctness["methods"]:
                 validate_outcome(method)
         keys.append(entry["key"])

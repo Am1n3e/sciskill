@@ -47,7 +47,7 @@ class RequestContext:
             raise LookupFailure("unsupported_url", "Credentials or nonstandard port in source URL")
         return parsed._replace(scheme="https", fragment="").geturl()
 
-    def get(self, url, *, params=None, page=False):
+    def get(self, url, *, params=None, page=False, follow_redirects=True):
         url = self._url(url)
         if self.fetches >= self.policy.max_fetches:
             raise LookupFailure("incomplete_search", "Logical fetch budget exhausted")
@@ -66,7 +66,7 @@ class RequestContext:
                     budget=self,
                 )
             except LookupFailure as exc:
-                if exc.code != "redirect":
+                if exc.code != "redirect" or not follow_redirects:
                     raise
                 if hop == self.policy.max_redirects:
                     raise LookupFailure("redirect_limit", "Too many source redirects") from exc
