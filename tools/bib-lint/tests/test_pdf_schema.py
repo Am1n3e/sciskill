@@ -153,3 +153,21 @@ def test_pdf_report_schema_version_is_an_integer():
     report["schema_version"] = 4.0
     with pytest.raises(ValueError, match="schema"):
         validate_report(report)
+
+
+@pytest.mark.parametrize("value", [[], None, "all", 1])
+def test_pdf_scope_malformed_types_are_controlled(value):
+    report = sealed()
+    report["verification_scope"] = value
+    with pytest.raises(ValueError, match="scope"):
+        validate_report(report)
+
+
+def test_pdf_huge_integer_coordinates_are_controlled():
+    from bib_lint.pdf_evidence import seal_extraction
+
+    report = sealed()
+    report["items"][0]["pdf"]["fragments"][0]["x0"] = 2**10000
+    seal_extraction(report)
+    with pytest.raises(ValueError, match="box"):
+        validate_report(report)

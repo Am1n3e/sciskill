@@ -50,7 +50,10 @@ def _text(value, name, *, empty=False):
 
 
 def _number(value):
-    return type(value) in (int, float) and math.isfinite(value)
+    try:
+        return type(value) in (int, float) and math.isfinite(value)
+    except OverflowError:
+        return False
 
 
 def _page(value, count):
@@ -202,7 +205,8 @@ def validate_pdf_report(report):
     ):
         raise ValueError("Schema 4 requires versioned PDF extraction evidence")
     _validate_seal(report)
-    if report.get("verification_scope", {}).get("mode") != "all":
+    scope = report.get("verification_scope")
+    if not isinstance(scope, dict) or scope.get("mode") != "all":
         raise ValueError("PDF citation usage must remain unknown; scope must be all")
     if not report["items"]:
         raise ValueError("PDF extraction must contain references")
