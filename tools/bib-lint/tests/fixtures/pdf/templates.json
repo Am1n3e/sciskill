@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "status": "partial_official_template_pins",
+  "status": "official_template_pins_verified",
   "verified_venue_count": 12,
-  "required_venue_count": 13,
+  "required_venue_count": 12,
   "baseline_corpus_count": 3,
-  "required_baseline_builds": 39,
-  "completion_policy": "Do not silently omit unresolved venues or replace their styles. T02 and the full baseline remain incomplete until all official assets are checksum-verified.",
+  "required_baseline_builds": 36,
+  "completion_policy": "All 12 in-scope venues are required. Reject missing or changed assets; do not silently omit a required venue.",
   "asset_policy": {
     "cache": "repository-root .local/pdf-e2e/assets/",
     "vendoring": false,
@@ -233,15 +233,6 @@
         }
       ],
       "attribution": "Official conference author kit or conference-linked official repository. Preserve notices when preparing local projects; downloaded vendor files are not tracked in this repository."
-    },
-    "uai": {
-      "status": "unresolved",
-      "instructions_url": "https://www.auai.org/uai2026/submission_instructions",
-      "url": "https://www.auai.org/uai2026/public/formatting/uai2026-template.zip",
-      "sha256": null,
-      "root": null,
-      "files": [],
-      "unresolved_reason": "Official host resets HTTPS connections; no third-party template substituted. Baseline compilation must fail until this asset is downloaded and pinned."
     },
     "acl": {
       "status": "downloaded_and_checksum_verified",
@@ -523,25 +514,6 @@
       ]
     },
     {
-      "id": "uai",
-      "asset": "uai",
-      "year": 2026,
-      "family": "uai",
-      "sample": "uai2026-template.tex",
-      "document_class": {
-        "name": "uai2026",
-        "options": []
-      },
-      "style_package": null,
-      "engine": "pdflatex",
-      "bibliography": null,
-      "mode": "review",
-      "macros": {},
-      "notes": [
-        "Class name confirmed by official submission instructions; bibliography style and complete recipe await the official archive."
-      ]
-    },
-    {
       "id": "acl",
       "asset": "acl",
       "year": null,
@@ -730,6 +702,12 @@
       "mode": "review",
       "macros": {},
       "notes": []
+    }
+  ],
+  "deferred_venues": [
+    {
+      "id": "uai",
+      "reason": "Explicitly deferred by the user; official archive unavailable. Outside the required baseline."
     }
   ]
 }

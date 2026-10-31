@@ -20,16 +20,16 @@ All `pdf_expectation` values are deliberately null. T04 must inspect each compil
 
 The three BibTeX inputs are unchanged, including literal keys and original comments. References in those old comments to the former development case files are historical pointers, not required inputs here. Use the new manifest/truth files as the fixture index. If compilation needs TeX-safe build keys, preserve the originals and record a separate reversible mapping without changing citation metadata.
 
-## Official template pins: partial
+## Official template pins
 
-`templates.json` describes the 13 required venue configurations and native bibliography setup. Nine downloaded official archives/repository snapshots have verified archive and selected-member SHA-256 values, covering 12 configurations:
+`templates.json` describes the 12 required venue configurations and native bibliography setup. Nine downloaded official archives/repository snapshots have verified archive and selected-member SHA-256 values, covering 12 configurations:
 
 - NeurIPS 2026, ICML 2026, ICLR 2027, AAAI 2026, IJCAI 2027, and AISTATS 2026 author kits.
 - ACL, EMNLP, and NAACL configurations from one commit-pinned official ACL style-family snapshot. No conference-year release is inferred for that snapshot.
 - CVPR and ICCV configurations from the commit-pinned shared official kit, using its documented conference-name/year macros; that snapshot identifies its style as CVPR 2027.
 - ECCV 2026 from the repository linked by its official author guidance.
 
-**UAI is unresolved.** The official UAI 2026 instructions link to `https://www.auai.org/uai2026/public/formatting/uai2026-template.zip`, but that host repeatedly resets HTTPS connections in this environment. Its checksum, archive members, and bibliography recipe remain unset. No unofficial replacement is used. T02 and the 39-build baseline remain incomplete; a future baseline validator must fail on this unresolved asset rather than silently run only 12 venues.
+UAI is deferred by explicit user instruction because its official archive could not be retrieved. It is outside the required baseline. All 12 in-scope configurations are pinned; none may be silently omitted from the 36-build baseline.
 
 The source links, exact revisions, archive hashes, file hashes, and baseline modes are recorded in the manifest. Downloaded author kits stay under repository-root `.local/pdf-e2e/assets/`; preserve their original notices in local projects. No vendor archive, compiled PDF, capture tree, or generated build output is committed here.
 

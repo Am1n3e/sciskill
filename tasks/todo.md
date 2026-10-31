@@ -2,7 +2,7 @@
 
 Plan: [plan.md](plan.md). Specification: [PDF reference input](../SPEC-pdf-reference-input.md).
 
-The user authorized gradual implementation. T01 is complete. T02 has verified pins for 12 of 13 venue configurations; the official UAI archive remains unavailable, so T02 is not complete. Commands below run from `tools/bib-lint` unless a repository-root command is explicitly marked. New test names, harness commands, markers, and options remain proposed outputs until their owning tasks are completed.
+The user authorized gradual implementation. T01 is complete. T02 is complete for the 12 in-scope venues. UAI is deferred by explicit user instruction; the baseline is 36 projects. Commands below run from `tools/bib-lint` unless a repository-root command is explicitly marked. New test names, harness commands, markers, and options remain proposed outputs until their owning tasks are completed.
 
 Each task follows red → green → refactor, preserves passing related regressions, and gets one focused commit after verification. Pure fixture/configuration/documentation tasks use content/build validation rather than invented behavioral tests. Do not mark a task complete while its expected behavior is skipped, xfailed, replaced by a stub, or merely covered by an unrelated Needs review verdict.
 
@@ -28,21 +28,21 @@ Generated projects, PDFs, build logs, temporary probes, and run output go under 
 
 ## T02: Pin official conference templates
 
-- [ ] Complete T02.
+- [x] Complete T02.
 
-**Description:** Resolve the 13 venue configurations in the plan to official release assets, including their native bibliography styles and compilation recipes.
+**Description:** Resolve the 12 venue configurations in the plan to official release assets, including their native bibliography styles and compilation recipes.
 
 **Acceptance criteria:**
-- [ ] Every venue records a specific year/release or commit, official URL, SHA-256, template family, native bibliography style, supported mode, TeX engine, and attribution/asset policy.
-- [ ] Venue-specific configurations remain explicit even where ACL or CVPR families share assets; asset fetching rejects checksum drift and does not silently substitute a third-party template.
-- [ ] Resolve a reproducible TeX toolchain for development/CI; no compiler/container/service becomes a product runtime requirement.
+- [x] Every venue records a specific year/release or commit, official URL, SHA-256, template family, native bibliography style, supported mode, TeX engine, and attribution/asset policy.
+- [x] Venue-specific configurations remain explicit even where ACL or CVPR families share assets; asset fetching rejects checksum drift and does not silently substitute a third-party template.
+- [x] Resolve a reproducible TeX toolchain for development/CI; no compiler/container/service becomes a product runtime requirement.
 
 **Verification:** Inspect each official author kit; verify asset checksums; resolve engine/package availability on the chosen test-build environment. T03 validates these pins through actual compilation.
 
 **Dependencies:** None; can be prepared alongside T01. **Estimated scope:** S, two files.
 **Files likely touched:** `tests/fixtures/pdf/templates.json`, `tests/fixtures/pdf/README.md`.
 
-**Progress:** Nine official archives/commit snapshots were downloaded into ignored storage and checked, including actual sample/style/bibliography member names and SHA-256 values; they cover 12 venue configurations. UAI's official HTTPS archive repeatedly resets the connection, so its checksum/members/bibliography recipe remain explicitly unset and the baseline must not omit it. The test-only Linux/amd64 TeX image is pinned by immutable platform digest; registry/configuration metadata and the local Docker engine were checked, but image layers/compiler execution remain for T03. No vendor archive or third-party substitute was promoted. T02 remains unchecked pending the official UAI asset.
+**Completed verification:** Nine official archives/commit snapshots have verified archive/member hashes and explicit recipes for all 12 required venues. UAI is deferred by explicit user instruction and is outside the 36-build baseline. The test-only Linux/amd64 TeX image is pinned by immutable platform digest; registry metadata and Docker availability were checked. Compiler execution and package availability will be verified by T03. No compiler becomes a product runtime dependency.
 
 ## T03: Generate and compile the LaTeX projects
 
@@ -51,7 +51,7 @@ Generated projects, PDFs, build logs, temporary probes, and run output go under 
 **Description:** Build a test-only generator/compiler that combines each pinned template with each frozen corpus and deterministic research-paper body text.
 
 **Acceptance criteria:**
-- [ ] Expose `--check-inputs`, `--prepare-assets`, and `--compile --matrix baseline`; produce the 39 baseline projects using native styles, actual citation commands, and all corpus entries.
+- [ ] Expose `--check-inputs`, `--prepare-assets`, and `--compile --matrix baseline`; produce the 36 baseline projects using native styles, actual citation commands, and all corpus entries.
 - [ ] Keep originals unchanged; record any TeX-safe key map, exact compile recipe, input/asset/toolchain hashes, bibliography warnings, and PDF checksum. Generated body text contains no case IDs, answer markers, or issue descriptions.
 - [ ] Compilation is offline after asset preparation, shell escape is disabled, failures are attributed, and the build cache invalidates on any recipe change. Required supported builds cannot silently skip missing assets or failed references.
 
@@ -62,7 +62,7 @@ Generated projects, PDFs, build logs, temporary probes, and run output go under 
 
 ## C1: Reproducible build checkpoint
 
-- [ ] All 39 planned builds are accounted for, with each supported project compiling and any intrinsic build-negative case explicitly reviewed.
+- [ ] All 36 planned builds are accounted for, with each supported project compiling and any intrinsic build-negative case explicitly reviewed.
 - [ ] Frozen inputs are unchanged, asset/toolchain pins are valid, and generated PDFs/logs are ignored.
 - [ ] Representative bibliography pages visually match the native template, without hidden test answers or fixture shortcuts.
 
@@ -98,14 +98,14 @@ Generated projects, PDFs, build logs, temporary probes, and run output go under 
 **Dependencies:** T03, T04. **Estimated scope:** S, two data files.
 **Files likely touched:** `tests/fixtures/pdf/visibility/general-ai.json`, `tests/fixtures/pdf/gold/general-ai.json`.
 
-## T04b: Review AISTATS/UAI gold renderings
+## T04b: Review AISTATS gold renderings
 
 - [ ] Complete T04b.
 
 **Description:** Independently annotate the statistical-ML conference batch, keeping default formatting and bibliography evidence intact.
 
 **Acceptance criteria:**
-- [ ] Account for every AISTATS/UAI corpus/case pair with ordered page/field evidence and reviewed visibility classifications.
+- [ ] Account for every AISTATS corpus/case pair with ordered page/field evidence and reviewed visibility classifications.
 - [ ] Distinguish abbreviation, omitted metadata, and actual printed corruption; no blanket uncertain outcome substitutes for a required finding.
 - [ ] The batch passes the common gold validator without depending on a product extractor.
 
@@ -139,9 +139,9 @@ Generated projects, PDFs, build logs, temporary probes, and run output go under 
 **Acceptance criteria:**
 - [ ] Account for every venue/corpus/case pair and actual column/reading order, with physical page/field evidence and frozen visibility classifications.
 - [ ] Verify numbered labels, rendered author abbreviations, locator availability, and URI targets from the actual PDFs rather than template-name assumptions.
-- [ ] Complete the full 13-venue inventory without changing labels to match a product result.
+- [ ] Complete the full 12-venue inventory without changing labels to match a product result.
 
-**Verification:** Inspect the batch's reference pages/annotations; run `uv run --group dev pytest -q tests/test_pdf_oracles.py`; require all 39 baseline build identities and every case rendering to be accounted for.
+**Verification:** Inspect the batch's reference pages/annotations; run `uv run --group dev pytest -q tests/test_pdf_oracles.py`; require all 36 baseline build identities and every case rendering to be accounted for.
 
 **Dependencies:** T03, T04. **Estimated scope:** S, two data files.
 **Files likely touched:** `tests/fixtures/pdf/visibility/vision.json`, `tests/fixtures/pdf/gold/vision.json`.
@@ -440,7 +440,7 @@ Generated projects, PDFs, build logs, temporary probes, and run output go under 
 
 **Acceptance criteria:**
 - [ ] Explain local PDF extraction, supported templates/layouts, OCR limitations, generated keys, provenance, coverage versus verification, and resume/refresh behavior with actual commands.
-- [ ] Document reproducible E2E setup, the 39-build baseline, required/omitted classifications, and test artifact locations without restoring development output to the diff.
+- [ ] Document reproducible E2E setup, the 36-build baseline, required/omitted classifications, and test artifact locations without restoring development output to the diff.
 - [ ] All approved success criteria and standing Definition of Done checks pass; no merge, release, or new PR is performed without the user's instruction.
 
 **Verification:** Run fast regressions, the full baseline/stress E2E matrices, standalone/shared package checks, Ruff lint/format/complexity, Git whitespace checks, and both root/tool `uv build`; inspect the final source/artifact diff and real viewer. Summarize actual skips and remaining limitations.

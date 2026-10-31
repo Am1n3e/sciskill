@@ -1,6 +1,6 @@
 # Implementation plan: PDF reference auditing through conference-paper E2E tests
 
-Status: The user authorized gradual implementation. T01 is complete. T02 has checksum-verified official assets for 12 of 13 venue configurations; the UAI archive is unresolved because its official host resets connections. T02 and the full baseline remain incomplete. Compiler tooling, PDF runtime behavior, dependencies, and CI integration remain unimplemented.
+Status: The user authorized gradual implementation. T01 and T02 are complete. UAI is deferred by explicit user instruction; all 12 in-scope venue configurations have verified pins and the baseline is 36 projects. Compiler tooling, PDF runtime behavior, dependencies, and CI integration remain unimplemented.
 
 Specification: [SPEC-pdf-reference-input.md](../SPEC-pdf-reference-input.md).
 Task list target: [todo.md](todo.md). Use these files as the single plan/task index; no external tracker is designated.
@@ -45,11 +45,11 @@ Expected answers must not come from the extractor, matcher, current verdicts, or
 | --- | --- |
 | `neurips`, `icml`, `iclr` | [NeurIPS](https://neurips.cc/Conferences/2026/CallForPapers), [ICML](https://icml.cc/Conferences/2026/AuthorInstructions), [ICLR](https://iclr.cc/Conferences/2027/AuthorGuidelines) |
 | `aaai`, `ijcai` | [AAAI author kit](https://aaai.org/authorkit26-1/), [IJCAI author kit](https://www.ijcai.org/authors_kit) |
-| `aistats`, `uai` | [AISTATS](https://virtual.aistats.org/Conferences/2026/CallForPapers), [UAI](https://www.auai.org/uai2026/submission_instructions) |
+| `aistats` | [AISTATS](https://virtual.aistats.org/Conferences/2026/CallForPapers) |
 | `acl`, `emnlp`, `naacl` | [ACL official style repository](https://github.com/acl-org/acl-style-files); distinct venue configurations |
 | `cvpr`, `iccv`, `eccv` | [CVPR/ICCV author kit](https://github.com/cvpr-org/author-kit), [ECCV author guidance](https://eccv.ecva.net/Conferences/2026/SubmissionPolicies) |
 
-Baseline: 13 venue configurations × 3 corpora = 39 required project builds. This is an explicit initial list, not a claim to cover every AI conference or historical template. Pin the actual year/release, asset checksums, bibliography style, engine, and default mode after inspecting the official files. Never assume a venue/year has a particular column layout from its name alone.
+Baseline: 12 venue configurations × 3 corpora = 36 required project builds. This is an explicit initial list, not a claim to cover every AI conference or historical template. Pin the actual year/release, asset checksums, bibliography style, engine, and default mode after inspecting the official files. Never assume a venue/year has a particular column layout from its name alone.
 
 Add supported review/final/preprint modes and stress layouts as named cases after the baseline is established. Do not multiply every option blindly. Build every case once per content/toolchain hash and reuse the resulting PDF throughout product TDD.
 
@@ -171,7 +171,7 @@ Benchmark extraction on development fixtures before choosing numeric byte/page/c
 | Typesetting erases the intended defect | Freeze visibility per style, expose omitted counts, retain source-only tests, add separately labeled visible counterparts when appropriate |
 | Test answer leaks through `.bib`, keys, hidden markers, or HTTP truth | Product input is PDF-only; file-access checks; no case IDs/expected labels embedded in generated text; canonical responses never derive from corrupted entries |
 | A blanket uncertain verdict looks safe but catches nothing | Exact issue/field assertions and expected clean outcomes; unrelated warnings do not pass |
-| Good results only on tuned layouts | Keep template/layout combinations held out during parser selection; run all 39 baseline builds plus named stress cases at release |
+| Good results only on tuned layouts | Keep template/layout combinations held out during parser selection; run all 36 baseline builds plus named stress cases at release |
 | Template URLs or dependencies drift | Version/checksum pins, cache verification, explicit reviewed template-update task |
 | LaTeX error mistaken for extraction error | Separate build status, attributed case diagnostics, no quiet deletion or skip |
 | PDF library parses text but not citation boundaries accurately | Fail-fast parser comparison on reviewed renderings; retain raw spans and unknown fields; no source metadata copied into input |
@@ -186,7 +186,7 @@ No agents are dispatched by this planning turn. Any later parallel work must hav
 
 ## Questions and review decisions
 
-- Confirm the explicit 13-venue list as the initial meaning of major AI conferences; add other venues through named manifest entries rather than an unbounded “all” claim.
+- Confirm the explicit 12-venue list as the initial meaning of major AI conferences; add other venues through named manifest entries rather than an unbounded “all” claim.
 - Review the local parser choice, installation footprint, supported dependency versions, and measured resource limits at C3.
 - Review corpus promotion and all visibility exceptions at C2. Keep compiled artifacts and the earlier removed development/evidence tree out of the public diff.
 - Review the PDF schema/CLI extraction-summary proposal before integrating it with product decisions. Existing schema-2/3 and BibTeX contracts remain acceptance gates.
