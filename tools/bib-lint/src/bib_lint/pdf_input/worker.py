@@ -15,11 +15,7 @@ from bib_lint.pdf_input.streams import bounded_streams, decoded_stream_size
 
 
 def _uris(group, hyperlinks):
-    return [
-        uri
-        for uri in hyperlinks
-        if any(_covers_line(uri, line) for line in group)
-    ]
+    return [uri for uri in hyperlinks if any(_covers_line(uri, line) for line in group)]
 
 
 def _covers_line(uri, line):
