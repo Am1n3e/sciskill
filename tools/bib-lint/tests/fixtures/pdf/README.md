@@ -1,6 +1,6 @@
 # PDF audit acceptance fixtures
 
-These inputs support the planned real LaTeX → PDF → reference extraction → metadata audit tests. The production PDF adapter is not implemented yet. The test harness validates inputs, prepares official assets, and generates native-style projects; compiler integration is in progress.
+These inputs support the planned real LaTeX → PDF → reference extraction → metadata audit tests. The production PDF adapter is not implemented yet. The test harness validates inputs, prepares official assets, and generates native-style projects; compiles them in an offline pinned container. Initial matrix execution has 20 compiled projects and 16 failures requiring review; PDF extraction tests are not implemented.
 
 ## Frozen inputs and independent truth
 
@@ -41,7 +41,7 @@ The NeurIPS example writes references manually and permits a consistent citation
 
 ## Test-only compiler pin
 
-The manifest pins the Linux/amd64 TeX Live container by immutable platform digest and records the pdfLaTeX/BibTeX pass sequence. Registry metadata and the image configuration were inspected; the compiler layers have not been pulled and execution/package availability has not been proven yet. T03 must verify compiler versions, required packages, and the actual standard bibliography file hashes before treating builds as reproducible.
+The manifest pins the Linux/amd64 TeX Live container by immutable platform digest and records the pdfLaTeX/BibTeX pass sequence. The image was pulled and executed: pdfTeX 1.40.29 and BibTeX 0.99e from TeX Live 2026. The standard bibliography files were found and hashed. Initial compilation exercised all required template families; the matrix still contains deliberate-input build failures requiring review.
 
 The local Docker engine is available. The pinned image supports the standard Linux/amd64 CI runner; an ARM development machine would need compatible emulation. Neither Docker nor TeX becomes a dependency of the installed PDF audit tool.
 
@@ -52,4 +52,4 @@ The local Docker engine is available. The pinned image supports the standard Lin
 - Treat template or bibliography changes as fixture changes requiring new rendering review. Preserve case intent instead of changing expected answers to fit product output.
 - Classify source-case evidence as printed text, URI annotation only, partial, omitted, or unable to compile before assessing the extractor. Do not count omitted information or build failures as successful PDF detections.
 
-See repository-root `tasks/plan.md` and `tasks/todo.md` for the staged implementation and verification commands. `PYTHONPATH=src:tests python -m pdf_e2e.build --check-inputs` validates the frozen inputs and required pins from `tools/bib-lint`. `--prepare-assets` fetches or verifies the pinned archives and stages selected members under `.local/pdf-e2e/assets/`. Compilation is the next increment.
+See repository-root `tasks/plan.md` and `tasks/todo.md` for the staged implementation and verification commands. `PYTHONPATH=src:tests python -m pdf_e2e.build --check-inputs` validates the frozen inputs and required pins from `tools/bib-lint`. `--prepare-assets` fetches or verifies the pinned archives and stages selected members under `.local/pdf-e2e/assets/`. `--compile --matrix baseline` builds every required project without network access. Missing assets, compiler errors, unresolved citations, and missing/duplicate bibliography occurrences fail the command. Per-project recipes/receipts and the complete `baseline.json` ledger stay under `.local/pdf-e2e/projects/`; failures are never counted as PDF audit detections.
