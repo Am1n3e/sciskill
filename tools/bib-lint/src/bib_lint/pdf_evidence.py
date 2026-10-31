@@ -236,3 +236,14 @@ def _validate_seal(report):
         raise ValueError("PDF extraction evidence is missing or malformed") from exc
     if report["extraction"].get("evidence_sha256") != actual:
         raise ValueError("PDF evidence checksum mismatch")
+
+
+def extraction_summary(report):
+    extraction = report.get("extraction")
+    if extraction is None:
+        return None
+    return {
+        "state": extraction["state"],
+        "occurrence_count": len(report["items"]),
+        **{k: extraction[k] for k in ("unresolved_fragments", "reference_pages", "diagnostics")},
+    }
