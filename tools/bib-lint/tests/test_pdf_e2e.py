@@ -10,7 +10,14 @@ import httpx
 import pytest
 from pdf_e2e.build import CACHE, FIXTURES, read_json
 from pdf_e2e.isolation import pdf_only
-from pdf_e2e.oracles import _locator_visible, equivalent_text, expand_project, normalized
+from pdf_e2e.issues import assert_locator_issue
+from pdf_e2e.oracles import (
+    _locator_visible,
+    equivalent_text,
+    expand_project,
+    normalized,
+    validate_gold_inventory,
+)
 from pdf_e2e.replay import ScholarlyReplay
 
 from bib_lint.cli import main
@@ -31,6 +38,10 @@ def pytest_generate_tests(metafunc):
     if not path.exists():
         raise ValueError("Required independent rendering gold is missing")
     gold = read_json(path)
+    ledger = read_json(
+        CACHE.parent / "projects" / ("stress.json" if selected == "stress" else "acceptance.json")
+    )
+    validate_gold_inventory(gold, ledger)
     truth = read_json(FIXTURES / "truth.json")
     cases = [expand_project(project, truth) for project in gold["projects"]]
     if selected == "pilot":
@@ -77,8 +88,44 @@ def _equivalent(left, right, fragments=()):
     return equivalent_text(unquote(str(left)), unquote(str(right)), list(fragments))
 
 
+def _assert_anchor(item, expected):
+    anchor = expected["anchor"]
+    fragments = item["pdf"]["fragments"]
+    first = fragments[0]
+    assert first["page"] == anchor["page"], (
+        expected["case_id"],
+        "physical first page",
+        first,
+        anchor,
+    )
+    line = [
+        fragment
+        for fragment in fragments
+        if fragment["page"] == first["page"] and abs(fragment["top"] - first["top"]) < 2
+    ]
+    box = [
+        min(f["x0"] for f in line),
+        min(f["top"] for f in line),
+        max(f["x1"] for f in line),
+        max(f["bottom"] for f in line),
+    ]
+    assert all(abs(actual - gold) < 2 for actual, gold in zip(box, anchor["box"], strict=True)), (
+        expected["case_id"],
+        "physical first-line box",
+        box,
+        anchor["box"],
+    )
+
+
 def _assert_fields(item, expected):
     fields = item["entry"]["fields"]
+    for field in expected.get("absent_fields", []):
+        assert not fields.get(field), (
+            expected["case_id"],
+            "unprinted field was fabricated",
+            field,
+            fields[field],
+        )
     for field in ("title", "year"):
         if field in expected["expected_fields"]:
             assert field in fields, (expected["case_id"], "missing field", field)
@@ -98,7 +145,7 @@ def _assert_fields(item, expected):
                 "lost author",
                 author,
             )
-    if expected["case_id"].startswith(("rule-variants/", "adversarial/")) and not any(
+    if expected.get("author_structure_visible", True) and not any(
         author["kind"] == "literal" for author in expected["expected_authors"]
     ):
         people = item["entry"]["persons"].get("author", [])
@@ -131,6 +178,26 @@ def _assert_fields(item, expected):
     assert all(fragment["page"] >= 1 for fragment in item["pdf"]["fragments"])
 
 
+def _assert_primary_check(methods, check, expected):
+    primary = [
+        method for method in methods if method.get("authority") and method["status"] == "found"
+    ]
+    assert primary and all(
+        any(
+            comparison["field"] == check["field"] and comparison["result"] in check["results"]
+            for comparison in method.get("comparisons", [])
+        )
+        for method in primary
+    ), (expected["case_id"], "all authoritative field findings", check, primary)
+    if expected.get("primary_sources"):
+        assert {method["name"] for method in primary} == set(expected["primary_sources"]), (
+            expected["case_id"],
+            "all authoritative sources found",
+            primary,
+            expected["primary_sources"],
+        )
+
+
 def _assert_checks(item, expected):
     correctness = item["validations"]["correctness"]
     methods = correctness["methods"]
@@ -145,6 +212,9 @@ def _assert_checks(item, expected):
         if field == "venue" and not any(
             expected["visibility"].get(name) == "text" for name in ("journal", "booktitle")
         ):
+            continue
+        if check.get("source") == "all_authoritative_found":
+            _assert_primary_check(methods, check, expected)
             continue
         comparisons = [
             comparison
@@ -162,19 +232,7 @@ def _assert_checks(item, expected):
             "unknown" in check["results"] and diagnostics
         ), (expected["case_id"], "required field finding", check, comparisons, diagnostics)
     for issue in expected.get("required_issues", []):
-        field = issue["field"]
-        findings = [
-            finding
-            for finding in correctness.get("input_findings", [])
-            if finding["field"] == field
-        ]
-        mismatches = [
-            comparison
-            for method in methods
-            for comparison in method.get("comparisons", [])
-            if comparison["field"] == field and comparison["result"] == "mismatch"
-        ]
-        assert findings or mismatches, (expected["case_id"], "missing locator conflict", issue)
+        assert_locator_issue(item, issue, expected)
     if expected["expected_statuses"]:
         assert reference_status(item["validations"]) in expected["expected_statuses"], (
             expected["case_id"],
@@ -206,10 +264,13 @@ def test_compiled_pdf_only_audits_every_rendered_reference(
 
     with monkeypatch.context() as transport_patch:
         transport_patch.setattr(MetadataClient, "__init__", with_transport)
-        with pdf_only(monkeypatch, [FIXTURES, CACHE.parent / "projects"]):
+        with pdf_only(monkeypatch, [FIXTURES, CACHE.parent / "projects"]) as guarded:
             code = main(["verify", str(source), "--output", str(output), "--json"])
     envelope = json.loads(capsys.readouterr().out)
     assert code == 0, envelope
+    assert len(guarded) == 1, (
+        "Every actual isolated parser worker must receive the input/network guard"
+    )
     assert envelope["status"] == "completed"
     report_path = Path(envelope["report_path"])
     report = read_json(report_path)
@@ -243,7 +304,7 @@ def test_compiled_pdf_only_audits_every_rendered_reference(
     failures = []
     for index, (item, case) in enumerate(zip(report["items"], cases, strict=True), 1):
         assert item["entry"]["key"] == f"pdf-ref-{index:04d}"
-        for check in (_assert_fields, _assert_checks):
+        for check in (_assert_fields, _assert_anchor, _assert_checks):
             try:
                 check(item, case)
             except AssertionError as error:

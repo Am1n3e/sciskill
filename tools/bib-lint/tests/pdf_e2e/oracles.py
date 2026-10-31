@@ -47,7 +47,7 @@ def equivalent_text(actual, expected, fragments):
     variants = {str(actual)}
     for left, right in zip(fragments, fragments[1:], strict=False):
         before = re.search(r"(\w+)-$", left["text"].rstrip())
-        after = re.match(r"([a-zà-öø-ÿ]\w*)", right["text"].lstrip())
+        after = re.match(r"([^\W\d_]\w*)", right["text"].lstrip())
         if before and after:
             joined = before[1] + "-" + after[1]
             variants.update(value.replace(joined, before[1] + after[1]) for value in list(variants))
@@ -129,6 +129,45 @@ def _person(person, initials):
     }
 
 
+def printed_authors(authors, body):
+    """Honor the native renderer's explicit count of unprinted trailing people."""
+    count = re.search(r"\band\s+(\d+)\s+others\b", body)
+    if not count:
+        return authors
+    shown = len(authors) - int(count[1])
+    if shown < 1:
+        raise ValueError("Native truncated author count exceeds the source list")
+    return authors[:shown] + [{"given": "", "family": "others", "suffix": "", "kind": "others"}]
+
+
+def author_structure_visible(authors):
+    # Native styles erase protected-name groups and print arbitrary suffixes
+    # with the same separators as distinct authors. A PDF cannot recover them.
+    return not any(
+        re.search(r"\band\b", author["given"])
+        or author["suffix"].strip(".").casefold() not in {"", "jr", "sr", "ii", "iii", "iv"}
+        for author in authors
+    )
+
+
+VENUE_MUTATIONS = {
+    "adv_consensus_shadowed_booktitle": "booktitle",
+    "adv_consensus_shadowed_journal": "journal",
+    "adv_consensus_arxiv_impostor_venue": "journal",
+    "adv_provider_venue_masquerade": "booktitle",
+}
+
+
+def visible_checks(case, family, visibility):
+    changed_venue = VENUE_MUTATIONS.get(case["citation_key"])
+    erased = changed_venue and visibility.get(changed_venue) not in {"text", "annotation_only"}
+    return [
+        check
+        for check in _required_checks(case, family)
+        if not (erased and check["field"] == "venue")
+    ]
+
+
 def _required_checks(case, family):
     source = case.get("source_expectation", {})
     required = [dict(check) for check in source.get("field_checks", [])]
@@ -186,14 +225,9 @@ def _locator_visible(field, visibility):
 def expected_statuses(case, family, visibility):
     source = case.get("source_expectation", {})
     status = source.get("reference_status")
-    if case["citation_key"] == "case_openreview_accepted_direct":
-        return ["Needs review"]  # Unlinked arXiv and accepted publication are both authoritative.
-    if case["citation_key"] == "adv_match_literal_prefix_collision":
-        return ["Needs review"] if family in INITIAL_FAMILIES else ["Partial match"]
-    if source.get("required_issue") and not required_issues(case, visibility):
-        if any(record.startswith("pal_") for record in case["canonical_records"]):
-            return ["Needs review"]
-        return ["Needs review"] if family in INITIAL_FAMILIES else ["Correct"]
+    override = _rendering_status(case, family, visibility)
+    if override:
+        return override
     if status is None:
         statuses = source.get("acceptable_statuses")
         if statuses == ["Correct"] and family in INITIAL_FAMILIES:
@@ -207,6 +241,22 @@ def expected_statuses(case, family, visibility):
     if status == "Unresolved":
         return ["Unresolved", "Needs review"]
     return [status]
+
+
+def _rendering_status(case, family, visibility):
+    source = case.get("source_expectation", {})
+    if case["citation_key"] == "case_openreview_accepted_direct":
+        return ["Needs review"]  # Unlinked arXiv and accepted publication are both authoritative.
+    if case["citation_key"] == "adv_match_literal_prefix_collision":
+        return ["Needs review"] if family in INITIAL_FAMILIES else ["Partial match"]
+    if source.get("required_issue") and not required_issues(case, visibility):
+        if any(record.startswith("pal_") for record in case["canonical_records"]):
+            return ["Needs review"]
+        return ["Needs review"] if family in INITIAL_FAMILIES else ["Correct"]
+    changed_venue = VENUE_MUTATIONS.get(case["citation_key"])
+    if changed_venue and visibility.get(changed_venue) not in {"text", "annotation_only"}:
+        return ["Needs review"] if family in INITIAL_FAMILIES else ["Correct"]
+    return None
 
 
 def _erased_mismatch_status(source, status, family, visibility):
@@ -227,7 +277,20 @@ def occurrence_classification(text, family):
     return "text" if text.strip() or family in NUMBERED_FAMILIES | {"ijcai"} else "omitted"
 
 
-def _case_expectation(case, entry, family, body):
+def typeset_locator_issues(targets, actual_uris):
+    def comparable(value):
+        return re.sub(r"\\+([%{}])", r"\1", value).casefold()
+
+    actual = {comparable(uri) for uri in actual_uris}
+    bad = any(
+        comparable(target) in actual
+        and re.match(r"https?://doi\.org/https?://(?:dx\.)?doi\.org/", comparable(target))
+        for target in targets
+    )
+    return [{"field": "doi", "code": "typeset_nested_doi_url"}] if bad else []
+
+
+def _case_expectation(case, entry, family, body, actual_uris=()):
     text, targets = rendered_text(body)
     visibility, expected = {}, {}
     folded = normalized(text)
@@ -241,9 +304,10 @@ def _case_expectation(case, entry, family, body):
         visibility[field] = "text" if visible else "annotation_only" if annotated else "omitted"
         if visible:
             expected[field] = plain
-    authors = [
-        _person(person, family in INITIAL_FAMILIES) for person in entry.persons.get("author", ())
-    ]
+    authors = printed_authors(
+        [_person(person, family in INITIAL_FAMILIES) for person in entry.persons.get("author", ())],
+        text,
+    )
     required = _required_checks(case, family)
     return {
         "source_key": entry.key,
@@ -253,17 +317,30 @@ def _case_expectation(case, entry, family, body):
         "expected_authors": authors,
         "rendered_text": text,
         "annotation_targets": targets,
+        "rendering_issues": typeset_locator_issues(targets, actual_uris),
         "required_checks": required,
         "canonical_records": case["canonical_records"],
         "classification": occurrence_classification(text, family),
         "author_presentation": "initials" if family in INITIAL_FAMILIES else "full",
+        "author_structure_visible": author_structure_visible(
+            [_person(person, False) for person in entry.persons.get("author", ())]
+        ),
     }
 
 
 def annotate_project(cell, truth):
     from pypdf import PdfReader
 
+    from .pages import page_anchors
+
     project = Path(cell["project"])
+    reader = PdfReader(project / "main.pdf")
+    actual_uris = [
+        str(annotation.get_object()["/A"]["/URI"])
+        for page in reader.pages
+        for annotation in page.get("/Annots", [])
+        if annotation.get_object().get("/A", {}).get("/URI")
+    ]
     recipe = json.loads((project / "recipe.json").read_text())
     source = FIXTURES / "corpora" / recipe["corpus"]["path"]
     entries = parse_file(source).entries
@@ -278,12 +355,25 @@ def annotate_project(cell, truth):
     for build_key, body in bodies:
         key = inverse[build_key]
         annotations.append(
-            _case_expectation(cases[key], entries[key], recipe["venue"]["family"], body)
+            _case_expectation(
+                cases[key], entries[key], recipe["venue"]["family"], body, actual_uris
+            )
         )
+    visible_keys = [
+        key
+        for (key, _), case in zip(bodies, annotations, strict=True)
+        if case["classification"] != "omitted"
+    ]
+    anchors = page_anchors(
+        project, visible_keys, {key: rendered_text(body)[0] for key, body in bodies}
+    )
+    for (key, _), case in zip(bodies, annotations, strict=True):
+        if case["classification"] != "omitted":
+            case["anchor"] = anchors[key]
     return {
         "venue": cell["venue"],
         "family": recipe["venue"]["family"],
-        "pages": len(PdfReader(project / "main.pdf").pages),
+        "pages": len(reader.pages),
         "corpus": cell["corpus"],
         "pdf_sha256": hashlib.sha256((project / "main.pdf").read_bytes()).hexdigest(),
         "selection": recipe["selection"],
@@ -335,6 +425,14 @@ def compact_oracles(gold):
             }
             if case["classification"] == "omitted":
                 row["o"] = True
+            else:
+                row["anchor"] = {key: case["anchor"][key] for key in ("page", "box")}
+            if case["rendering_issues"]:
+                row["issues"] = case["rendering_issues"]
+            if case["expected_authors"] and case["expected_authors"][-1]["kind"] == "others":
+                row["authors_shown"] = len(case["expected_authors"]) - 1
+            if not case["author_structure_visible"]:
+                row["author_grouping_erased"] = True
             result["cases"].append(row)
         compact["projects"].append(result)
     return compact
@@ -367,15 +465,64 @@ def expand_project(project, truth):
                 "expected_fields": {
                     field: rendered_text(entry.fields[field])[0] for field in row["t"]
                 },
+                "absent_fields": [
+                    field
+                    for field in ("title", "year")
+                    if project["corpus"] == "rule-variants" and not entry.fields.get(field)
+                ],
                 "expected_authors": [
                     _person(person, project["family"] in INITIAL_FAMILIES)
-                    for person in entry.persons.get("author", ())
-                ],
-                "required_checks": _required_checks(case, project["family"]),
+                    for person in entry.persons.get("author", ())[: row.get("authors_shown")]
+                ]
+                + (
+                    [{"given": "", "family": "others", "suffix": "", "kind": "others"}]
+                    if "authors_shown" in row
+                    else []
+                ),
+                "required_checks": visible_checks(case, project["family"], visibility),
                 "expected_statuses": expected_statuses(case, project["family"], visibility),
                 "required_issues": required_issues(case, visibility),
                 "canonical_records": case["canonical_records"],
+                "primary_sources": list(
+                    dict.fromkeys(
+                        truth["canonical_records"][key]["provider"]
+                        for key in case["canonical_records"]
+                        if truth["canonical_records"][key]["provider"] == "arxiv"
+                        or truth["canonical_records"][key]["metadata"].get("publication_status")
+                        in {"accepted", "published"}
+                    )
+                ),
                 "classification": "omitted" if row.get("o") else "text",
+                "anchor": row.get("anchor"),
+                "author_structure_visible": not row.get("author_grouping_erased", False),
             }
         )
+        if row.get("issues"):
+            rendered = expanded["cases"][-1]
+            for check in rendered["required_checks"]:
+                if check["field"] in {issue["field"] for issue in row["issues"]}:
+                    check["results"] = ["unknown"]
+            rendered["expected_statuses"] = ["Needs review"]
+            rendered["required_issues"].extend(
+                {"field": issue["field"], "requirement": issue["code"]} for issue in row["issues"]
+            )
     return expanded
+
+
+def validate_gold_inventory(gold, ledger):
+    from collections import Counter
+
+    cells = (
+        ledger["builds"]
+        if ledger.get("matrix") == "stress"
+        else ledger["renderable_builds"] + ledger["renderable_counterparts"]
+    )
+
+    def identities(rows):
+        return Counter((row["venue"], row["corpus"], row["pdf_sha256"]) for row in rows)
+
+    actual, required = identities(gold["projects"]), identities(cells)
+    if not ledger.get("complete") or actual != required or any(n != 1 for n in actual.values()):
+        raise ValueError(
+            "Independent gold project inventory differs from the required build matrix"
+        )
