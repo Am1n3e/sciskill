@@ -56,10 +56,6 @@ const cases = [
   eyebrow: 'SciSkill / Reference auditing',
 }}>
   <div class="bib-lint-guide">
-    <nav class="guide-jumps" aria-label="On this page">
-      <a href="#start">Run an audit</a><a href="#viewer">Open the viewer</a><a href="#findings">Read a finding</a><a href="#retry">Recheck a reference</a>
-    </nav>
-
     <section id="start">
       <h2>1. Check your references</h2>
       <p>Check <code>paper.pdf</code> or <code>references.bib</code> with the same command.</p>
@@ -146,7 +142,6 @@ const cases = [
 
 <style>
   :global(.doc-content-wide) { max-width: none; min-width: 0; }
-  .guide-jumps { display: flex; gap: 12px 24px; flex-wrap: wrap; margin-bottom: 28px; font-size: 12px; }
   section { scroll-margin-top: 24px; }
   .input-note { border-left: 2px solid var(--line); padding-left: 16px; font-size: 14px; }
   .example-note, .boundary-note { font-size: 12px; }
@@ -161,7 +156,6 @@ const cases = [
   .unresolved { color: #475569; }
   :global(.prose .other-states th) { white-space: nowrap; }
   @media (max-width: 760px) {
-    .guide-jumps { gap: 8px 16px; }
     details { padding: 12px; }
     summary { line-height: 1.8; }
   }
