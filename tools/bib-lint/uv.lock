@@ -55,6 +55,7 @@ benchmark = [
 ]
 dev = [
     { name = "coverage" },
+    { name = "huey" },
     { name = "invoke" },
     { name = "lefthook" },
     { name = "pypdf" },
@@ -77,6 +78,7 @@ requires-dist = [
 benchmark = [{ name = "hallmark", git = "https://github.com/rpatrik96/hallmark?rev=f774fa40675daa83eca6201637a94c4536b7bb3e" }]
 dev = [
     { name = "coverage", specifier = ">=7.10,<8" },
+    { name = "huey", specifier = "==3.5.3" },
     { name = "invoke", specifier = ">=2.2,<3" },
     { name = "lefthook", specifier = "==2.2.1" },
     { name = "pypdf", specifier = ">=6,<7" },
@@ -538,6 +540,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406, upload-time = "2024-12-06T15:37:23.222Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad", size = 73517, upload-time = "2024-12-06T15:37:21.509Z" },
+]
+
+[[package]]
+name = "huey"
+version = "3.5.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c7/34/a5193a2658b0e21a787bf23c4f58ed95238c9882371e26e4d169059d91fc/huey-3.5.3.tar.gz", hash = "sha256:3d9e8fe95638bde843fbcfe38c063d906afa0d4b0cf94955a24c0f90eb09bb44", size = 625867, upload-time = "2026-10-24T02:08:57.018Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ce/2c/bce2ca816fa58424d56792b520336651a0f17c13739d88ddfa8385199718/huey-3.5.3-py3-none-any.whl", hash = "sha256:30cbf102f2074570709cf5a5f8e4a1826cf1fbb55d7fcffda1272a0cfa74f55d", size = 139585, upload-time = "2026-10-24T02:08:55.779Z" },
 ]
 
 [[package]]
