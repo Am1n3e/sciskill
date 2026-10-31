@@ -52,3 +52,24 @@ def test_guard_is_injected_into_isolated_real_parser_bootstrap(tmp_path, monkeyp
     assert process.returncode != 0
     assert "harness input" in process.stderr
     assert len(guarded) == 1
+
+
+def test_public_pdf_workflow_guard_blocks_vendored_styles(monkeypatch):
+    from pdf_e2e.assets import VENDORED_ROOT
+    from test_pdf_e2e import PROTECTED_INPUTS
+
+    style = VENDORED_ROOT / "aaai/aaai2026.sty"
+    script = (
+        "# bib_lint.pdf_input.worker\nfrom pathlib import Path; Path("
+        + repr(str(style))
+        + ").read_bytes()"
+    )
+    with pdf_only(monkeypatch, PROTECTED_INPUTS) as guarded:
+        with pytest.raises(AssertionError, match="harness input"):
+            style.read_bytes()
+        worker = subprocess.run(
+            [sys.executable, "-I", "-c", script], capture_output=True, text=True
+        )
+    assert worker.returncode != 0
+    assert "harness input" in worker.stderr
+    assert len(guarded) == 1

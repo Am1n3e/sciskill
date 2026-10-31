@@ -9,6 +9,7 @@ from urllib.parse import unquote
 
 import httpx
 import pytest
+from pdf_e2e.assets import VENDORED_ROOT
 from pdf_e2e.build import CACHE, FIXTURES, read_json
 from pdf_e2e.isolation import pdf_only
 from pdf_e2e.issues import assert_locator_issue
@@ -26,6 +27,7 @@ from bib_lint.status import reference_status
 from bib_lint.verification.http import MetadataClient
 
 pytestmark = pytest.mark.pdf_e2e
+PROTECTED_INPUTS = (FIXTURES, CACHE.parent / "projects", VENDORED_ROOT)
 
 
 def pytest_generate_tests(metafunc):
@@ -318,7 +320,7 @@ def test_compiled_pdf_only_audits_every_rendered_reference(
 
     with monkeypatch.context() as transport_patch:
         transport_patch.setattr(MetadataClient, "__init__", with_transport)
-        with pdf_only(monkeypatch, [FIXTURES, CACHE.parent / "projects"]) as guarded:
+        with pdf_only(monkeypatch, PROTECTED_INPUTS) as guarded:
             code = main(["verify", str(source), "--output", str(output), "--json"])
     envelope = json.loads(capsys.readouterr().out)
     assert code == 0, envelope

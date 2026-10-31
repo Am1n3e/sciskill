@@ -4,6 +4,8 @@ These unmodified sources support the PDF acceptance tests. The required source s
 
 Every copied file retains its original bytes, including embedded copyright and license notices. Standalone upstream notices are included and checksum-pinned as `notices` in [the template manifest](../../fixtures/pdf/templates.json). `prepare_asset` and `verified_asset` reject changed, missing, unsafe, or symlinked inputs.
 
+These files retain their upstream licensing; the repository's MIT license does not replace those terms.
+
 The manifest also records the exact conference configurations and compiler digest. Asset updates require explicit pin and rendering review; never replace a kit silently.
 
 ## neurips
