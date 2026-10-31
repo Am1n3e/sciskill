@@ -7,13 +7,10 @@ import socket
 import subprocess
 import tarfile
 import time
-import urllib.error
-import urllib.request
 import zipfile
 from pathlib import Path
 
 import httpx
-import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -22,6 +19,35 @@ def run(command, cwd, env):
     result = subprocess.run(command, cwd=cwd, env=env, text=True, capture_output=True, timeout=90)
     assert result.returncode == 0, result.stdout + result.stderr
     return result
+
+
+def wait_for_viewer(server, base_url, log_path, *, timeout=30):
+    deadline = time.monotonic() + timeout
+    last = "No response received"
+    # urllib discovers macOS system proxies as well as environment proxies.
+    # Readiness must take the same explicit direct-loopback route as the browser.
+    with httpx.Client(base_url=base_url, trust_env=False, timeout=1) as browser:
+        while time.monotonic() < deadline:
+            code = server.poll()
+            if code is not None:
+                last = f"Viewer process exited {code}"
+                break
+            try:
+                response = browser.get("/api/state")
+                last = f"HTTP {response.status_code}: {response.text[:2000]}"
+                state = response.json()
+                if (
+                    response.status_code == 200
+                    and isinstance(state, dict)
+                    and "summary" in state
+                    and state["summary"] is None
+                ):
+                    return state
+            except (httpx.HTTPError, ValueError) as exc:
+                last = repr(exc)
+            time.sleep(0.1)
+    output = log_path.read_text()[-4000:] if log_path.exists() else "No server log"
+    raise AssertionError(f"Installed viewer did not become ready: {last}\nServer output:\n{output}")
 
 
 def test_installed_wheel_and_local_install_modes(tmp_path):
@@ -117,33 +143,19 @@ assert 'Audit setup' in files('bib_lint.viewer').joinpath('static/index.html').r
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
-    server = subprocess.Popen(
-        [str(executable), "view", "--port", str(port), "--no-browser"],
-        cwd=paper,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        start_new_session=True,
-    )
+    log_path = tmp_path / "installed-viewer.log"
+    with log_path.open("w") as server_log:
+        server = subprocess.Popen(
+            [str(executable), "view", "--port", str(port), "--no-browser"],
+            cwd=paper,
+            env=env,
+            stdout=server_log,
+            stderr=subprocess.STDOUT,
+            text=True,
+            start_new_session=True,
+        )
     try:
-        deadline = time.monotonic() + 30
-        ready = False
-        while time.monotonic() < deadline:
-            if server.poll() is not None:
-                pytest.fail("Viewer exited before becoming ready: " + "".join(server.communicate()))
-            try:
-                with urllib.request.urlopen(
-                    f"http://127.0.0.1:{port}/api/state", timeout=1
-                ) as response:
-                    ready = (
-                        response.status == 200 and json.loads(response.read())["summary"] is None
-                    )
-                if ready:
-                    break
-            except (OSError, urllib.error.URLError):
-                time.sleep(0.1)
-        assert ready, "Installed viewer did not become ready"
+        wait_for_viewer(server, f"http://127.0.0.1:{port}", log_path)
         with httpx.Client(base_url=f"http://127.0.0.1:{port}", trust_env=False) as browser:
             assert browser.get("/").status_code == 200
             assert "Science Skills" in browser.get("/").text
