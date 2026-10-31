@@ -58,13 +58,14 @@ def prepare_asset(asset_id: str, pin: dict, cache: Path) -> Path:
 
 
 def _download(pin: dict) -> bytes:
-    with httpx.stream("GET", pin["url"], follow_redirects=True, timeout=60) as response:
+    url = pin.get("resolved_url") or pin["url"]
+    with httpx.stream("GET", url, follow_redirects=True, timeout=60) as response:
         response.raise_for_status()
         chunks = bytearray()
         for chunk in response.iter_bytes():
             chunks.extend(chunk)
             if len(chunks) > pin["bytes"]:
-                raise ValueError(f"Unexpected archive size: {pin['url']}")
+                raise ValueError(f"Unexpected archive size: {url}")
     return bytes(chunks)
 
 

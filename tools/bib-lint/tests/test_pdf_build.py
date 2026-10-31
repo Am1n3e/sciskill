@@ -121,3 +121,64 @@ def test_stress_builds_verify_staged_template_members(tmp_path):
     member.write_bytes(b"changed")
     with pytest.raises(ValueError, match="checksum.*native.sty"):
         verified_asset(pin, tmp_path)
+
+
+@pytest.mark.parametrize("resolved", [None, "https://conference.example/official-kit.zip"])
+def test_asset_download_uses_pinned_resolved_url_with_original_url_fallback(
+    tmp_path, monkeypatch, resolved
+):
+    import hashlib
+    import io
+    import zipfile
+    from contextlib import contextmanager
+
+    import httpx
+    from pdf_e2e.assets import prepare_asset
+
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as zipped:
+        zipped.writestr("kit/native.sty", b"% verified style\n")
+    raw = buffer.getvalue()
+    pin = {
+        "url": "https://conference.example/landing",
+        "sha256": hashlib.sha256(raw).hexdigest(),
+        "bytes": len(raw),
+        "root": "kit/",
+        "files": [
+            {"path": "native.sty", "sha256": hashlib.sha256(b"% verified style\n").hexdigest()}
+        ],
+    }
+    if resolved:
+        pin["resolved_url"] = resolved
+    requested = []
+
+    @contextmanager
+    def stream(method, url, **kwargs):
+        requested.append((method, url))
+        yield httpx.Response(200, content=raw, request=httpx.Request(method, url))
+
+    monkeypatch.setattr(httpx, "stream", stream)
+    output = prepare_asset("kit", pin, tmp_path)
+    assert requested == [("GET", resolved or pin["url"])]
+    assert (output / "native.sty").read_bytes() == b"% verified style\n"
+
+
+def test_resolved_asset_download_still_enforces_stream_size(monkeypatch):
+    from contextlib import contextmanager
+
+    import httpx
+    from pdf_e2e.assets import _download
+
+    @contextmanager
+    def stream(method, url, **kwargs):
+        yield httpx.Response(200, content=b"too large", request=httpx.Request(method, url))
+
+    monkeypatch.setattr(httpx, "stream", stream)
+    with pytest.raises(ValueError, match="archive size"):
+        _download(
+            {
+                "url": "https://conference.example/landing",
+                "resolved_url": "https://conference.example/kit.zip",
+                "bytes": 1,
+            }
+        )
