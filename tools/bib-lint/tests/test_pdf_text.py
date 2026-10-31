@@ -688,3 +688,69 @@ def test_preprint_locator_cannot_be_promoted_into_a_missing_title():
     item = citation("Jane Smith. 2024. Preprint, arXiv:2406.12276v1.")
     assert "title" not in item["entry"]["fields"]
     assert any(d["code"] == "missing_title" for d in item["pdf"]["diagnostics"])
+
+
+@pytest.mark.parametrize(
+    "prefix,continuation,expected",
+    [
+        (
+            r"HTTPS://doi.org/10.18653\%2Fv1\%2F2025.",
+            "EMNLP-MAIN.58.",
+            r"HTTPS://doi.org/10.18653\%2Fv1\%2F2025.EMNLP-MAIN.58",
+        ),
+        (
+            "HTTPS://doi.org/10.18653%2Fv1%2F2025.EMNLP-MAIN.",
+            "58.",
+            "HTTPS://doi.org/10.18653%2Fv1%2F2025.EMNLP-MAIN.58",
+        ),
+    ],
+)
+def test_wrapped_doi_retains_uppercase_encoded_and_short_numeric_suffix(
+    prefix, continuation, expected
+):
+    item = parse_reference(
+        [
+            line("Jane Smith. Example Paper. Journal, 2025."),
+            line("doi: " + prefix, top=113),
+            line(continuation + " URL https://example.org/paper.", top=126),
+        ],
+        "pdf-ref-0001",
+        [],
+    )
+    assert item["entry"]["fields"]["doi"] == expected
+    assert item["pdf"]["field_evidence"]["doi"][-1]["fragment"] == 2
+
+
+def test_journal_comma_volume_comma_year_retains_routing_context():
+    item = citation("Jane Smith. Example Paper. Journal of Example Research, 22, 2031.")
+    assert item["entry"]["fields"]["volume"] == "22"
+    assert item["entry"]["fields"]["year"] == "2031"
+    mappings = item["pdf"]["field_evidence"]["volume"]
+    assert (
+        "".join(
+            item["pdf"]["fragments"][m["fragment"]]["text"][m["start"] : m["end"]] for m in mappings
+        )
+        == "22"
+    )
+
+
+def test_explicit_foreign_arxiv_wrapper_is_preserved_as_invalid_identifier_evidence():
+    item = citation("Jane Smith. 2024. Example Paper. arXiv:https://evil.example/2406.12276v1.")
+    assert item["entry"]["fields"]["arxiv"] == "https://evil.example/2406.12276v1"
+    assert item["entry"]["fields"]["eprint"] == "https://evil.example/2406.12276v1"
+    assert any(
+        d["code"] == "malformed_locator" and d["fields"] == ["arxiv"]
+        for d in item["pdf"]["diagnostics"]
+    )
+
+
+def test_terminal_doi_followed_by_new_author_sentence_is_not_joined():
+    item = parse_reference(
+        [
+            line("Jane Smith. Example Paper. Journal, 2025. doi:10.1234/example."),
+            line("Nathan Lambert. Another Paper.", top=113),
+        ],
+        "pdf-ref-0001",
+        [],
+    )
+    assert item["entry"]["fields"]["doi"] == "10.1234/example"

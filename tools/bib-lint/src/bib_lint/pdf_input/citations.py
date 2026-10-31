@@ -64,15 +64,19 @@ def _join(lines):
 
 
 def _wrapped_locator(text, continuation):
-    if not re.search(r"https?://\S*$|\b10\.\d{4,9}/\S*$", text):
+    if not re.search(r"https?://\S*$|\b10\.\d{4,9}/\S*$", text, re.I):
         return text.endswith("/")
     if re.match(r"(?:Accessed|Retrieved|Visited|Available|URL|doi)\b", continuation, re.I):
         return False
     numeric_suffix = re.search(r"\b\d{4}\.$", text) and re.match(
         r"\d{4,5}(?:v\d+)?(?:[./?#;,\s]|$)", continuation
     )
+    doi_token = re.search(r"(?:https?://(?:dx\.)?doi\.org/|\b10\.\d{4,9}/)\S*$", text, re.I)
+    doi_suffix = doi_token and re.match(
+        r"(?:[A-Za-z0-9]+[._/%\\-]\S*|\d{2,}(?:[.,;]?(?:\s|$)))", continuation
+    )
     return not text.endswith(".") or bool(
-        numeric_suffix or re.match(r"[a-z]{2,}(?:[/.\-_]|$)", continuation)
+        numeric_suffix or doi_suffix or re.match(r"[a-z]{2,}(?:[/.\-_]|$)", continuation)
     )
 
 
@@ -494,7 +498,10 @@ def _numeric_context(fields, origins, content, title_end):
     if start < 0:
         return
     cursor = start + len(venue)
-    match = re.match(r"\s*,?\s*(\d{1,4})(?=\s*(?:[(:]|,\s*\d+\s*[-–]))", content[cursor:])
+    match = re.match(
+        r"\s*,?\s*(\d{1,4})(?=\s*(?:[(:]|,\s*\d+\s*[-–]|,\s*(?:18|19|20)\d{2}[a-z]?(?:\W|$)))",
+        content[cursor:],
+    )
     if match:
         fields["volume"] = match[1]
         origins["volume"] = {"span": (cursor + match.start(1), cursor + match.end(1))}
