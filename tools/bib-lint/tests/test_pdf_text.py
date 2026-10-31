@@ -783,3 +783,39 @@ def test_bare_doi_decimal_prefix_line_wrap_is_retained(suffix):
     )
     assert item["entry"]["fields"]["doi"] == "10." + suffix.rstrip(".")
     assert not any(d["code"] == "malformed_locator" for d in item["pdf"]["diagnostics"])
+
+
+def test_terminal_journal_volume_is_retained_when_publication_year_precedes_title():
+    item = citation("Jane Smith. 2031. Example Paper. Journal of Example Research, 22.")
+    assert item["entry"]["fields"]["volume"] == "22"
+    assert item["entry"]["fields"]["year"] == "2031"
+    evidence = item["pdf"]["field_evidence"]["volume"]
+    assert (
+        "".join(
+            item["pdf"]["fragments"][m["fragment"]]["text"][m["start"] : m["end"]] for m in evidence
+        )
+        == "22"
+    )
+
+
+def test_terminal_journal_publication_year_is_not_invented_as_volume():
+    item = citation("Jane Smith. Example Paper. Journal of Example Research, 2025.")
+    assert item["entry"]["fields"]["year"] == "2025"
+    assert "volume" not in item["entry"]["fields"]
+
+
+def test_generic_italic_preprint_status_is_not_a_publication_venue():
+    from bib_lint.verification.matching import input_record
+
+    item = parse_reference(
+        [
+            line("Jane Smith. 2024. Example Paper."),
+            line("Preprint", font="Times-Italic", top=113),
+            line(", arXiv:2406.12276v1.", top=126),
+        ],
+        "pdf-ref-0001",
+        [],
+    )
+    assert "journal" not in item["entry"]["fields"]
+    assert "Preprint" in item["pdf"]["text"]
+    assert input_record(item["entry"])["record_type"] == "preprint"

@@ -456,7 +456,7 @@ def _title_boundary(content, title, tail, start, styles, base):
 
 def _clean_venue(value):
     value = value.strip(" ,.;()")
-    if YEAR.fullmatch(value):
+    if YEAR.fullmatch(value) or re.fullmatch(r"Preprint(?:\s*,?\s*arxiv\s*:.*)?", value, re.I):
         return ""
     return re.split(
         r",\s*(?:\(?\d|pp?\.?|pages|vol(?:ume)?\.?)|\s+(?=\(?\d+[(:])",
@@ -504,6 +504,12 @@ def _numeric_context(fields, origins, content, title_end):
         r"\s*,?\s*(\d{1,4})(?=\s*(?:[(:]|,\s*\d+\s*[-–]|,\s*(?:18|19|20)\d{2}[a-z]?(?:\W|$)))",
         content[cursor:],
     )
+    if not match:
+        match = re.match(
+            r"\s*,\s*(\d{1,3})(?=\s*(?:\.\s*(?:$|URL\b|doi\s*:)|$))",
+            content[cursor:],
+            re.I,
+        )
     if match:
         fields["volume"] = match[1]
         origins["volume"] = {"span": (cursor + match.start(1), cursor + match.end(1))}
