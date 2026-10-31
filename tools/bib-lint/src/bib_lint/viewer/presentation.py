@@ -18,9 +18,19 @@ def reference_rows(report):
         extraction = item["validations"].get("extraction", {})
         extraction_warning = extraction.get("state") == "needs_review"
         diagnostics = extraction.get("diagnostics", [])
-        if diagnostics:
-            row["Note"] += "; PDF extraction: " + "; ".join(d["message"] for d in diagnostics)
+        extra = list(
+            dict.fromkeys(d["message"] for d in diagnostics if d["message"] not in row["Note"])
+        )
+        if extra:
+            row["Note"] += "; PDF extraction: " + "; ".join(extra)
+        checked = [
+            m
+            for m in methods
+            if m.get("evidence_category") != "resolver" and m["status"] != "not_applicable"
+        ]
         row.update(
+            sources_checked=len(checked),
+            records_found=sum(m["status"] == "found" for m in checked),
             title=item["entry"].get("fields", {}).get("title", ""),
             source_failed=failed,
             needs_attention=(
@@ -38,7 +48,7 @@ def summary(report, rows):
     eligible = (
         set(scope["eligible_keys"])
         if scope
-        else {row["Citation key"] for row in rows if row["Used in paper"] == "Yes"}
+        else {row["Citation key"] for row in rows if row["Used in paper"] != "No"}
     )
     checked = [row for row in rows if row["Citation key"] in eligible]
     counts = Counter(row["Status"] for row in checked)
@@ -80,6 +90,9 @@ def metadata(report, path):
         source = source.get("name")
     return {
         "report_path": str(path),
+        "output_directory": str(path.parent)
+        if path.name in {"report.json", "report.tmp.json"}
+        else "",
         "bibliography": report.get("audit_input", {}).get("path") or source,
         "updated_at": datetime.fromtimestamp(path.stat().st_mtime, UTC).isoformat(),
         "input_kind": "pdf" if "extraction" in report else "bibliography",
@@ -94,6 +107,7 @@ def reference_detail(item):
         "row": row,
         "authors": display(input_record(item["entry"]).get("authors", [])),
         "reason": result.get("reason") or row["Note"],
+        "lookup_summary": lookup_summary(result),
         "suggestions": suggestions(item),
         "comparisons": comparison_rows(item, show_matches=True),
         "sources": source_rows(result.get("methods", [])),
@@ -105,3 +119,18 @@ def reference_detail(item):
             else {}
         ),
     }
+
+
+def lookup_summary(result):
+    if not result:
+        return "Source verification has not started."
+    if result.get("complete") is False:
+        return "Source verification is incomplete. These are the checks saved so far."
+    if result.get("retrieval", {}).get("resolved"):
+        return (
+            "Checked the supplied link or identifier. Only the sources listed below were checked."
+        )
+    return (
+        "Only the sources listed below were checked. "
+        "A failed lookup does not prove a reference is invalid."
+    )

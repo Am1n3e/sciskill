@@ -132,11 +132,15 @@ def table_rows(report):
 def display(value):
     if value is None or value == "" or value == []:
         return "—"
-    if isinstance(value, list) and all(isinstance(v, dict) for v in value):
+    if isinstance(value, list) and all(isinstance(v, dict) and "family" in v for v in value):
         return "; ".join(
             " ".join(str(v.get(k) or "") for k in ("given", "family", "suffix")).strip()
             for v in value
         )
+    if isinstance(value, list) and all(
+        isinstance(v, dict) and {"field", "value"} <= v.keys() for v in value
+    ):
+        return "; ".join(f"{v['field']}: {v['value']}" for v in value)
     return json.dumps(value, ensure_ascii=False) if isinstance(value, (dict, list)) else str(value)
 
 
@@ -229,8 +233,12 @@ def source_rows(methods):
     return [
         {
             "Source": m["name"],
-            "Status": [source_status(m["status"])],
-            "URL": m.get("source_url") or (m.get("found_ref") or {}).get("url"),
+            "Name": m.get("display_name") or m["name"],
+            "Status": ["Resolved" if m.get("redirect_url") else source_status(m["status"])],
+            "URL": m.get("source_url")
+            or (m.get("found_ref") or {}).get("url")
+            or m.get("redirect_url"),
+            "Lookup": lookup_label(m),
             "Revision": m.get("adapter_version", ""),
             "Search scope": "; ".join(
                 dict.fromkeys(a["scope"] for a in m.get("lookup_provenance", []))
@@ -239,6 +247,19 @@ def source_rows(methods):
         }
         for m in methods
     ]
+
+
+def lookup_label(method):
+    if method.get("status") == "error" and method.get("requests") == []:
+        return "Not queried"
+    history = method.get("lookup_history", [])
+    strategy = history[-1].get("strategy") if history else None
+    return {
+        "url": "Supplied link",
+        "identifier": "Supplied identifier",
+        "resolve": "DOI resolution",
+        "search": "Source search",
+    }.get(strategy, "Saved source check")
 
 
 def cache_entries(cache_dir, citation_key):
