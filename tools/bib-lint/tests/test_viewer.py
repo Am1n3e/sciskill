@@ -209,3 +209,26 @@ def test_a_report_file_is_never_used_as_the_output_directory(tmp_path):
     (workspace / "report.json").write_text(json.dumps(report))
     assert metadata(report, workspace)["output_directory"] == str(workspace)
     assert metadata(report, workspace / "report.json")["output_directory"] == str(workspace)
+
+
+def test_a_review_finding_names_the_unverified_fields():
+    report = fixture_report()
+    result = report["items"][0]["validations"]["correctness"]
+    result.update(
+        is_correct=None, reason="Record identified, but some citation fields remain unverified"
+    )
+    result["methods"][0].update(
+        differences=[],
+        comparisons=[
+            {"field": "authors", "result": "unknown", "input": "J. Smith", "found": "Jane Smith"}
+        ],
+    )
+    assert table_rows(report)[0]["Note"] == "Unverified: authors"
+
+
+def test_findings_preserve_input_problems_alongside_source_mismatches():
+    report = fixture_report()
+    result = report["items"][0]["validations"]["correctness"]
+    result["input_findings"] = [{"field": "doi", "message": "Conflicting supplied identifiers"}]
+    note = table_rows(report)[0]["Note"]
+    assert "year" in note and "Conflicting supplied identifiers" in note

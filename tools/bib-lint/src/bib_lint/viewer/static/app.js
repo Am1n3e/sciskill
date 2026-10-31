@@ -1,7 +1,8 @@
 'use strict';
-let state, detail, poll, requestPending=false, detailVersion=0;
+let state, detail, poll, requestPending=false, detailVersion=0, detailFocus=null;
 const $=id=>document.getElementById(id);
 const number=new Intl.NumberFormat();
+const detailRoot=document.getElementById('reference-detail');
 const node=(tag,text,cls)=>{const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(cls)el.className=cls;return el;};
 function badge(status,text=status){const cls=status==='Correct'||status==='Match'||status==='Found'?'good':status==='Invalid'||status==='Mismatch'||status==='Failed'?'bad':['Needs review','Partial match','Unresolved','Insufficient data'].includes(status)?'review':'info';return node('span',text,`chip ${cls}`);}
 function message(text,error=false){const el=node('p',text,`notice${error?' error':''}`);$('messages').append(el);}
@@ -9,7 +10,6 @@ function json(value){return node('pre',JSON.stringify(value,null,2),'code');}
 function safeLink(text,url){try{const u=new URL(url);if(!['http:','https:'].includes(u.protocol))return node('span',text);const a=node('a',text,'external');a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';return a;}catch{return node('span',text);}}
 function params(){return new URLSearchParams(location.search);}
 function route(changes){const p=params();for(const [key,value] of Object.entries(changes)){if(value===null||value==='')p.delete(key);else p.set(key,value);}history.pushState(null,'',`${location.pathname}${p.size?'?'+p:''}`);renderReferences();renderRoute();}
-function navigationLink(text,changes,cls){const a=node('a',text,cls);const p=params();for(const [key,value] of Object.entries(changes)){if(value===null||value==='')p.delete(key);else p.set(key,value);}a.href=`/?${p}`;a.addEventListener('click',event=>{if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;event.preventDefault();route(changes);});return a;}
 async function api(path,options){const response=await fetch(path,{cache:'no-store',...options});const data=await response.json();if(!response.ok)throw new Error(data.error||'Could not read the audit. Reload and try again.');return data;}
 function table(headers,rows,render,className=''){const wrap=node('div',undefined,'table-scroll');const t=node('table',undefined,className);const head=node('tr');headers.forEach(text=>{const th=node('th',text);th.scope='col';head.append(th);});const thead=node('thead');thead.append(head);const body=node('tbody');rows.forEach(row=>{const tr=node('tr');render(tr,row);body.append(tr);});if(!rows.length){const td=node('td','No entries to show.','table-empty');td.colSpan=headers.length;const tr=node('tr');tr.append(td);body.append(tr);}t.append(thead,body);wrap.append(t);return wrap;}
 function cell(tr,value,cls){const td=node('td',undefined,cls);td.append(value instanceof Node?value:node('span',String(value??'—')));tr.append(td);return td;}
@@ -18,13 +18,15 @@ function isPdfInput(){return /\.pdf$/i.test($('bibliography').value.trim());}
 function updateInputOptions(){const pdf=isPdfInput();$('aux').disabled=pdf;$('pdf-input-help').hidden=!pdf;}
 function renderExtractionCoverage(){
   const region=$('extraction-status'),extraction=state.summary?.extraction;
-  region.hidden=!extraction;region.replaceChildren();if(!extraction)return;
-  const review=extraction.state!=='complete';
-  region.className=`notice extraction-coverage${review?'':' complete'}`;
-  region.append(node('h2',`PDF extraction coverage: ${review?'needs review':'complete'}`));
-  region.append(node('p',`${number.format(extraction.occurrence_count)} reference ${extraction.occurrence_count===1?'occurrence':'occurrences'} · physical pages ${extraction.reference_pages.join(', ')||'unknown'} · ${number.format(extraction.unresolved_fragments)} unresolved ${extraction.unresolved_fragments===1?'fragment':'fragments'}`));
-  if(review)region.append(node('p','Source verification can finish while PDF extraction still needs review. Inspect the original fragments before relying on the results.'));
-  if(extraction.diagnostics.length){const list=node('ul');for(const issue of extraction.diagnostics)list.append(node('li',`${issue.page?`Page ${issue.page}: `:''}${issue.message}`));region.append(list);}
+  region.replaceChildren();region.hidden=!extraction||extraction.state==='complete';if(region.hidden)return;
+  region.className='notice extraction-coverage';
+  region.append(node('strong','PDF reference coverage needs review'));
+  region.append(node('p',`${extraction.unresolved_fragments} unresolved ${extraction.unresolved_fragments===1?'fragment':'fragments'} · reference pages ${extraction.reference_pages.join(', ')||'unknown'}. Finished source checks do not establish complete extraction.`));
+  if(extraction.diagnostics.length){
+    const details=node('details');details.append(node('summary','Extraction warnings'));const list=node('ul');
+    for(const issue of extraction.diagnostics)list.append(node('li',`${issue.page?`Page ${issue.page}: `:''}${issue.message}`));
+    details.append(list);region.append(details);
+  }
 }
 function pdfPanel(panel){
   const evidence=detail.pdf;
@@ -47,70 +49,109 @@ function pdfPanel(panel){
   panel.append(node('h3','PDF URI targets'),node('p','These are hyperlink targets associated with this reference, separate from the printed text. Extraction does not follow them.','muted small'));
   panel.append(table(['Physical page','URI target'],evidence.uris,(tr,row)=>{cell(tr,row.page);cell(tr,safeLink(row.uri,row.uri));},'comparison-table'));
 }
-function renderOverview(){
-  const panel=$('overview-panel');panel.replaceChildren();
-  if(!state.summary){
-    const empty=node('div',undefined,'empty-state');
-    empty.append(node('h2',state.loading?'Verification is starting…':'Start a reference audit'),node('p',state.loading?'Waiting for the first saved checkpoint.':'Use Audit setup to extract a PDF reference list, verify a bibliography, or open an existing audit directory.'));
-    panel.append(empty);return;
+function renderHeader(){
+  const context=$('input-summary'),counts=$('run-summary');context.replaceChildren();counts.replaceChildren();
+  $('access-mode').hidden=!state.read_only;
+  $('setup').hidden=Boolean(state.read_only);
+  if(!state.summary)return;
+  const m=state.metadata,s=state.summary,input=state.audit_input||{};
+  const line=node('p');line.append(node('span','Input','context-label'),node('code',typeof m.bibliography==='string'?m.bibliography:m.report_path));context.append(line);
+  const options=[];
+  if(input.aux)options.push(`AUX: ${input.aux}`);
+  if(m.output_directory)options.push(`Output: ${m.output_directory}`);
+  if(input.encoding)options.push(`Encoding: ${input.encoding}`);
+  if(input.include_source)options.push('Include source');
+  options.push(s.scope==='unknown'?'Scope unknown':m.input_kind==='pdf'?'All extracted references':s.scope==='used'?`${s.used} cited entries`:'All entries');
+  context.append(node('p',options.join(' · '),'input-options'));
+  counts.append(node('strong',`${number.format(s.total)} references`));
+  counts.append(node('span',s.scope==='unknown'?`${s.completed} saved results`:`${s.completed}/${s.eligible} finished`,'muted'));
+  for(const label of ['Correct','Invalid','Needs review','Partial match','Unresolved','Pending']){
+    if(s.statuses[label])counts.append(badge(label,`${s.statuses[label]} ${label.toLowerCase()}`));
   }
-  const s=state.summary,m=state.metadata;
-  const complete=s.completed===s.eligible;
-  panel.append(node('h2',s.scope==='unknown'?'Saved audit · scope unknown':s.eligible===0?'No eligible references':complete?'Verification complete':'Verification incomplete'));
-  const scope=m.input_kind==='pdf'?'All extracted references · citation usage unknown':s.scope==='all'?'All bibliography entries · citation usage unknown':s.scope==='used'?`${s.used} cited entries · ${s.skipped} unused entries skipped`:'Citation scope unknown in this saved report';
-  panel.append(node('p',scope,'muted small'));
-  const metrics=node('div',undefined,'metrics');
-  for(const [label,value,help] of [
-    ['References',s.total,m.input_kind==='pdf'?'Extracted from the PDF':'Entries in the bibliography'],
-    ['Verification finished',s.scope==='unknown'?s.completed:`${s.completed} / ${s.eligible}`,s.scope==='unknown'?'Saved results; original audit scope is unknown':'References processed, including unresolved results'],
-    ['Needs attention',s.attention,'Discrepancies, uncertainty, or source failures'],
-    ['Correct',s.statuses.Correct||0,'Checked fields match the available source evidence']
-  ]){
-    const el=node('div',undefined,'metric');
-    el.append(node('span',label,'metric-label'),node('span',typeof value==='number'?number.format(value):value,'metric-value'),node('small',help));metrics.append(el);
-  }
-  panel.append(metrics);
-  const breakdown=node('div',undefined,'status-breakdown');
-  for(const label of ['Correct','Invalid','Unresolved','Partial match','Needs review','Pending']){
-    if(s.statuses[label])breakdown.append(badge(label,`${label}: ${s.statuses[label]}`));
-  }
-  panel.append(breakdown);
-  const next=node('div',undefined,'overview-next');
-  next.append(node('h3',s.attention?'Review the findings':'Browse the references'),node('p',s.completed?'A finished audit can still contain unresolved references. A failed lookup does not establish that a reference is invalid.':'References remain pending until their source checks finish.','evidence-note'),navigationLink(s.attention?'Review references needing attention →':'View all references →',{view:'references',attention:s.attention?'1':null,key:null},'text-action'));
-  panel.append(next);
-  const meta=node('details',undefined,'advanced metadata');meta.append(node('summary','Audit details'));
-  if(m.bibliography)meta.append(node('p',`${m.input_kind==='pdf'?'PDF':'Bibliography'}: ${typeof m.bibliography==='string'?m.bibliography:JSON.stringify(m.bibliography)}`));
-  meta.append(node('p',`Report: ${m.report_path}`),node('p',`Updated: ${new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(new Date(m.updated_at))}`));
-  panel.append(meta);
-  if(s.agent_reviewed)panel.append(node('p',`Separate agent assessments are available for ${s.agent_reviewed} references.`,'muted small'));
 }
 function renderReferences(){
   if(!state)return;
+  const focused=document.activeElement;
+  detailFocus=detailRoot.contains(focused)||focused?.matches('.reference-toggle')?focused:null;
   const p=params();$('search').value=p.get('q')||'';$('hide-unused').checked=p.get('hide_unused')==='1';$('attention').checked=p.get('attention')==='1';
   const query=(p.get('q')||'').toLowerCase();
   const rows=state.rows.filter(r=>(!$('hide-unused').checked||(r['Used in paper']!=='No'&&r.Status!=='Skipped'))&&(!$('attention').checked||r.needs_attention)&&[r['Citation key'],r.title,r.Note,r['Agent note']].join(' ').toLowerCase().includes(query));
+  $('reference-filters').hidden=!state.summary;$('visible-count').hidden=!state.summary;
   $('visible-count').textContent=`${number.format(rows.length)} of ${number.format(state.rows.length)} references`;
+  if(!state.summary){$('references-table').replaceChildren(node('p',state.loading?'Waiting for the first saved result…':'Choose an input or open a saved audit to see its references.','empty-state muted'));return;}
   $('references-table').replaceChildren(table(['Reference','Status','Finding','Source checks'],rows,(tr,row)=>{
-    const ref=node('div');ref.append(navigationLink(row.title||row['Citation key'],{view:'references',key:row['Citation key']},'reference-title'),node('span',row['Citation key'],'citation-key'));cell(tr,ref);
+    const ref=node('div'),button=node('button',row.title||row['Citation key'],'reference-title reference-toggle');button.type='button';button.dataset.key=row['Citation key'];
+    const marker=node('span',p.get('key')===row['Citation key']?'−':'+','expand-marker');marker.setAttribute('aria-hidden','true');button.prepend(marker);
+    button.setAttribute('aria-controls','reference-detail');button.setAttribute('aria-expanded',String(p.get('key')===row['Citation key']));
+    button.addEventListener('click',()=>{
+      route({key:params().get('key')===row['Citation key']?null:row['Citation key'],detail:null});
+      [...document.querySelectorAll('.reference-toggle')].find(b=>b.dataset.key===row['Citation key'])?.focus();
+    });
+    ref.append(button,node('span',row['Citation key'],'citation-key'));cell(tr,ref);
     const statuses=node('div');statuses.append(badge(row.Status));
-    if(row.Agent)statuses.append(node('p','Agent','small muted'),badge(row.Agent));
-    cell(tr,statuses);
-    const finding=node('div');finding.append(node('p',row.Note,'finding-note'));
-    if(row['Agent note'])finding.append(node('p',row['Agent note'],'muted small'));
-    cell(tr,finding);
+    if(row.Agent)statuses.append(node('p','Agent','small muted'),badge(row.Agent));cell(tr,statuses);
+    const finding=node('div');finding.append(node('p',row.Status==='Correct'&&!row.source_failed?'—':row.Note,'finding-note'));
+    if(row['Agent note'])finding.append(node('p',row['Agent note'],'muted small'));cell(tr,finding);
     const checked=node('div',undefined,'source-count');
-    checked.append(node('span',`${row.records_found} ${row.records_found===1?'record':'records'} found`),node('span',`${row.sources_checked} ${row.sources_checked===1?'source check':'source checks'}`,'muted small'));
-    cell(tr,checked);
+    checked.append(node('span',`${row.records_found} ${row.records_found===1?'record':'records'} found`),node('span',`${row.sources_checked} ${row.sources_checked===1?'source check':'source checks'}`,'muted small'));cell(tr,checked);
   },'references-table'));
 }
 function renderJob(){const job=state.job,bar=$('job-status');bar.hidden=!job;if(!job)return;bar.replaceChildren();const head=node('div',undefined,'job-heading');head.append(node('strong',`Audit: ${job.result?.status||job.state}`));const b=node('button',['running','stopping'].includes(job.state)?'Stop':'Resume');b.type='button';b.dataset.action=['running','stopping'].includes(job.state)?'stop':'resume';b.disabled=job.state==='stopping'||requestPending;if(['running','stopping'].includes(job.state)||job.result?.complete!==true)head.append(b);bar.append(head);if(state.summary){const progress=node('progress');progress.max=state.summary.eligible||1;progress.value=state.summary.eligible?state.summary.completed:1;progress.setAttribute('aria-label','Verification progress');bar.append(progress,node('p',`${state.summary.completed}/${state.summary.eligible} eligible entries completed`,'muted small'));}if(job.error)bar.append(node('p',job.error,'notice error'));if(job.logs?.length){const d=node('details');d.append(node('summary','Verification diagnostics'),node('pre',job.logs.join(''),'code'));bar.append(d);}}
 function controls(){updateInputOptions();const busy=requestPending||['running','stopping'].includes(state?.job?.state);$('audit-fields').disabled=busy;document.querySelectorAll('.key-action').forEach(b=>b.disabled=busy||!$('citation-key').value.trim());$('reload-workspace').disabled=requestPending;}
-function accept(data){state=data;const path=data.metadata?.bibliography||data.report_path;$('workspace-title').textContent=typeof path==='string'&&path?path.split(/[\\/]/).pop():'Bibliography verification and source evidence';$('workspace-title').title=typeof path==='string'?path:'';$('messages').replaceChildren();if(data.error)message(data.error,true);data.warnings.forEach(w=>message(w));populateSetup();renderOverview();renderReferences();renderJob();renderExtractionCoverage();controls();renderRoute();clearTimeout(poll);if(['running','stopping'].includes(data.job?.state))poll=setTimeout(()=>load(),1000);}
-async function load(){try{accept(await api('/api/state'));}catch(error){$('messages').replaceChildren();message(error.message,true);}}
+function accept(data){
+  state=data;$('messages').replaceChildren();if(data.error)message(data.error,true);data.warnings.forEach(w=>message(w));
+  populateSetup();renderHeader();renderReferences();renderJob();renderExtractionCoverage();controls();renderRoute();
+  clearTimeout(poll);if(['running','stopping'].includes(data.job?.state))poll=setTimeout(()=>load(),1000);
+}
+async function load(force=false){if(force===true)delete detailRoot.dataset.signature;try{accept(await api('/api/state'));}catch(error){$('messages').replaceChildren();message(error.message,true);}}
 async function action(name){if(requestPending)return;requestPending=true;clearTimeout(poll);controls();const payload={action:name,bibliography:$('bibliography').value.trim(),aux:isPdfInput()?'':$('aux').value.trim(),output:$('output').value.trim(),key:$('citation-key').value.trim(),report:$('report').value.trim(),cache_dir:$('cache-dir').dataset.custom?$('cache-dir').value.trim():'',agent_path:$('agent-path').dataset.custom?$('agent-path').value.trim():''};try{const data=await api('/api/action',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':state.csrf},body:JSON.stringify(payload)});if(name==='open'||name==='parse'||data.report_path!==state.report_path)history.replaceState(null,'','/');accept(data);$('setup').open=false;}catch(error){$('messages').replaceChildren();message(error.message,true);if(!payload.bibliography&&['verify','parse','refresh'].includes(name))$('bibliography').focus();if(['running','stopping'].includes(state?.job?.state))poll=setTimeout(()=>load(),1000);}finally{requestPending=false;controls();if(state)renderJob();}}
-function renderRoute(){const p=params(),key=p.get('key');const view=key?'references':p.get('view')==='references'?'references':'overview';for(const name of ['overview','references']){$(`${name}-panel`).hidden=name!==view;$(`${name}-tab`).setAttribute('aria-selected',String(name===view));$(`${name}-tab`).tabIndex=name===view?0:-1;}$('reference-list').hidden=Boolean(key);$('reference-detail').hidden=!key;if(key&&state)loadDetail(key);else detailVersion++;}
-async function loadDetail(key){const version=++detailVersion;const container=$('reference-detail');container.replaceChildren(node('p','Loading reference…','muted'));try{const result=await api(`/api/reference?key=${encodeURIComponent(key)}`);if(version!==detailVersion)return;detail=result;renderDetail(key);}catch(error){if(version!==detailVersion)return;container.replaceChildren(navigationLink('← All references',{view:'references',key:null},'back-link'),node('p',error.message,'notice error'));}}
-function renderDetail(key){const root=$('reference-detail');root.replaceChildren();const top=node('div',undefined,'detail-top');top.append(navigationLink('← All references',{view:'references',key:null,detail:null},'back-link'));const status=node('div');status.append(badge(detail.row.Status));if(detail.agent_review)status.append(node('span',' · Agent: ','small'),badge(detail.agent_review.status));top.append(status);root.append(top,node('h2',detail.entry.fields.title||key,'detail-heading'),node('p',key,'detail-key'),node('p',detail.authors,'detail-authors'),node('p',detail.reason,'evidence-note'));const names=['Comparison'];if(detail.pdf)names.push('PDF evidence');names.push('Cached responses','Raw log');if(detail.agent_review)names.push('Agent evidence');const tablist=node('div',undefined,'detail-tabs');tablist.setAttribute('role','tablist');tablist.setAttribute('aria-label','Reference evidence');root.append(tablist);const requested=params().get('detail');const active=names.includes(requested)?requested:names[0];names.forEach((name,index)=>{const b=node('button',name);b.type='button';b.id=`detail-tab-${index}`;b.setAttribute('role','tab');b.setAttribute('aria-controls',`detail-panel-${index}`);b.setAttribute('aria-selected',String(name===active));b.tabIndex=name===active?0:-1;b.addEventListener('click',()=>{const p=params();p.set('detail',name);history.replaceState(null,'',`/?${p}`);renderDetail(key);});b.addEventListener('keydown',event=>tabKeys(event,tablist));tablist.append(b);const panel=node('section');panel.id=`detail-panel-${index}`;panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby',b.id);panel.hidden=name!==active;root.append(panel);if(name==='Comparison')comparison(panel);if(name==='Cached responses')responses(panel,key,name===active);if(name==='Raw log')panel.append(json({sources:detail.methods,...(detail.agent_review?{agent:detail.agent_review}:{})}));if(name==='PDF evidence')pdfPanel(panel);if(name==='Agent evidence')agentPanel(panel);});}
+function restoreReferenceFocus(){
+  const target=detailFocus?.isConnected?detailFocus:[...document.querySelectorAll('.reference-toggle')].find(b=>b.dataset.key===detailFocus?.dataset.key);
+  target?.focus({preventScroll:true});detailFocus=null;
+}
+function renderRoute(){
+  const key=params().get('key');
+  const button=[...document.querySelectorAll('.reference-toggle')].find(b=>b.dataset.key===key);
+  if(!key||!button){
+    detailVersion++;delete detailRoot.dataset.signature;delete detailRoot.dataset.identity;detailRoot.hidden=true;$('workspace-content').append(detailRoot);restoreReferenceFocus();return;
+  }
+  const expanded=node('tr',undefined,'expanded-reference'),cell=node('td');cell.colSpan=4;
+  detailRoot.hidden=false;cell.append(detailRoot);expanded.append(cell);button.closest('tr').after(expanded);
+  const signature=JSON.stringify([state.report_path,state.rows.find(row=>row['Citation key']===key)]);
+  // Unrelated progress updates must not rebuild the reference being read.
+  if(detailRoot.dataset.signature!==signature){detailRoot.dataset.signature=signature;loadDetail(key);}
+  restoreReferenceFocus();
+}
+async function loadDetail(key){
+  const identity=JSON.stringify([state.report_path,key]);
+  const opened=detailRoot.dataset.identity===identity?new Set([...detailRoot.querySelectorAll('details[open]')].map(el=>el.firstElementChild.textContent)):new Set();
+  detailRoot.dataset.identity=identity;
+  const version=++detailVersion;detailRoot.replaceChildren(node('p','Loading reference checks…','muted'));
+  try{
+    const result=await api(`/api/reference?key=${encodeURIComponent(key)}`);
+    if(version!==detailVersion)return;detail=result;renderDetail(key,opened);
+  }catch(error){if(version===detailVersion){delete detailRoot.dataset.signature;detailRoot.replaceChildren(node('p',error.message,'notice error'));}}
+}
+function renderDetail(key,opened){
+  detailRoot.replaceChildren();
+  const top=node('div',undefined,'detail-top'),close=node('button','Close');close.type='button';close.setAttribute('aria-label','Close reference details');
+  close.addEventListener('click',()=>{
+    route({key:null,detail:null});[...document.querySelectorAll('.reference-toggle')].find(b=>b.dataset.key===key)?.focus();
+  });
+  top.append(node('strong','Reference checks'),close);detailRoot.append(top,node('p',detail.authors,'detail-authors'),node('p',detail.reason,'evidence-note'));
+  comparison(detailRoot);
+  if(detail.pdf)evidenceSection('PDF evidence',panel=>pdfPanel(panel));
+  evidenceSection('Cached responses',panel=>responses(panel,key,true));
+  evidenceSection('Raw log',panel=>panel.append(json({sources:detail.methods,...(detail.agent_review?{agent:detail.agent_review}:{})})));
+  if(detail.agent_review)evidenceSection('Agent evidence',panel=>agentPanel(panel));
+  for(const section of detailRoot.querySelectorAll('details'))if(opened.has(section.firstElementChild.textContent))section.open=true;
+}
+function evidenceSection(name,render){
+  const section=node('details',undefined,'evidence-section'),body=node('div');section.append(node('summary',name),body);
+  function populate(){if(section.open&&!body.childNodes.length)render(body);}
+  section.addEventListener('toggle',populate);detailRoot.append(section);
+  if(params().get('detail')===name){section.open=true;populate();}
+}
 function comparison(panel){
   if(detail.agent_review&&detail.agent_review.status!==detail.row.Status)panel.append(node('p',`Agent assessment: ${detail.agent_review.status}; automated assessment: ${detail.row.Status}. Review both sets of evidence before accepting a correction.`,'notice'));
   if(detail.suggestions.length){
@@ -140,9 +181,7 @@ function comparison(panel){
 }
 function responses(panel,key,active){if(detail.cache_error)panel.append(node('p',detail.cache_error,'muted small'));if(!detail.responses.length){panel.append(node('p','No raw cached responses for this reference.','muted'));return;}const label=node('label','Response','response-selector'),select=node('select');select.setAttribute('aria-label','Cached response');detail.responses.forEach((entry,index)=>{const option=node('option',`${entry.method} · HTTP ${entry.status_code} · ${entry.retrieved_at||entry.cached_at||''}`);option.value=index;select.append(option);});label.append(select);const content=node('div');panel.append(label,content);let responseVersion=0;async function show(){const version=++responseVersion;content.replaceChildren(node('p','Loading response…','muted'));try{const data=await api(`/api/response?key=${encodeURIComponent(key)}&index=${select.value}`);if(version!==responseVersion||!content.isConnected)return;content.replaceChildren(node('p',`${data.entry.path} · SHA-256 verified`,'muted small'),node('pre',data.text,'code'));}catch(error){if(version===responseVersion)content.replaceChildren(node('p',error.message,'notice error'));}}select.addEventListener('change',show);if(active)show();}
 function agentPanel(panel){const review=detail.agent_review;panel.append(node('h3','Agent evidence'),node('p',review.summary),node('p',`Reviewed ${review.reviewed_at} · Checked: ${review.checked_fields.join(', ')}`,'muted small'));for(const evidence of review.evidence){panel.append(safeLink(evidence.title||'Primary evidence',evidence.url),node('p',evidence.supports,'evidence-note'));}if(review.limitations)panel.append(node('p',review.limitations,'muted small'));}
-function tabKeys(event,list){const buttons=[...list.querySelectorAll('[role=tab]')];const current=buttons.indexOf(event.target);const keys={ArrowRight:(current+1)%buttons.length,ArrowLeft:(current+buttons.length-1)%buttons.length,Home:0,End:buttons.length-1};if(!(event.key in keys))return;event.preventDefault();const id=buttons[keys[event.key]].id;buttons[keys[event.key]].click();document.getElementById(id)?.focus();}
-for(const name of ['overview','references']){$(`${name}-tab`).addEventListener('click',()=>route({view:name==='overview'?null:name,key:null}));$(`${name}-tab`).addEventListener('keydown',event=>tabKeys(event,event.currentTarget.parentElement));}
-$('reload-workspace').addEventListener('click',load);
+$('reload-workspace').addEventListener('click',()=>load(true));
 $('audit-form').addEventListener('submit',event=>{event.preventDefault();action('verify');});
 $('open-form').addEventListener('submit',event=>{event.preventDefault();action('open');});
 document.addEventListener('click',event=>{const button=event.target.closest('button[data-action]');if(button)action(button.dataset.action);});
@@ -150,6 +189,6 @@ $('citation-key').addEventListener('input',controls);
 $('bibliography').addEventListener('input',controls);
 for(const id of ['cache-dir','agent-path'])$(id).addEventListener('input',()=>{$(id).dataset.custom='true';});
 for(const [id,key] of [['hide-unused','hide_unused'],['attention','attention']])$(id).addEventListener('change',()=>{route({[key]:$(id).checked?'1':null});});
-$('search').addEventListener('input',()=>{const p=params();if($('search').value)p.set('q',$('search').value);else p.delete('q');history.replaceState(null,'',`/?${p}`);renderReferences();});
+$('search').addEventListener('input',()=>{const p=params();if($('search').value)p.set('q',$('search').value);else p.delete('q');history.replaceState(null,'',`/?${p}`);renderReferences();renderRoute();});
 window.addEventListener('popstate',()=>{renderReferences();renderRoute();});
 load();

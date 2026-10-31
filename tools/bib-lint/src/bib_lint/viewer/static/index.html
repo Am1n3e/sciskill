@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#fffdfa">
-  <title>bib-lint · Science Skills</title>
+  <title>SciSkill / BibLint</title>
   <link rel="stylesheet" href="/styles.css">
   <script src="/app.js" defer></script>
 </head>
@@ -12,16 +12,14 @@
 <a class="skip-link" href="#workspace-content">Skip to content</a>
 <main class="main">
   <header class="workspace-header">
-    <div class="brand"><span class="eyebrow">Science Skills</span><h1>bib-lint</h1><p id="workspace-title">Bibliography verification and source evidence</p></div>
-    <button id="reload-workspace" type="button">Reload</button>
+    <h1>SciSkill <span>/</span> BibLint</h1>
+    <div class="header-actions"><span id="access-mode" class="muted small" hidden>Read-only</span><button id="reload-workspace" type="button">Reload</button></div>
   </header>
-  <nav class="workspace-tabs" role="tablist" aria-label="Workspace views">
-    <button id="overview-tab" role="tab" aria-selected="true" aria-controls="overview-panel">Overview</button>
-    <button id="references-tab" role="tab" aria-selected="false" aria-controls="references-panel" tabindex="-1">References</button>
-  </nav>
+  <div id="input-summary" class="input-summary"></div>
+  <div id="run-summary" class="run-summary" aria-live="polite"></div>
   <div id="messages" aria-live="polite"></div>
   <details id="setup" class="setup">
-    <summary>Audit setup</summary>
+    <summary>Input &amp; options</summary>
     <form id="audit-form" autocomplete="off">
       <fieldset id="audit-fields">
         <div class="form-grid">
@@ -54,10 +52,10 @@
   <section id="job-status" class="job-status" aria-live="polite" hidden></section>
   <section id="extraction-status" aria-live="polite" hidden></section>
   <div id="workspace-content" tabindex="-1">
-    <section id="overview-panel" role="tabpanel" aria-labelledby="overview-tab"><p class="muted">Loading audit…</p></section>
-    <section id="references-panel" role="tabpanel" aria-labelledby="references-tab" hidden>
+    <section id="references-panel" aria-label="References">
+      <h2 class="sr-only">References</h2>
       <div id="reference-list">
-        <div class="filters">
+        <div id="reference-filters" class="filters">
           <label class="search-label">Search references<input type="search" id="search" name="search" autocomplete="off" placeholder="Citation key, title, or finding…"></label>
           <label class="toggle"><input type="checkbox" id="hide-unused">Hide unused/skipped</label>
           <label class="toggle"><input type="checkbox" id="attention" title="Includes uncertain findings and failed source requests">Needs attention</label>
@@ -65,7 +63,7 @@
         <p id="visible-count" class="muted small" aria-live="polite"></p>
         <div id="references-table" class="table-scroll"></div>
       </div>
-      <article id="reference-detail" hidden></article>
+      <article id="reference-detail" aria-label="Reference details" hidden></article>
     </section>
   </div>
 </main>

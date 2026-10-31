@@ -142,7 +142,7 @@ assert all(p.descriptor.adapter_version for p in METHODS.values())
 from bib_lint.viewer.app import ViewerSession
 from bib_lint.viewer.jobs import Registry
 assert ViewerSession(Registry()).state()['summary'] is None
-assert 'Audit setup' in files('bib_lint.viewer').joinpath('static/index.html').read_text()
+assert 'Input &amp; options' in files('bib_lint.viewer').joinpath('static/index.html').read_text()
 """
     run([str(python), "-c", script], paper, env)
     check_installed_queues(python, paper, env)
@@ -165,7 +165,7 @@ assert 'Audit setup' in files('bib_lint.viewer').joinpath('static/index.html').r
         wait_for_viewer(server, f"http://127.0.0.1:{port}", log_path)
         with httpx.Client(base_url=f"http://127.0.0.1:{port}", trust_env=False) as browser:
             assert browser.get("/").status_code == 200
-            assert "Science Skills" in browser.get("/").text
+            assert "SciSkill" in browser.get("/").text
             assert browser.get("/app.js").status_code == 200
             state = browser.get("/api/state").json()
             started = browser.post(

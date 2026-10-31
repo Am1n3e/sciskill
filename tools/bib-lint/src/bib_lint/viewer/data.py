@@ -81,11 +81,26 @@ def note(item):
         {d["field"] for m in result.get("methods", []) for d in m.get("differences", [])}
     )
     errors = [m["name"] for m in result.get("methods", []) if m.get("status") == "error"]
-    parts = (
-        ["Check " + ", ".join(differences)]
-        if differences
-        else [result.get("reason", "Review evidence")]
+    findings = list(
+        dict.fromkeys(f"{f['field']}: {f['message']}" for f in result.get("input_findings", []))
     )
+    unverified = sorted(
+        {
+            c["field"]
+            for m in result.get("methods", [])
+            if m.get("authority")
+            for c in m.get("comparisons", [])
+            if c["result"] == "unknown"
+        }
+    )
+    if differences:
+        parts = ["Check " + ", ".join(differences)] + findings
+    elif findings:
+        parts = findings
+    elif unverified:
+        parts = ["Unverified: " + ", ".join(unverified)]
+    else:
+        parts = [result.get("reason", "Review evidence")]
     if errors:
         parts.append("Unavailable: " + ", ".join(errors))
     return "; ".join(parts)
