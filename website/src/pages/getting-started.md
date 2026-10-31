@@ -35,7 +35,7 @@ uvx sciskill bib-lint verify paper.pdf --output paper-audit --json
 uvx sciskill bib-lint view paper-audit
 ```
 
-[Follow the visual walkthrough](../tools/bib-lint/) for screenshots, expanded findings, BibTeX input, and rechecks.
+[Follow the visual walkthrough](../tools/bib-lint/) for screenshots and expanded findings.
 
 ## Plan your rebuttal
 

@@ -3,42 +3,30 @@ import DocLayout from '../../layouts/DocLayout.astro';
 import UsageCommands from '../../components/UsageCommands.astro';
 import GuideScreenshot from '../../components/GuideScreenshot.astro';
 import results from '../../assets/bib-lint/results.jpg';
-import correct from '../../assets/bib-lint/correct.jpg';
+import valid from '../../assets/bib-lint/valid.jpg';
 import invalid from '../../assets/bib-lint/invalid.jpg';
-import review from '../../assets/bib-lint/needs-review.jpg';
 import unresolved from '../../assets/bib-lint/unresolved.jpg';
-import partial from '../../assets/bib-lint/partial-match.jpg';
-import pdf from '../../assets/bib-lint/pdf-evidence.jpg';
-
-const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 const cases = [
   {
     id: 'invalid', status: 'Invalid', title: 'A source demonstrates a mismatch',
-    text: 'This Tulu citation says 2025; the retrieved arXiv record says 2024. The expanded row shows both values and the source link. Check publication versions before accepting a correction.',
+    text: 'A source demonstrates a metadata mismatch. Here the citation says 2025; the arXiv record says 2024.',
     image: invalid,
     alt: 'Expanded Invalid Tulu reference showing a suggested year correction from 2025 to 2024 and the arXiv evidence link.',
-    caption: 'Suggested corrections are proposals. The input file has not been edited.',
+    caption: 'Open the source link next to the suggested value before editing your reference.',
   },
   {
-    id: 'correct', status: 'Correct', title: 'The checked fields match',
-    text: 'The offline reinforcement learning reference matches the retrieved record. Matching fields are visible by default. “Found” means a source returned a record; “Correct” is the reference decision.',
-    image: correct,
-    alt: 'Expanded Correct reference with matching title, authors, year, and arXiv identifier, plus one arXiv source check.',
-    caption: 'Only the sources actually checked appear here. One match does not imply agreement from other providers.',
+    id: 'valid', status: 'Valid', title: 'The checked metadata matches',
+    text: 'The checked citation fields match the retrieved record.',
+    image: valid,
+    alt: 'Expanded Valid reference with matching title, authors, year, and arXiv identifier, plus one arXiv source check.',
+    caption: 'The comparison shows which values match and the source used to verify them.',
   },
   {
-    id: 'needs-review', status: 'Needs review', title: 'A record was found, but a field is uncertain',
-    text: 'High Confidence Policy Improvement has an author-name difference that the audit cannot confidently resolve. The field is marked “Insufficient data” instead of being declared wrong.',
-    image: review,
-    alt: 'Expanded Needs review reference showing uncertain author names, a PMLR record found, and the other source-search outcomes.',
-    caption: 'A found record can still leave citation fields unverified.',
-  },
-  {
-    id: 'unresolved', status: 'Unresolved', title: 'No unambiguous authoritative record was found',
-    text: 'This example’s saved searches did not resolve Bayesian Data Analysis. That is a lookup limitation, not evidence that the book is fabricated.',
+    id: 'unresolved', status: 'Unresolved', title: 'Could not verify confidently',
+    text: 'A missing record, uncertain field, or incomplete author list prevents a validity decision. This does not mean the reference is invalid.',
     image: unresolved,
-    alt: 'Expanded Unresolved Bayesian Data Analysis reference showing no demonstrated field differences and six source searches with no matching record.',
-    caption: 'Provider coverage and missing identifiers can leave real publications unresolved.',
+    alt: 'Expanded Unresolved reference showing uncertain author names and a PMLR source record.',
+    caption: 'Compare the author names with the linked source to resolve the uncertainty.',
   },
 ];
 ---
@@ -72,7 +60,7 @@ const cases = [
 
     <section id="findings">
       <h2>3. Read a finding</h2>
-      <p>Select a reference title to expand its checks and source evidence.</p>
+      <p>Each processed reference is <strong>Valid</strong>, <strong>Invalid</strong>, or <strong>Unresolved</strong>. Select its title to see the reason and source comparison.</p>
       {cases.map(example => (
         <details class="finding-example" id={example.id} open={example.id === 'invalid'}>
           <summary><span class={`finding-status ${example.id}`}>{example.status}</span><span>{example.title}</span></summary>
@@ -81,43 +69,6 @@ const cases = [
         </details>
       ))}
 
-      <details class="finding-example" id="partial-match">
-        <summary><span class="finding-status partial-match">Partial match</span><span>The printed author list is abbreviated</span></summary>
-        <p>“Tanmay Gupta; others” matches the start of the CodeNav author list. It does not verify the omitted authors.</p>
-        <GuideScreenshot image={partial}
-          alt="Expanded Partial match CodeNav reference comparing Tanmay Gupta and others with the complete three-author arXiv record."
-          caption="Partial match acknowledges abbreviated evidence instead of upgrading it to a full match."
-        />
-      </details>
-
-      <details class="finding-example" id="pdf-evidence">
-        <summary><span class="finding-status">PDF evidence</span><span>Check what was actually printed</span></summary>
-        <p>Expand <strong>PDF evidence</strong> beneath a reference to see the original text fragments, physical page numbers, and field provenance.</p>
-        <GuideScreenshot image={pdf}
-          alt="PDF evidence for High Confidence Policy Improvement showing interpreted text, four original fragments, and physical page 2 locations."
-          caption="Here the printed name is split across lines. Retrieved metadata never fills missing input fields before comparison."
-        />
-      </details>
-
-      <table class="other-states">
-        <thead><tr><th scope="col">Also visible</th><th scope="col">Meaning</th></tr></thead>
-        <tbody>
-          <tr><th scope="row">Pending</th><td>Verification has not finished for this reference.</td></tr>
-          <tr><th scope="row">Skipped</th><td>The AUX file marks the BibTeX entry as unused.</td></tr>
-          <tr><th scope="row">Failed source</th><td>A lookup failed. This alone does not make the reference Invalid.</td></tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section id="retry">
-      <h2>4. Recheck one reference</h2>
-      <p>Rerunning the original audit resumes unfinished work and preserves saved outcomes. Use <code>--refresh</code> to fetch sources again; <code>--key</code> limits the recheck.</p>
-      <UsageCommands
-        agent="Retry the source lookups for lambert2024tulu in paper-audit and show me what changed."
-        cli={'uvx sciskill bib-lint verify references.bib \\\n  --output paper-audit \\\n  --key lambert2024tulu --refresh --json'}
-      />
-      <p class="boundary-note">A finished audit does not certify complete PDF extraction. Review extraction warnings; scanned reference lists need OCR outside BibLint. Metadata checks do not establish whether a paper supports your scientific claim.</p>
-      <p><a href="https://github.com/Am1n3e/sciskill/blob/main/tools/bib-lint/README.md">Full CLI reference</a> · <a href={`${base}evaluation/`}>Evaluation &amp; limitations</a></p>
     </section>
   </div>
 </DocLayout>
@@ -126,16 +77,13 @@ const cases = [
   :global(.doc-content-wide) { max-width: none; min-width: 0; }
   section { scroll-margin-top: 24px; }
   .input-note { border-left: 2px solid var(--line); padding-left: 16px; font-size: 14px; }
-  .boundary-note { font-size: 12px; }
   details { border: 1px solid var(--line); border-radius: 4px; padding: 16px; margin: 12px 0; }
   summary { cursor: pointer; color: var(--ink); font-size: 13px; }
   summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 5px; }
   .finding-status { display: inline-block; font-size: 12px; font-weight: 650; margin: 0 12px 0 6px; }
-  .correct { color: #246048; }
+  .valid { color: #246048; }
   .invalid { color: #9d2940; }
-  .needs-review, .partial-match { color: #684790; }
-  .unresolved { color: #475569; }
-  :global(.prose .other-states th) { white-space: nowrap; }
+  .unresolved { color: #684790; }
   @media (max-width: 760px) {
     details { padding: 12px; }
     summary { line-height: 1.8; }
