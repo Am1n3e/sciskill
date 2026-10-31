@@ -1,6 +1,7 @@
 """Recover reference occurrences from text geometry, independent of citation metadata."""
 
 import re
+from bisect import bisect_left, bisect_right
 from collections import Counter, defaultdict
 from statistics import median
 
@@ -10,32 +11,65 @@ HEADING = re.compile(
 LABEL = re.compile(r"^\s*(?:\[([^\]\n]{1,120})\]|(\d+)\.(?=\s|$))\s*")
 
 
-def _line_numbers(words):
+def _word_style(word):
+    return word["fontname"], round(word["size"], 1)
+
+
+def _line_numbers(words, known_styles=None):
+    styles = known_styles if known_styles is not None else set()
     groups = defaultdict(list)
+    body = Counter(_word_style(word) for word in words if not word["text"].isdigit())
+    body_style = body.most_common(1)[0][0] if body else None
     for word in words:
         if word["text"].isdigit() and len(word["text"]) <= 4:
             groups[round(word["x1"] / 3)].append(word)
-    removed = set()
     for group in groups.values():
-        numbers = [int(w["text"]) for w in sorted(group, key=lambda w: w["top"])]
+        numbers = [int(word["text"]) for word in sorted(group, key=lambda word: word["top"])]
         if (
             len(numbers) >= 4
             and sum(b == a + 1 for a, b in zip(numbers, numbers[1:], strict=False))
             >= len(numbers) * 0.65
         ):
-            removed.update(id(w) for w in group)
-    return [w for w in words if id(w) not in removed]
+            if all(1800 <= number <= 2099 for number in numbers):
+                continue
+            for word in group:
+                style = _word_style(word)
+                styles.add(style if style != body_style else (*style, round(word["x1"] / 3)))
+    return [
+        word
+        for word in words
+        if not (
+            word["text"].isdigit()
+            and (
+                _word_style(word) in styles or (*_word_style(word), round(word["x1"] / 3)) in styles
+            )
+        )
+    ]
 
 
 def _gutter(words, width):
     """A column gutter has vertically overlapping text on both sides but little ink."""
     if len(words) < 30:
         return None
-    candidates = [width / 2 + step for step in range(-18, 19, 3)]
-    gutter = min(candidates, key=lambda g: sum(w["x0"] < g + 3 and w["x1"] > g - 3 for w in words))
+    starts = sorted(word["x0"] for word in words)
+    ends = sorted(word["x1"] for word in words)
+    low = max(width * 0.12, starts[0] + 30)
+    high = min(width * 0.88, ends[-1] - 30)
+    candidates = [
+        g
+        for g in range(int(low), int(high), 3)
+        if bisect_right(ends, g) >= 10 and len(starts) - bisect_left(starts, g) >= 10
+    ]
+    if not candidates:
+        return None
+
+    def ink(gutter):
+        return bisect_left(starts, gutter + 5) - bisect_right(ends, gutter - 5)
+
+    gutter = min(candidates, key=lambda g: (ink(g), abs(g - width / 2)))
     left = [w for w in words if w["x1"] < gutter]
     right = [w for w in words if w["x0"] > gutter]
-    crossing = sum(w["x0"] < gutter + 3 and w["x1"] > gutter - 3 for w in words)
+    crossing = ink(gutter)
     rows = len({round(w["top"] / 6) for w in words})
     if min(len(left), len(right)) < 10 or crossing > max(2, rows * 0.18):
         return None
@@ -79,7 +113,7 @@ def _row(words, page, column):
     }
 
 
-def page_lines(page):
+def page_lines(page, number_styles=None):
     words = page.extract_words(
         x_tolerance=1.5, y_tolerance=2, extra_attrs=["fontname", "size"], expand_ligatures=False
     )
@@ -93,7 +127,8 @@ def page_lines(page):
                 and word["top"] > page.height * 0.8
                 and abs((word["x0"] + word["x1"]) / 2 - page.width / 2) < 18
             )
-        ]
+        ],
+        number_styles,
     )
     gutter = _gutter(words, page.width)
     columns = (
@@ -145,7 +180,10 @@ def _without_headers(pages):
         )
         if (
             (running[text] > 1 or centered)
-            and not re.search(r"[.!?]", text)
+            and (
+                not re.search(r"[.!?]", text)
+                or re.search(r"confidential|review\s*copy|under\s*review", text, re.I)
+            )
             and not HEADING.fullmatch(text)
         ):
             removed.update(id(line) for line in group)

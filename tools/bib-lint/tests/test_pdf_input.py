@@ -152,3 +152,28 @@ def test_wrapped_reference_continues_on_next_physical_page(tmp_path):
     assert len(items) == 3
     assert [f["page"] for f in items[1]["pdf"]["fragments"]] == [1, 2]
     assert items[1]["entry"]["fields"]["doi"] == "10.1234/second"
+
+
+def test_unequal_columns_keep_all_reference_occurrences(tmp_path):
+    path = tmp_path / "unequal-columns.pdf"
+    page = canvas.Canvas(str(path), pagesize=(800, 792), invariant=1)
+    page.setFont("Times-Bold", 12)
+    page.drawString(40, 720, "References")
+    page.setFont("Times-Roman", 10)
+    for number in range(1, 5):
+        y = 690 - 55 * (number - 1)
+        page.drawString(
+            40,
+            y,
+            f"[{number}] Jane Smith. A Comprehensive Study of Attention Networks "
+            "and Models with Extensive Applications.",
+        )
+        page.drawString(50, y - 13, "Journal of Testing and Evaluation, 2025.")
+    for number in range(5, 9):
+        y = 690 - 55 * (number - 5)
+        page.drawString(500, y, f"[{number}] John Doe. An Example Paper.")
+        page.drawString(510, y - 13, "Journal, 2025.")
+    page.save()
+    report = extract_pdf(path)
+    assert [item["pdf"]["label"] for item in report["items"]] == list(map(str, range(1, 9)))
+    assert all(len(item["pdf"]["fragments"]) == 2 for item in report["items"])
