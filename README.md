@@ -38,7 +38,7 @@ SciSkill pairs agent instructions with tools that carry out the work and make th
 
 ### bib-lint
 
-Audit BibTeX bibliographies or text-based research-paper PDF reference lists against scholarly sources, with local extraction and an evidence viewer. See [bib-lint](tools/bib-lint/README.md).
+Audit BibTeX bibliographies or text-based research-paper PDF reference lists against scholarly sources, with local extraction and an evidence viewer. See the [visual walkthrough](https://am1n3e.github.io/sciskill/tools/bib-lint/) or [CLI reference](tools/bib-lint/README.md).
 
 ```sh
 uvx sciskill bib-lint --help

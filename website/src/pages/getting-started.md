@@ -26,7 +26,16 @@ Provide your LaTeX and bibliography paths and an optional venue. Your agent init
 /sciskill bib-lint references.bib
 ```
 
-Your agent checks bibliography metadata against scholarly records, reviews the source evidence, and opens the report. Provide a corresponding compiled AUX file to check only cited references; otherwise the audit checks all entries. Bibliography files remain unchanged.
+Use `paper.pdf` instead to audit a PDF's reference list. Your input stays unchanged.
+
+Without an agent:
+
+```sh
+uvx sciskill bib-lint verify paper.pdf --output paper-audit --json
+uvx sciskill bib-lint view paper-audit
+```
+
+[Follow the visual walkthrough](../tools/bib-lint/) for screenshots, expanded findings, BibTeX input, and rechecks.
 
 ## Plan your rebuttal
 
