@@ -68,3 +68,13 @@ def test_printed_unknown_markers_and_ijcai_labels_are_occurrences():
     assert occurrence_classification("????", "aaai") == "text"
     assert occurrence_classification("", "ijcai") == "text"
     assert occurrence_classification("", "iclr") == "omitted"
+
+
+def test_field_equivalence_preserves_word_boundaries_and_only_relaxes_observed_wrap_hyphens():
+    from pdf_e2e.oracles import equivalent_text
+
+    fragments = [{"text": "Noah Dor-"}, {"text": "mann. Another title."}]
+    assert equivalent_text("Dor-mann", "Dormann", fragments)
+    assert not equivalent_text("Tool-use", "Tooluse", [])
+    assert not equivalent_text("Tanmay Gupta", "TanmayGupta", [])
+    assert equivalent_text("{S}ee{C}lick: {GUI}", "SeeClick: GUI", [])

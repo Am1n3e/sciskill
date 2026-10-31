@@ -37,6 +37,25 @@ def normalized(value):
     return "".join(character for character in text if character.isalnum())
 
 
+def _field_words(value):
+    text = unicodedata.normalize("NFKC", str(value)).casefold().replace("{", "").replace("}", "")
+    text = text.replace("‐", "-").replace("‑", "-")
+    return tuple(re.findall(r"\w+(?:-\w+)*", text))
+
+
+def equivalent_text(actual, expected, fragments):
+    variants = {str(actual)}
+    for left, right in zip(fragments, fragments[1:], strict=False):
+        before = re.search(r"(\w+)-$", left["text"].rstrip())
+        after = re.match(r"([a-zà-öø-ÿ]\w*)", right["text"].lstrip())
+        if before and after:
+            joined = before[1] + "-" + after[1]
+            variants.update(value.replace(joined, before[1] + after[1]) for value in list(variants))
+            if len(variants) > 64:
+                raise ValueError("Too many independent oracle wrap variants")
+    return any(_field_words(value) == _field_words(expected) for value in variants)
+
+
 def _group(text, start):
     while start < len(text) and text[start].isspace():
         start += 1

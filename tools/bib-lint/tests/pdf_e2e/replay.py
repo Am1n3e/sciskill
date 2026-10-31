@@ -2,6 +2,7 @@
 
 import html
 import re
+from difflib import SequenceMatcher
 from urllib.parse import urlsplit
 from xml.sax.saxutils import escape
 
@@ -26,6 +27,18 @@ def _name(author):
 
 def _meta(name, value):
     return f'<meta name="{name}" content="{html.escape(str(value or ""), quote=True)}">'
+
+
+def _search_records(records, term):
+    query = " ".join(re.findall(r"\w+", term.casefold()))
+    return [
+        record
+        for record in records
+        if SequenceMatcher(
+            None, query, " ".join(re.findall(r"\w+", record["title"].casefold()))
+        ).ratio()
+        >= 0.78
+    ]
 
 
 def _record_html(record):
@@ -126,6 +139,9 @@ class ScholarlyReplay:
                     and re.sub(r"v\d+$", "", r["identifiers"]["arxiv"]) == identifier
                 )
             ]
+        elif request.url.params.get("search_query"):
+            term = request.url.params["search_query"].removeprefix("ti:").strip('"')
+            records = _search_records(records, term)
         start = int(request.url.params.get("start", "0"))
         count = len(records)
         entries = []
@@ -161,6 +177,8 @@ class ScholarlyReplay:
         identifier = request.url.params.get("id")
         if identifier:
             records = [r for r in records if r["identifiers"]["openreview"] == identifier]
+        elif request.url.params.get("term"):
+            records = _search_records(records, request.url.params["term"])
         offset = int(request.url.params.get("offset", "0"))
         notes = []
         for record in records[offset : offset + 20]:

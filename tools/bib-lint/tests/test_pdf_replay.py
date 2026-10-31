@@ -94,3 +94,23 @@ def test_acl_replay_preserves_raw_display_alias_and_explicit_citation(tmp_path):
         result = adapter.lookup(query, RequestContext(client, adapter.descriptor, "trial"))
     author = result.candidates[0].authors[4]
     assert author.given == "Sujian" and author.family == "Li"
+
+
+def test_title_replay_shortlists_source_records_without_copying_mutated_metadata():
+    from pdf_e2e.replay import ScholarlyReplay
+
+    truth = read_json(FIXTURES / "truth.json")
+    replay = ScholarlyReplay(truth["canonical_records"])
+    request = httpx.Request(
+        "GET",
+        "https://export.arxiv.org/api/query",
+        params={
+            "search_query": (
+                'ti:"CodeNav Beyond tool use to using real world codebases with LLM agents"'
+            )
+        },
+    )
+    response = replay(request)
+    assert "CodeNav" in response.text
+    assert "GAIA" not in response.text
+    assert "Tulu" not in response.text

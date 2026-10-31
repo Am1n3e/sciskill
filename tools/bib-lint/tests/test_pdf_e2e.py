@@ -10,7 +10,7 @@ import httpx
 import pytest
 from pdf_e2e.build import CACHE, FIXTURES, read_json
 from pdf_e2e.isolation import pdf_only
-from pdf_e2e.oracles import _locator_visible, expand_project, normalized
+from pdf_e2e.oracles import _locator_visible, equivalent_text, expand_project, normalized
 from pdf_e2e.replay import ScholarlyReplay
 
 from bib_lint.cli import main
@@ -73,8 +73,8 @@ def _project_pdf(expected):
     return pdf
 
 
-def _equivalent(left, right):
-    return normalized(unquote(str(left))) == normalized(unquote(str(right)))
+def _equivalent(left, right, fragments=()):
+    return equivalent_text(unquote(str(left)), unquote(str(right)), list(fragments))
 
 
 def _assert_fields(item, expected):
@@ -82,7 +82,9 @@ def _assert_fields(item, expected):
     for field in ("title", "year"):
         if field in expected["expected_fields"]:
             assert field in fields, (expected["case_id"], "missing field", field)
-            assert _equivalent(fields[field], expected["expected_fields"][field]), (
+            assert _equivalent(
+                fields[field], expected["expected_fields"][field], item["pdf"]["fragments"]
+            ), (
                 expected["case_id"],
                 field,
                 fields.get(field),
@@ -108,12 +110,18 @@ def _assert_fields(item, expected):
         )
         for actual, author in zip(people, expected["expected_authors"], strict=True):
             assert _equivalent(
-                " ".join(actual.get("first", []) + actual.get("middle", [])), author["given"]
+                " ".join(actual.get("first", []) + actual.get("middle", [])),
+                author["given"],
+                item["pdf"]["fragments"],
             ), (expected["case_id"], "given name", actual, author)
             assert _equivalent(
-                " ".join(actual.get("prelast", []) + actual.get("last", [])), author["family"]
+                " ".join(actual.get("prelast", []) + actual.get("last", [])),
+                author["family"],
+                item["pdf"]["fragments"],
             ), (expected["case_id"], "family name", actual, author)
-            assert _equivalent(" ".join(actual.get("lineage", [])), author["suffix"]), (
+            assert _equivalent(
+                " ".join(actual.get("lineage", [])), author["suffix"], item["pdf"]["fragments"]
+            ), (
                 expected["case_id"],
                 "name suffix",
                 actual,
