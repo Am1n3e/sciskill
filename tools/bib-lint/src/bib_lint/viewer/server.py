@@ -7,6 +7,7 @@ import webbrowser
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib.resources import files
+from socketserver import TCPServer
 from urllib.parse import parse_qs, urlsplit
 
 from bib_lint.viewer.app import ViewerSession
@@ -26,6 +27,13 @@ class ViewerServer(ThreadingHTTPServer):
         self.sessions = {}
         self.session_guard = threading.RLock()
         super().__init__(("127.0.0.1", port), Handler)
+
+    def server_bind(self):
+        # HTTPServer reverse-resolves its bound address before listening. This
+        # viewer is loopback-only and needs no DNS-derived public server name.
+        TCPServer.server_bind(self)
+        self.server_name = "localhost"
+        self.server_port = self.socket.getsockname()[1]
 
     def session(self, cookie):
         cookies = SimpleCookie()
