@@ -831,3 +831,24 @@ def test_only_truncation_sentinel_retains_evidence_but_named_authors_are_unknown
         for d in item["pdf"]["diagnostics"]
     )
     assert item["validations"]["extraction"]["state"] == "needs_review"
+
+
+def test_parenthesized_publication_year_is_not_part_of_italic_venue():
+    item = parse_reference(
+        [
+            line("Jane Smith. Example Paper."),
+            line("ICML 2023 Poster (2023)", font="Times-Italic", top=113),
+            line("https://openreview.net/forum?id=example.", top=126),
+        ],
+        "pdf-ref-0001",
+        [],
+    )
+    assert item["entry"]["fields"]["journal"] == "ICML 2023 Poster"
+    assert item["entry"]["fields"]["year"] == "2023"
+    evidence = item["pdf"]["field_evidence"]["journal"]
+    assert (
+        "".join(
+            item["pdf"]["fragments"][m["fragment"]]["text"][m["start"] : m["end"]] for m in evidence
+        )
+        == "ICML 2023 Poster"
+    )
