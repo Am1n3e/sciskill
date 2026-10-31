@@ -52,10 +52,18 @@ class EmbeddedConsumer(Consumer):
         # Huey 3.5.3 exposes no constructor option to disable its signal installation.
         pass
 
+    @property
+    def threads(self):
+        return [thread for _, thread in self.worker_threads] + [self.scheduler]
+
     def check_alive(self):
-        threads = [thread for _, thread in self.worker_threads] + [self.scheduler]
-        if any(not thread.is_alive() for thread in threads):
+        if any(not thread.is_alive() for thread in self.threads):
             raise LookupError("Provider worker exited; resume the checkpoint to recover its task")
+
+    def join_started(self):
+        for thread in self.threads:
+            if thread.ident is not None:
+                thread.join()
 
 
 def _register(queue, lookup, provider, stop, retries, retry_delay):
@@ -160,11 +168,13 @@ class ProviderQueues:
     def close(self):
         self.stop.set()
         # Stop every dequeue loop before joining any provider's active lookup.
-        for consumer in self.consumers:
-            consumer.stop()
-        for consumer in self.consumers:
-            consumer.stop(graceful=True)
-        self.stack.close()
+        try:
+            for consumer in self.consumers:
+                consumer.stop()
+            for consumer in self.consumers:
+                consumer.join_started()
+        finally:
+            self.stack.close()
 
     def __exit__(self, exc_type, *_):
         self.close()

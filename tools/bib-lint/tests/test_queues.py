@@ -135,3 +135,28 @@ def test_infrastructure_failure_is_not_hidden_by_cancellation(tmp_path):
         assert "queue storage failed" in str(exc)
     except KeyboardInterrupt:
         pytest.fail("Cancellation hid the actual infrastructure failure")
+
+
+@pytest.mark.parametrize("started_threads", [0, 1, 2, 3])
+def test_partial_startup_preserves_error_releases_owner_and_joins_threads(
+    tmp_path, monkeypatch, started_threads
+):
+    before = set(threading.enumerate())
+    original_start = threading.Thread.start
+    attempts = []
+
+    def start(thread):
+        if len(attempts) == started_threads:
+            raise RuntimeError("unable to start new thread")
+        attempts.append(thread)
+        return original_start(thread)
+
+    providers = {name: METHODS[name] for name in ("pmlr", "arxiv")}
+    with monkeypatch.context() as patch:
+        patch.setattr(threading.Thread, "start", start)
+        with pytest.raises(RuntimeError, match="unable to start new thread"):
+            with ProviderQueues(tmp_path, lambda *args: {}, providers=providers):
+                pytest.fail("Startup must fail")
+    assert set(threading.enumerate()) == before
+    with ProviderQueues(tmp_path, lambda *args: {"ok": True}, providers=providers) as queues:
+        assert queues.submit({}, "pmlr", "search").get(blocking=True, timeout=5) == {"ok": True}
