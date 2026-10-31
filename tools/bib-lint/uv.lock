@@ -69,7 +69,7 @@ requires-dist = [
     { name = "cryptography", specifier = ">=48,<49" },
     { name = "defusedxml", specifier = ">=0.7,<1" },
     { name = "httpx", specifier = ">=0.28,<0.29" },
-    { name = "pdfplumber", specifier = ">=0.11.10,<0.12" },
+    { name = "pdfplumber", specifier = "==0.11.10" },
     { name = "pybtex", specifier = ">=0.26,<0.27" },
 ]
 

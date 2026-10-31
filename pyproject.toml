@@ -12,7 +12,7 @@ requires-python = ">=3.12"
 license = "MIT"
 dependencies = [
   "beautifulsoup4>=4.13,<5", "defusedxml>=0.7,<1", "httpx>=0.28,<0.29",
-  "pybtex>=0.26,<0.27", "pdfplumber>=0.11.10,<0.12", "cryptography>=48,<49", "Markdown>=3.7,<4", "bleach>=6.2,<7",
+  "pybtex>=0.26,<0.27", "pdfplumber==0.11.10", "cryptography>=48,<49", "Markdown>=3.7,<4", "bleach>=6.2,<7",
   "PyYAML>=6,<7", "markdownify>=1,<2",
 ]
 

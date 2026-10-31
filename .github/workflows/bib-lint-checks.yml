@@ -35,8 +35,12 @@ jobs:
       - run: uv run --locked --group dev ruff check . --select C901 --ignore-noqa
 
   package:
-    name: Installed standalone and shared packages
-    runs-on: ubuntu-latest
+    name: Installed packages (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -77,6 +81,7 @@ jobs:
         run: |
           PYTHONPATH=tests uv run --locked --group dev python -m pdf_e2e.build --compile --matrix baseline
           uv run --locked --group dev pytest -q -m pdf_e2e --pdf-matrix baseline --basetemp ../../.local/pdf-e2e/pytest-baseline --junitxml ../../.local/pdf-e2e/junit-baseline.xml
+          PYTHONPATH=tests uv run --locked --group dev python -m pdf_e2e.build --compile --matrix stress
           uv run --locked --group dev pytest -q -m pdf_e2e --pdf-matrix stress --basetemp ../../.local/pdf-e2e/pytest-stress --junitxml ../../.local/pdf-e2e/junit-stress.xml
       - name: Retain failure diagnostics
         if: failure()
@@ -87,6 +92,7 @@ jobs:
           path: |
             .local/pdf-e2e/projects/baseline.json
             .local/pdf-e2e/projects/acceptance.json
+            .local/pdf-e2e/projects/stress.json
             .local/pdf-e2e/projects/**/build.json
             .local/pdf-e2e/projects/**/pass-*.log
             .local/pdf-e2e/projects/**/container.log
