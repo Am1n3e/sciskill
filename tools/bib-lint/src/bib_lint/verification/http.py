@@ -25,6 +25,8 @@ class LookupFailure(Exception):
 
 def retry_delay(value, fallback=2):
     try:
+        if not re.fullmatch(r"[0-9]+", str(value).strip()):
+            raise ValueError("Retry-After is not a delta-seconds value")
         seconds = float(value)
     except (TypeError, ValueError):
         try:

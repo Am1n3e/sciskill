@@ -3,6 +3,8 @@
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
+import pytest
+
 from bib_lint.verification.providers import METHODS
 from bib_lint.verification.queues import ProviderQueues, RetryLookup
 
@@ -93,3 +95,43 @@ def test_abandoned_queue_work_is_rebuilt_from_checkpoint_not_replayed(tmp_path):
         result = queues.submit({}, "pmlr", "search").get(blocking=True, timeout=5)
     assert result == {"fresh": True}
     assert calls == []
+
+
+def test_huey_result_storage_failure_reaches_coordinator(tmp_path, monkeypatch):
+    with ProviderQueues(
+        tmp_path, lambda *args: {"ok": True}, providers={"pmlr": METHODS["pmlr"]}
+    ) as queues:
+
+        def fail(*args, **kwargs):
+            raise OSError("result storage is full")
+
+        monkeypatch.setattr(queues.queues["pmlr"], "put_result", fail)
+        queues.submit({}, "pmlr", "search")
+        failure = queues.failures.get(timeout=5)
+        queues.failures.put(failure)
+        with pytest.raises(OSError, match="storage is full"):
+            queues.check()
+
+
+def test_unrepresentable_retry_delay_does_not_orphan_a_task(tmp_path):
+    with ProviderQueues(
+        tmp_path,
+        lambda *args: (_ for _ in ()).throw(RetryLookup({"status": "error"}, delay=1e100)),
+        providers={"pmlr": METHODS["pmlr"]},
+    ) as queues:
+        assert queues.submit({}, "pmlr", "search").get(blocking=True, timeout=5) == {
+            "status": "error"
+        }
+
+
+def test_infrastructure_failure_is_not_hidden_by_cancellation(tmp_path):
+    try:
+        with ProviderQueues(
+            tmp_path, lambda *args: {}, providers={"pmlr": METHODS["pmlr"]}
+        ) as queues:
+            queues.failures.put(OSError("queue storage failed"))
+            raise KeyboardInterrupt
+    except OSError as exc:
+        assert "queue storage failed" in str(exc)
+    except KeyboardInterrupt:
+        pytest.fail("Cancellation hid the actual infrastructure failure")
