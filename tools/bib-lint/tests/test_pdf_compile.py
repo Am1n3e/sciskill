@@ -68,3 +68,31 @@ def test_cached_pdf_is_invalidated_when_output_changes(tmp_path):
     assert _cached(tmp_path, "recipe-v2") is None
     (tmp_path / "main.pdf").write_bytes(b"%PDF-1.5\nreplaced")
     assert _cached(tmp_path, "recipe-v1") is None
+
+
+def test_new_compiler_failure_cannot_reuse_old_negative_diagnostics(tmp_path, monkeypatch):
+    import json
+    import subprocess
+
+    from pdf_e2e.compiler import compile_project
+    from pdf_e2e.matrix import expected_failure
+
+    (tmp_path / "pass-2.log").write_text("Name 1 has a comma at the end")
+    recipe = {
+        "files": {},
+        "key_map": {"source": "ref0001"},
+        "toolchain": {
+            "platform": "linux/amd64",
+            "image": "pinned-image",
+            "commands": [["bibtex", "main"]],
+        },
+    }
+    (tmp_path / "recipe.json").write_text(json.dumps(recipe))
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *_a, **_k: subprocess.CompletedProcess([], 125, "", "image unavailable"),
+    )
+    with pytest.raises(ValueError, match="Compiler exited 125"):
+        compile_project(tmp_path)
+    assert not expected_failure(tmp_path, {"source": {"diagnostic": "has a comma at the end"}})

@@ -121,6 +121,8 @@ def compile_project(project: Path) -> dict:
     for suffix in ("aux", "bbl", "blg", "log", "pdf", "out", "brf"):
         (project / f"main.{suffix}").unlink(missing_ok=True)
     (project / "build.json").unlink(missing_ok=True)
+    for log in [*project.glob("pass-*.log"), project / "toolchain.txt", project / "container.log"]:
+        log.unlink(missing_ok=True)
     result = subprocess.run(
         _docker_command(project, recipe["toolchain"]), capture_output=True, text=True, timeout=240
     )
