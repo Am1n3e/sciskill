@@ -7,12 +7,11 @@ const { image, alt, caption, eager = false } = Astro.props;
   <a href={image.src} aria-label={`Open full-size screenshot: ${alt}`}>
     <img src={image.src} width={image.width} height={image.height} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" />
   </a>
-  <figcaption>{caption} <a href={image.src}>Full size ↗</a></figcaption>
+  <figcaption>{caption}</figcaption>
 </figure>
 
 <style>
   figure { margin: 24px 0; }
   img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 4px; }
   figcaption { font-size: 12px; color: var(--muted); line-height: 1.7; margin-top: 8px; }
-  figcaption a { white-space: nowrap; margin-left: 4px; }
 </style>

@@ -74,9 +74,8 @@ const cases = [
       />
       <GuideScreenshot image={results} eager
         alt="BibLint viewer with a summary table of 20 extracted and processed references, result counts, search filters, and the reference table immediately below."
-        caption="The summary covers the whole audit. Search and Needs attention filter the reference rows, not those totals. Select a title to expand its checks in place."
+        caption="The summary shows audit totals. Filter the reference list, then select a title to inspect its checks and source evidence."
       />
-      <p class="example-note">These screenshots show PDF test cases with recorded source responses and deliberately altered citations. Paths are shortened. Live results may differ; use citation keys from your own audit.</p>
     </section>
 
     <section id="findings">
@@ -144,8 +143,7 @@ const cases = [
   :global(.doc-content-wide) { max-width: none; min-width: 0; }
   section { scroll-margin-top: 24px; }
   .input-note { border-left: 2px solid var(--line); padding-left: 16px; font-size: 14px; }
-  .example-note, .boundary-note { font-size: 12px; }
-  .example-note { border-left: 2px solid var(--line); padding-left: 16px; }
+  .boundary-note { font-size: 12px; }
   details { border: 1px solid var(--line); border-radius: 4px; padding: 16px; margin: 12px 0; }
   summary { cursor: pointer; color: var(--ink); font-size: 13px; }
   summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 5px; }
