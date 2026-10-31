@@ -110,6 +110,8 @@ def _ready(reference, providers, save, progress):
     stop_search = step.strategy != "search" and resolved(result)
     next_index = reference.index + 1
     complete = stop_search or next_index == len(reference.steps)
+    # A failed checkpoint write must replay from disk, never merge this result twice.
+    reference.future = None
     save(
         reference.item,
         result,
@@ -117,7 +119,7 @@ def _ready(reference, providers, save, progress):
         complete,
         {"next": next_index, "resolved": stop_search, "redirects": reference.redirects.copy()},
     )
-    reference.index, reference.future = next_index, None
+    reference.index = next_index
     if progress:
         _source_progress(step.provider, result, progress)
         if complete:

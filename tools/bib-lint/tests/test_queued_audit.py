@@ -122,6 +122,40 @@ def test_interrupt_after_checkpoint_does_not_consume_the_same_result_twice(tmp_p
     assert report["verification_run"]["complete"]
 
 
+def test_checkpoint_write_failure_does_not_merge_a_completed_lookup_twice(tmp_path, monkeypatch):
+    from bib_lint import verification
+
+    bib = source(tmp_path)
+    requests, failures = [], []
+    write = verification._write_json
+
+    def fail_once(path, report):
+        result = report["items"][0]["validations"].get("correctness", {})
+        if result.get("complete") and not failures:
+            failures.append(True)
+            raise OSError("checkpoint disk failure")
+        return write(path, report)
+
+    def respond(request):
+        requests.append(request)
+        return httpx.Response(200, text=metadata())
+
+    client = MetadataClient(tmp_path / "audit/cache", transport=httpx.MockTransport(respond))
+    try:
+        monkeypatch.setattr(verification, "_write_json", fail_once)
+        with pytest.raises(OSError, match="checkpoint disk failure"):
+            run_audit(bib, output=tmp_path / "audit", client=client)
+        saved = json.loads((tmp_path / "audit/report.tmp.json").read_text())
+        assert "correctness" not in saved["items"][0]["validations"]
+        _, report, _ = run_audit(bib, output=tmp_path / "audit", client=client)
+    finally:
+        client.close()
+    method = report["items"][0]["validations"]["correctness"]["methods"][0]
+    assert len(requests) == len(method["requests"]) == len(method["lookup_history"]) == 1
+    assert method["requests"][0]["cached"]
+    assert "lookup_history" not in method["lookup_history"][0]
+
+
 def test_http_attempt_budget_covers_all_scheduled_retries(tmp_path):
     bib = source(tmp_path)
     requests = []
