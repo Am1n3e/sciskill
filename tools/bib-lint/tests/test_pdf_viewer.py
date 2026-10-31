@@ -156,3 +156,40 @@ def test_annotation_only_field_provenance_reloads_without_becoming_printed_text(
     assert detail["pdf"]["field_evidence"]["doi"] == [{"uri": 0}]
     assert "10.1234/example" not in detail["pdf"]["fragments"][0]["text"]
     assert detail["pdf"]["uris"][0]["uri"] == "https://doi.org/10.1234/example"
+
+
+def test_pdf_parse_only_runs_real_extraction_without_a_verification_job(tmp_path, monkeypatch):
+    from reportlab.pdfgen import canvas
+
+    from bib_lint.viewer.app import ViewerSession
+    from bib_lint.viewer.jobs import Registry
+
+    source = tmp_path / "research paper.PDF"
+    page = canvas.Canvas(str(source), pagesize=(612, 792), invariant=1)
+    page.setFont("Times-Roman", 10)
+    page.drawString(50, 740, "A paper about evaluation.")
+    page.setFont("Times-Bold", 12)
+    page.drawString(50, 680, "References")
+    page.setFont("Times-Roman", 10)
+    page.drawString(50, 660, "[1] Jane Smith. Example Paper. Example Journal, 2025.")
+    page.save()
+    original = source.read_bytes()
+    registry = Registry()
+
+    def unexpected_job(*args, **kwargs):
+        raise AssertionError("Parse only must not start source verification")
+
+    monkeypatch.setattr(registry, "start", unexpected_job)
+    output = tmp_path / "audit"
+    session = ViewerSession(registry)
+    state = session.action({"action": "parse", "bibliography": str(source), "output": str(output)})
+    assert state["error"] is None and state["job"] is None
+    assert state["summary"]["total"] == state["summary"]["eligible"] == 1
+    assert state["summary"]["completed"] == 0 and state["summary"]["used"] is None
+    assert state["summary"]["extraction"]["state"] == "complete"
+    detail = session.detail("pdf-ref-0001")
+    assert detail["entry"]["fields"]["title"] == "Example Paper"
+    assert detail["entry"]["fields"]["year"] == "2025"
+    assert detail["pdf"]["fragments"][0]["page"] == 1
+    assert not (output / "cache").exists()
+    assert source.read_bytes() == original
