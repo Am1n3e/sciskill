@@ -65,7 +65,18 @@ def extract_pdf(path, *, limits=None):
     ):
         raise PDFExtractionError("PDF resource limits must be positive numbers")
     raw = _read(path, limits)
-    command = [sys.executable, "-m", "bib_lint.pdf_input.worker", json.dumps(limits)]
+    bootstrap = (
+        "import runpy,sys; sys.path.insert(0,sys.argv.pop(1)); "
+        "runpy.run_module('bib_lint.pdf_input.worker',run_name='__main__')"
+    )
+    command = [
+        sys.executable,
+        "-P",
+        "-c",
+        bootstrap,
+        str(Path(__file__).resolve().parents[2]),
+        json.dumps(limits),
+    ]
     try:
         result = subprocess.run(
             command, input=raw, capture_output=True, timeout=limits["max_seconds"]

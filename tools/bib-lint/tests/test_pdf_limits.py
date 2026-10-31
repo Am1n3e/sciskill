@@ -137,3 +137,17 @@ def test_limit_settings_require_a_small_typed_mapping(tmp_path, limits):
     source = _paper(tmp_path / "paper.pdf")
     with pytest.raises(PDFExtractionError, match="limit"):
         extract_pdf(source, limits=limits)
+
+
+def test_worker_does_not_import_a_package_from_the_papers_directory(tmp_path, monkeypatch):
+    source = _paper(tmp_path / "paper.pdf")
+    impostor = tmp_path / "bib_lint"
+    impostor.mkdir()
+    (impostor / "__init__.py").write_text(
+        "from pathlib import Path\nPath('unexpected-import').write_text('executed')\n"
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("PYTHONPATH", raising=False)
+    report = extract_pdf(source)
+    assert len(report["items"]) == 1
+    assert not (tmp_path / "unexpected-import").exists()
