@@ -10,10 +10,10 @@ import httpx
 import pytest
 from pdf_e2e.build import CACHE, FIXTURES, read_json
 from pdf_e2e.isolation import pdf_only
-from pdf_e2e.oracles import expand_project, normalized, rendered_text
+from pdf_e2e.oracles import _locator_visible, expand_project, normalized
 from pdf_e2e.replay import ScholarlyReplay
 
-from bib_lint.audit import run_audit
+from bib_lint.cli import main
 from bib_lint.status import reference_status
 from bib_lint.verification.http import MetadataClient
 
@@ -27,7 +27,7 @@ def pytest_generate_tests(metafunc):
     if selected is None:
         metafunc.parametrize("project_case", [None])
         return
-    path = FIXTURES / "renderings.json"
+    path = FIXTURES / ("stress-renderings.json" if selected == "stress" else "renderings.json")
     if not path.exists():
         raise ValueError("Required independent rendering gold is missing")
     gold = read_json(path)
@@ -46,10 +46,15 @@ def pytest_generate_tests(metafunc):
 
 
 def _project_pdf(expected):
-    ledger = read_json(CACHE.parent / "projects/acceptance.json")
+    stress = expected["selection"]["variant"].startswith("stress-")
+    ledger = read_json(CACHE.parent / "projects" / ("stress.json" if stress else "acceptance.json"))
     if not ledger.get("complete"):
         raise ValueError("Required compiled-PDF matrix is incomplete; run pdf_e2e.build --compile")
-    builds = ledger["renderable_builds"] + ledger["renderable_counterparts"]
+    builds = (
+        ledger["builds"]
+        if stress
+        else ledger["renderable_builds"] + ledger["renderable_counterparts"]
+    )
     cell = next(
         (
             cell
@@ -69,9 +74,7 @@ def _project_pdf(expected):
 
 
 def _equivalent(left, right):
-    return normalized(unquote(rendered_text(str(left))[0])) == normalized(
-        unquote(rendered_text(str(right))[0])
-    )
+    return normalized(unquote(str(left))) == normalized(unquote(str(right)))
 
 
 def _assert_fields(item, expected):
@@ -93,6 +96,29 @@ def _assert_fields(item, expected):
                 "lost author",
                 author,
             )
+    if expected["case_id"].startswith(("rule-variants/", "adversarial/")) and not any(
+        author["kind"] == "literal" for author in expected["expected_authors"]
+    ):
+        people = item["entry"]["persons"].get("author", [])
+        assert len(people) == len(expected["expected_authors"]), (
+            expected["case_id"],
+            "structured author count",
+            people,
+            expected["expected_authors"],
+        )
+        for actual, author in zip(people, expected["expected_authors"], strict=True):
+            assert _equivalent(
+                " ".join(actual.get("first", []) + actual.get("middle", [])), author["given"]
+            ), (expected["case_id"], "given name", actual, author)
+            assert _equivalent(
+                " ".join(actual.get("prelast", []) + actual.get("last", [])), author["family"]
+            ), (expected["case_id"], "family name", actual, author)
+            assert _equivalent(" ".join(actual.get("lineage", [])), author["suffix"]), (
+                expected["case_id"],
+                "name suffix",
+                actual,
+                author,
+            )
     assert item["pdf"]["fragments"], (expected["case_id"], "missing original fragments")
     assert all(fragment["page"] >= 1 for fragment in item["pdf"]["fragments"])
 
@@ -102,6 +128,10 @@ def _assert_checks(item, expected):
     methods = correctness["methods"]
     for check in expected["required_checks"]:
         field = check["field"]
+        if field in {"arxiv", "doi", "pmlr", "jmlr", "acl", "openreview"} and not _locator_visible(
+            field, expected["visibility"]
+        ):
+            continue
         if field in {"year", "title"} and field not in expected["expected_fields"]:
             continue
         if field == "venue" and not any(
@@ -123,11 +153,35 @@ def _assert_checks(item, expected):
         assert any(c["result"] in check["results"] for c in comparisons) or (
             "unknown" in check["results"] and diagnostics
         ), (expected["case_id"], "required field finding", check, comparisons, diagnostics)
+    for issue in expected.get("required_issues", []):
+        field = issue["field"]
+        findings = [
+            finding
+            for finding in correctness.get("input_findings", [])
+            if finding["field"] == field
+        ]
+        mismatches = [
+            comparison
+            for method in methods
+            for comparison in method.get("comparisons", [])
+            if comparison["field"] == field and comparison["result"] == "mismatch"
+        ]
+        assert findings or mismatches, (expected["case_id"], "missing locator conflict", issue)
+    if expected["expected_statuses"]:
+        assert reference_status(item["validations"]) in expected["expected_statuses"], (
+            expected["case_id"],
+            "verdict",
+            reference_status(item["validations"]),
+            expected["expected_statuses"],
+            correctness.get("reason"),
+        )
     if item["pdf"]["diagnostics"]:
         assert reference_status(item["validations"]) != "Correct"
 
 
-def test_compiled_pdf_only_audits_every_rendered_reference(project_case, tmp_path, monkeypatch):
+def test_compiled_pdf_only_audits_every_rendered_reference(
+    project_case, tmp_path, monkeypatch, capsys
+):
     expected = project_case
     pdf = _project_pdf(expected)
     source = tmp_path / "paper.pdf"
@@ -136,15 +190,40 @@ def test_compiled_pdf_only_audits_every_rendered_reference(project_case, tmp_pat
     truth = read_json(FIXTURES / "truth.json")
     replay = ScholarlyReplay(truth["canonical_records"])
     output = tmp_path / "audit"
-    client = MetadataClient(output / "cache", transport=httpx.MockTransport(replay))
-    with pdf_only(monkeypatch, [FIXTURES, CACHE.parent / "projects"]):
-        workspace, report, _ = run_audit(source, output=output, client=client)
-    client.close()
+    original_init = MetadataClient.__init__
+
+    def with_transport(self, *args, **kwargs):
+        kwargs["transport"] = httpx.MockTransport(replay)
+        original_init(self, *args, **kwargs)
+
+    with monkeypatch.context() as transport_patch:
+        transport_patch.setattr(MetadataClient, "__init__", with_transport)
+        with pdf_only(monkeypatch, [FIXTURES, CACHE.parent / "projects"]):
+            code = main(["verify", str(source), "--output", str(output), "--json"])
+    envelope = json.loads(capsys.readouterr().out)
+    assert code == 0, envelope
+    assert envelope["status"] == "completed"
+    report_path = Path(envelope["report_path"])
+    report = read_json(report_path)
+    debug = CACHE.parent / "product-reports"
+    debug.mkdir(exist_ok=True)
+    (
+        debug
+        / (
+            expected["venue"]
+            + "-"
+            + expected["corpus"]
+            + "-"
+            + expected["pdf_sha256"][:12]
+            + ".json"
+        )
+    ).write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     assert report["schema_version"] == 4
+    assert report["extraction"]["document"]["pages"] == expected["pages"]
     assert report["verification_run"]["complete"] is True
     assert replay.unexpected == []
     assert source.read_bytes() == original
-    assert json.loads(workspace.final.read_text()) == report
+    assert report_path == output / "report.json"
     cases = [case for case in expected["cases"] if case["classification"] != "omitted"]
     assert len(report["items"]) == len(cases), (
         expected["venue"],
@@ -153,7 +232,12 @@ def test_compiled_pdf_only_audits_every_rendered_reference(project_case, tmp_pat
         len(report["items"]),
         len(cases),
     )
+    failures = []
     for index, (item, case) in enumerate(zip(report["items"], cases, strict=True), 1):
         assert item["entry"]["key"] == f"pdf-ref-{index:04d}"
-        _assert_fields(item, case)
-        _assert_checks(item, case)
+        for check in (_assert_fields, _assert_checks):
+            try:
+                check(item, case)
+            except AssertionError as error:
+                failures.append(str(error))
+    assert not failures, "\n".join(failures)
