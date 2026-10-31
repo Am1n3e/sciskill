@@ -33,14 +33,33 @@ EXTRAS = {
 }
 
 
-def build_bibliography(source: Path) -> tuple[str, dict]:
+def build_bibliography(source: Path, *, selected_keys: list[str] | None = None) -> tuple[str, dict]:
     """Substitute only entry headers, retaining fields, names, comments, and ordering."""
     original = parse_file(source)
-    key_map = {key: f"ref{index:04d}" for index, key in enumerate(original.entries, 1)}
+    selected = list(original.entries) if selected_keys is None else selected_keys
+    if len(set(selected)) != len(selected) or any(key not in original.entries for key in selected):
+        raise ValueError("Invalid bibliography selection")
+    key_map = {
+        key: f"ref{index:04d}" for index, key in enumerate(original.entries, 1) if key in selected
+    }
+    source_text = original.source_text
+    if selected_keys is not None:
+        headers = list(re.finditer(r"(?m)^@[A-Za-z]+\s*\{\s*([^,}\s]+)", source_text))
+        if {match[1] for match in headers} != set(original.entries):
+            raise ValueError("Cannot safely isolate this bibliography selection")
+        source_text = "\n".join(
+            source_text[
+                match.start() : headers[index + 1].start()
+                if index + 1 < len(headers)
+                else len(source_text)
+            ]
+            for index, match in enumerate(headers)
+            if match[1] in selected
+        )
     pattern = re.compile(r"(@[A-Za-z]+\s*\{\s*)([^,}\s]+)(\s*[,}])")
     text = pattern.sub(
         lambda match: match[1] + key_map.get(match[2], match[2]) + match[3],
-        original.source_text,
+        source_text,
     )
     return text, key_map
 
@@ -96,9 +115,18 @@ def paper_source(venue: dict, keys: list[str]) -> str:
 
 
 def create_project(
-    venue: dict, corpus: dict, asset_dir: Path, fixtures: Path, output: Path
+    venue: dict,
+    corpus: dict,
+    asset_dir: Path,
+    fixtures: Path,
+    output: Path,
+    *,
+    selected_keys: list[str] | None = None,
+    variant: str = "baseline",
 ) -> Path:
-    text, key_map = build_bibliography(fixtures / "corpora" / corpus["path"])
+    text, key_map = build_bibliography(
+        fixtures / "corpora" / corpus["path"], selected_keys=selected_keys
+    )
     files = {
         str(path.relative_to(asset_dir)): path.read_bytes()
         for path in asset_dir.rglob("*")
@@ -115,6 +143,11 @@ def create_project(
         "generator_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         "files": {name: hashlib.sha256(raw).hexdigest() for name, raw in sorted(files.items())},
         "key_map": key_map,
+        "selection": {
+            "variant": variant,
+            "included": list(key_map),
+            "excluded": [key for key in corpus["entry_keys"] if key not in key_map],
+        },
     }
     build_id = hashlib.sha256(json.dumps(recipe, sort_keys=True).encode()).hexdigest()
     project = output / venue["id"] / corpus["id"] / build_id

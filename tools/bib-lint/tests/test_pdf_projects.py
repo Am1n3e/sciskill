@@ -89,3 +89,29 @@ def test_vision_bibliography_uses_native_small_font(name):
     source = paper_source(venue, ["ref0001"])
     assert "{\\small\n\\bibliographystyle{ieeenat_fullname}" in source
     assert "\\bibliography{references}\n}" in source
+
+
+def test_explicit_subset_preserves_selected_metadata_and_records_exclusions(tmp_path):
+    import dataclasses
+
+    from pdf_e2e.projects import build_bibliography
+
+    source = FIXTURES / "corpora/adversarial.bib"
+    selected = ["adv_match_title_tex_emphasis", "adv_provider_shadowed_version_pin"]
+    text, key_map = build_bibliography(source, selected_keys=selected)
+    original = parse_file(source).entries
+    rendered = parse_string(text).entries
+    assert list(key_map) == selected
+    assert len(rendered) == 2
+    for old, new in key_map.items():
+        assert dataclasses.replace(original[old], key=new) == rendered[new]
+
+
+def test_subset_rejects_unknown_or_duplicate_source_keys():
+    from pdf_e2e.projects import build_bibliography
+
+    source = FIXTURES / "corpora/adversarial.bib"
+    with pytest.raises(ValueError, match="selection"):
+        build_bibliography(source, selected_keys=["missing"])
+    with pytest.raises(ValueError, match="selection"):
+        build_bibliography(source, selected_keys=["adv_match_title_tex_emphasis"] * 2)

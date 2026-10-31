@@ -8,7 +8,25 @@ from types import SimpleNamespace
 import pytest
 
 
-def pytest_collection_modifyitems(items):
+def pytest_addoption(parser):
+    parser.addoption(
+        "--pdf-matrix",
+        choices=("pilot", "baseline", "stress"),
+        default=None,
+        help="Run the selected compiled-PDF acceptance matrix (requires pinned assets/TeX)",
+    )
+
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "pdf_e2e: opt-in real compiled-paper acceptance tests")
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--pdf-matrix") is None:
+        heavy = [item for item in items if item.get_closest_marker("pdf_e2e")]
+        items[:] = [item for item in items if item not in heavy]
+        config.hook.pytest_deselected(items=heavy)
+
     for item in items:
         name = Path(str(item.fspath)).name
         category = (

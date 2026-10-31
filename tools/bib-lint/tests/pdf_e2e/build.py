@@ -11,6 +11,7 @@ from pathlib import Path
 from bib_lint.parser import parse_file
 from pdf_e2e.assets import prepare_asset
 from pdf_e2e.compiler import compile_project
+from pdf_e2e.matrix import complete_matrix
 from pdf_e2e.projects import create_project
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures/pdf"
@@ -127,12 +128,16 @@ def main() -> None:
             for name, pin in manifest["assets"].items()
         }
     if args.compile:
-        result["compilation"] = compile_baseline(args.cache, args.output)
+        baseline = compile_baseline(args.cache, args.output)
+        result["compilation"] = complete_matrix(
+            baseline,
+            read_json(FIXTURES / "templates.json"),
+            read_json(FIXTURES / "corpora/manifest.json")["corpora"],
+            args.cache,
+            args.output,
+        )
     print(json.dumps(result))
-    if (
-        args.compile
-        and result["compilation"]["compiled"] != result["compilation"]["required_builds"]
-    ):
+    if args.compile and not result["compilation"]["complete"]:
         raise SystemExit(1)
 
 
