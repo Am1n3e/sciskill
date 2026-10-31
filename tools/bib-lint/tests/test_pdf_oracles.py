@@ -128,21 +128,22 @@ def test_literal_person_braces_are_erased_but_full_name_survives_initial_styles(
     assert expected_statuses(case, "icml", {"title": "text", "year": "text"}) == ["Partial match"]
 
 
-def test_version_pin_erasure_is_physical_and_changes_verdict_without_dropping_checks():
+def test_locator_erasure_is_physical_and_changes_verdict_without_dropping_checks():
     from pdf_e2e.build import FIXTURES, read_json
-    from pdf_e2e.oracles import _required_checks, expected_statuses, version_pin_visible
+    from pdf_e2e.oracles import _required_checks, arxiv_locator_visible, expected_statuses
 
     uri = "https://arxiv.org/abs/2406.12276v1"
-    assert version_pin_visible("arXiv:2406.12276v1", [], [])
-    assert version_pin_visible("Visible title", [uri], [uri])
-    assert not version_pin_visible("Visible title", [uri], [])
+    assert arxiv_locator_visible("arXiv:2406.12276v1", [], [])
+    assert arxiv_locator_visible("arXiv:2406.12276", [], [])
+    assert arxiv_locator_visible("Visible title", [uri], [uri])
+    assert not arxiv_locator_visible("Visible title", [uri], [])
     case = next(
         c
         for c in read_json(FIXTURES / "truth.json")["cases"]
         if c["citation_key"] == "case_year_wrong"
     )
     assert expected_statuses(
-        case, "ijcai", {"title": "text", "year": "text"}, arxiv_pin_erased=True
+        case, "ijcai", {"title": "text", "year": "text"}, arxiv_locator_erased=True
     ) == ["Needs review"]
     assert {"field": "year", "results": ["mismatch"]} in _required_checks(case, "ijcai")
 
@@ -299,4 +300,73 @@ def test_printed_doi_must_survive_complete_not_just_prefix_or_annotation():
     with pytest.raises(AssertionError, match="doi"):
         _assert_fields(item, expected)
     item["entry"]["fields"]["doi"] += ".58"
+    _assert_fields(item, expected)
+
+
+def test_unlinked_title_candidate_requires_precise_review_and_stays_unselected():
+    import copy
+
+    import pytest
+    from test_pdf_e2e import _assert_candidate_review
+
+    expected = {
+        "case_id": "controlled/title",
+        "candidate_review": {"input": "CodeNav Revisited", "found": "CodeNav", "source": "arxiv"},
+    }
+    finding = {
+        "field": "title",
+        "code": "candidate_title_discrepancy",
+        "input": "CodeNav Revisited",
+        "found": "CodeNav",
+        "result": "unknown",
+    }
+    item = {
+        "pdf": {"fragments": []},
+        "validations": {
+            "correctness": {
+                "input_findings": [finding],
+                "canonical_ref": None,
+                "methods": [
+                    {
+                        "name": "arxiv",
+                        "status": "not_found",
+                        "found_ref": None,
+                        "rejected_candidates": [{"title": "CodeNav"}],
+                    }
+                ],
+            }
+        },
+    }
+    _assert_candidate_review(item, expected)
+    for changed in ({"code": "unrelated"}, {"found": "Different"}, {"result": "mismatch"}):
+        wrong = copy.deepcopy(item)
+        wrong["validations"]["correctness"]["input_findings"][0].update(changed)
+        with pytest.raises(AssertionError, match="candidate"):
+            _assert_candidate_review(wrong, expected)
+    wrong = copy.deepcopy(item)
+    wrong["validations"]["correctness"]["canonical_ref"] = {"title": "CodeNav"}
+    with pytest.raises(AssertionError, match="candidate"):
+        _assert_candidate_review(wrong, expected)
+
+
+def test_only_others_needs_an_explicit_missing_authors_diagnostic():
+    import pytest
+    from test_pdf_e2e import _assert_fields
+
+    expected = {
+        "case_id": "controlled/others",
+        "expected_fields": {},
+        "expected_authors": [{"given": "", "family": "others", "suffix": "", "kind": "others"}],
+    }
+    item = {
+        "entry": {"fields": {}, "persons": {"author": [{"last": ["others"]}]}},
+        "pdf": {
+            "text": "others. A title.",
+            "fragments": [{"page": 1, "text": "others. A title."}],
+            "diagnostics": [{"code": "unrelated", "fields": ["authors"]}],
+        },
+    }
+    with pytest.raises(AssertionError, match="missing_authors"):
+        _assert_fields(item, expected)
+    item["pdf"]["diagnostics"][0]["code"] = "missing_authors"
     _assert_fields(item, expected)

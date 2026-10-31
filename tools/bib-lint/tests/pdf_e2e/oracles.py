@@ -30,6 +30,7 @@ RELEVANT_FIELDS = (
 )
 INITIAL_FAMILIES = {"icml", "aaai", "aistats", "eccv"}
 NUMBERED_FAMILIES = {"cvpr", "eccv"}
+LOCATOR_FIELDS = set(RELEVANT_FIELDS) - {"title", "year", "journal", "booktitle"}
 
 
 def normalized(value):
@@ -231,8 +232,8 @@ def _locator_visible(field, visibility):
     )
 
 
-def expected_statuses(case, family, visibility, *, arxiv_pin_erased=False):
-    if arxiv_pin_erased:
+def expected_statuses(case, family, visibility, *, arxiv_locator_erased=False):
+    if arxiv_locator_erased:
         return ["Needs review"]
     source = case.get("source_expectation", {})
     status = source.get("reference_status")
@@ -301,9 +302,9 @@ def typeset_locator_issues(targets, actual_uris):
     return [{"field": "doi", "code": "typeset_nested_doi_url"}] if bad else []
 
 
-def version_pin_visible(text, targets, actual_uris):
+def arxiv_locator_visible(text, targets, actual_uris):
     visible = [text, *(target for target in targets if target in actual_uris)]
-    return any(re.search(r"\b\d{4}\.\d{4,5}v[1-9]\d*", value) for value in visible)
+    return any(re.search(r"\b\d{4}\.\d{4,5}(?:v[1-9]\d*)?", value) for value in visible)
 
 
 def _case_expectation(case, entry, family, body, actual_uris=(), *, arxiv_primary=False):
@@ -341,7 +342,12 @@ def _case_expectation(case, entry, family, body, actual_uris=(), *, arxiv_primar
         "author_structure_visible": author_structure_visible(
             [_person(person, False) for person in entry.persons.get("author", ())]
         ),
-        "arxiv_pin_erased": arxiv_primary and not version_pin_visible(text, targets, actual_uris),
+        "arxiv_locator_erased": arxiv_primary
+        and not arxiv_locator_visible(text, targets, actual_uris),
+        "identity_locator_erased": case["citation_key"] == "case_title_typo"
+        and not any(
+            visibility.get(field) in {"text", "annotation_only"} for field in LOCATOR_FIELDS
+        ),
     }
 
 
@@ -435,7 +441,8 @@ def compact_oracles(gold):
         "anchor": "independent physical page and tight first-line box in points",
         "authors_shown": "native style prints this many source authors, followed by others",
         "author_grouping_erased": "source name groups or suffixes look like author separators",
-        "arxiv_pin_erased": "native text and actual URI actions retain no arXiv version pin",
+        "arxiv_locator_erased": "native text and actual URI actions retain no arXiv locator",
+        "identity_locator_erased": "no identifier establishes which work has the disputed title",
         "issues": "native typesetter locator defects confirmed by actual PDF URI actions",
     }
     compact["projects"] = []
@@ -463,8 +470,10 @@ def compact_oracles(gold):
                 row["authors_shown"] = len(case["expected_authors"]) - 1
             if not case["author_structure_visible"]:
                 row["author_grouping_erased"] = True
-            if case["arxiv_pin_erased"]:
-                row["arxiv_pin_erased"] = True
+            if case["arxiv_locator_erased"]:
+                row["arxiv_locator_erased"] = True
+            if case["identity_locator_erased"]:
+                row["identity_locator_erased"] = True
             result["cases"].append(row)
         compact["projects"].append(result)
     return compact
@@ -516,7 +525,7 @@ def expand_project(project, truth):
                     case,
                     project["family"],
                     visibility,
-                    arxiv_pin_erased=row.get("arxiv_pin_erased", False),
+                    arxiv_locator_erased=row.get("arxiv_locator_erased", False),
                 ),
                 "required_issues": required_issues(case, visibility),
                 "canonical_records": case["canonical_records"],
@@ -543,6 +552,13 @@ def expand_project(project, truth):
             rendered["required_issues"].extend(
                 {"field": issue["field"], "requirement": issue["code"]} for issue in row["issues"]
             )
+        if row.get("identity_locator_erased"):
+            record = truth["canonical_records"][case["canonical_records"][0]]
+            expanded["cases"][-1]["candidate_review"] = {
+                "input": rendered_text(entry.fields["title"])[0],
+                "found": record["metadata"]["title"],
+                "source": record["provider"],
+            }
     return expanded
 
 

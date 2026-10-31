@@ -120,6 +120,14 @@ def _assert_anchor(item, expected):
 
 def _assert_fields(item, expected):
     fields = item["entry"]["fields"]
+    if expected["expected_authors"] and all(
+        author["kind"] == "others" for author in expected["expected_authors"]
+    ):
+        assert any(
+            diagnostic.get("code") == "missing_authors"
+            and "authors" in diagnostic.get("fields", [])
+            for diagnostic in item["pdf"].get("diagnostics", [])
+        ), (expected["case_id"], "missing_authors diagnostic for an others-only author list")
     if "doi" in expected["expected_fields"] and not any(
         issue.get("requirement") == "typeset_nested_doi_url"
         for issue in expected.get("required_issues", [])
@@ -212,11 +220,43 @@ def _assert_primary_check(methods, check, expected):
         )
 
 
+def _assert_candidate_review(item, expected):
+    if not expected.get("candidate_review"):
+        return
+    target = expected["candidate_review"]
+    correctness = item["validations"]["correctness"]
+    assert any(
+        finding.get("field") == "title"
+        and finding.get("code") == "candidate_title_discrepancy"
+        and finding.get("result") == "unknown"
+        and _equivalent(finding.get("input"), target["input"], item["pdf"]["fragments"])
+        and _equivalent(finding.get("found"), target["found"])
+        for finding in correctness.get("input_findings", [])
+    ), (expected["case_id"], "precise candidate title review", target)
+    assert correctness.get("canonical_ref") is None, (
+        expected["case_id"],
+        "candidate identity remains unselected",
+    )
+    assert any(
+        method["name"] == target["source"]
+        and method["status"] == "not_found"
+        and not method.get("found_ref")
+        and any(
+            _equivalent(candidate.get("title"), target["found"])
+            for candidate in method.get("rejected_candidates", [])
+        )
+        for method in correctness["methods"]
+    ), (expected["case_id"], "candidate remains rejected", target)
+
+
 def _assert_checks(item, expected):
     correctness = item["validations"]["correctness"]
     methods = correctness["methods"]
+    _assert_candidate_review(item, expected)
     for check in expected["required_checks"]:
         field = check["field"]
+        if field == "title" and expected.get("candidate_review"):
+            continue  # Exact disputed input/found evidence is checked above; identity was erased.
         if field in {"arxiv", "doi", "pmlr", "jmlr", "acl", "openreview"} and not _locator_visible(
             field, expected["visibility"]
         ):
