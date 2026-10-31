@@ -113,6 +113,23 @@ def _row(words, page, column):
     }
 
 
+def _without_numbered_headers(words, page):
+    removed = set()
+    for row in _rows(words):
+        if len(row) < 2 or row[0]["top"] >= page.height * 0.15:
+            continue
+        ends = (
+            (row[0], row[1]["x0"] - row[0]["x1"]),
+            (row[-1], row[-1]["x0"] - row[-2]["x1"]),
+        )
+        if any(
+            number["text"] == str(page.page_number) and gap > max(12, number["size"] * 2)
+            for number, gap in ends
+        ):
+            removed.update(id(word) for word in row)
+    return [word for word in words if id(word) not in removed]
+
+
 def page_lines(page, number_styles=None):
     words = page.extract_words(
         x_tolerance=1.5, y_tolerance=2, extra_attrs=["fontname", "size"], expand_ligatures=False
@@ -130,6 +147,7 @@ def page_lines(page, number_styles=None):
         ],
         number_styles,
     )
+    words = _without_numbered_headers(words, page)
     gutter = _gutter(words, page.width)
     columns = (
         [[w for w in words if (w["x0"] >= gutter) == bool(side)] for side in (0, 1)]
