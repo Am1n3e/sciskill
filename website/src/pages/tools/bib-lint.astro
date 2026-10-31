@@ -62,20 +62,12 @@ const cases = [
 
     <section id="start">
       <h2>1. Check your references</h2>
-      <p>Use a local PDF with selectable text. BibLint checks its reference list and saves a resumable audit; your input stays unchanged.</p>
+      <p>Check <code>paper.pdf</code> or <code>references.bib</code> with the same command.</p>
+      <p class="input-note"><strong>Recommended:</strong> Use the <code>.bib</code> file when available to avoid PDF extraction issues.</p>
       <UsageCommands
         agent={'/sciskill bib-lint paper.pdf\nSave the audit in paper-audit.'}
         cli={'uvx sciskill bib-lint verify paper.pdf \\\n  --output paper-audit --json'}
       />
-      <p class="setup-note">Agent setup: <a href={`${base}getting-started/`}>install SciSkill</a>. Direct CLI: requires <code>uv</code>, Python 3.12+, and macOS/Linux.</p>
-      <details class="input-alternative">
-        <summary>Using a BibTeX file?</summary>
-        <UsageCommands
-          agent={'/sciskill bib-lint references.bib\nSave the audit in references-audit.'}
-          cli={'uvx sciskill bib-lint verify references.bib \\\n  --output references-audit --json'}
-        />
-        <p>Add <code>--aux paper.aux</code> to check only cited BibTeX entries. Without AUX, all entries are checked; citation usage is unknown. PDF input always checks all extracted occurrences.</p>
-      </details>
     </section>
 
     <section id="viewer">
@@ -84,7 +76,6 @@ const cases = [
         agent="Open the BibLint report in paper-audit so I can inspect the findings."
         cli="uvx sciskill bib-lint view paper-audit"
       />
-      <p class="setup-note">For the BibTeX example, open <code>references-audit</code> instead of <code>paper-audit</code>.</p>
       <GuideScreenshot image={results} eager
         alt="BibLint viewer with a summary table of 20 extracted and processed references, result counts, search filters, and the reference table immediately below."
         caption="The summary covers the whole audit. Search and Needs attention filter the reference rows, not those totals. Select a title to expand its checks in place."
@@ -157,7 +148,8 @@ const cases = [
   :global(.doc-content-wide) { max-width: none; min-width: 0; }
   .guide-jumps { display: flex; gap: 12px 24px; flex-wrap: wrap; margin-bottom: 28px; font-size: 12px; }
   section { scroll-margin-top: 24px; }
-  .setup-note, .example-note, .boundary-note { font-size: 12px; }
+  .input-note { border-left: 2px solid var(--line); padding-left: 16px; font-size: 14px; }
+  .example-note, .boundary-note { font-size: 12px; }
   .example-note { border-left: 2px solid var(--line); padding-left: 16px; }
   details { border: 1px solid var(--line); border-radius: 4px; padding: 16px; margin: 12px 0; }
   summary { cursor: pointer; color: var(--ink); font-size: 13px; }
