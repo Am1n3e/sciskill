@@ -138,3 +138,21 @@ def test_pdf_report_reload_exposes_coverage_and_evidence_without_lookups(tmp_pat
     assert detail["pdf"]["fragments"][0]["page"] == 2
     assert detail["pdf"]["uris"][0]["uri"].startswith("javascript:")
     assert not (tmp_path / "cache").exists()
+
+
+def test_annotation_only_field_provenance_reloads_without_becoming_printed_text(tmp_path):
+    from bib_lint.viewer.app import ViewerSession
+    from bib_lint.viewer.jobs import Registry
+
+    report = pdf_report()
+    item = report["items"][0]
+    item["entry"]["fields"]["doi"] = "10.1234/example"
+    item["pdf"]["uris"][0]["uri"] = "https://doi.org/10.1234/example"
+    item["pdf"]["field_evidence"]["doi"] = [{"uri": 0}]
+    seal_extraction(report)
+    path = tmp_path / "report.json"
+    path.write_text(json.dumps(report))
+    detail = ViewerSession(Registry(), path).detail("pdf-ref-0001")
+    assert detail["pdf"]["field_evidence"]["doi"] == [{"uri": 0}]
+    assert "10.1234/example" not in detail["pdf"]["fragments"][0]["text"]
+    assert detail["pdf"]["uris"][0]["uri"] == "https://doi.org/10.1234/example"
