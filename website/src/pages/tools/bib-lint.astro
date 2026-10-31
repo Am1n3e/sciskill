@@ -52,17 +52,17 @@ const cases = [
 ---
 <DocLayout wide frontmatter={{
   title: 'BibLint, in practice',
-  description: 'Check a PDF reference list or BibTeX file. Open the results. Follow each finding back to its evidence.',
+  description: 'Check a BibTeX file or a PDF reference list. Open the results. Follow each finding back to its evidence.',
   eyebrow: 'SciSkill / Reference auditing',
 }}>
   <div class="bib-lint-guide">
     <section id="start">
       <h2>1. Check your references</h2>
-      <p>Check <code>paper.pdf</code> or <code>references.bib</code> with the same command.</p>
+      <p>Check <code>references.bib</code>, or use <code>paper.pdf</code> instead.</p>
       <p class="input-note"><strong>Recommended:</strong> Use the <code>.bib</code> file when available to avoid PDF extraction issues.</p>
       <UsageCommands
-        agent={'/sciskill bib-lint paper.pdf\nSave the audit in paper-audit.'}
-        cli={'uvx sciskill bib-lint verify paper.pdf \\\n  --output paper-audit --json'}
+        agent={'/sciskill bib-lint references.bib\nSave the audit in paper-audit.'}
+        cli={'uvx sciskill bib-lint verify references.bib \\\n  --output paper-audit --json'}
       />
     </section>
 
@@ -76,7 +76,7 @@ const cases = [
         alt="BibLint viewer with a summary table of 20 extracted and processed references, result counts, search filters, and the reference table immediately below."
         caption="The summary covers the whole audit. Search and Needs attention filter the reference rows, not those totals. Select a title to expand its checks in place."
       />
-      <p class="example-note">These screenshots use public-reference test cases with recorded source responses and deliberately altered citations. Paths are shortened. Live results may differ; the example keys below are not keys for your own PDF.</p>
+      <p class="example-note">These screenshots show PDF test cases with recorded source responses and deliberately altered citations. Paths are shortened. Live results may differ; use citation keys from your own audit.</p>
     </section>
 
     <section id="findings">
@@ -131,8 +131,8 @@ const cases = [
       <h2>4. Recheck one reference</h2>
       <p>Rerunning the original audit resumes unfinished work and preserves saved outcomes. Use <code>--refresh</code> to fetch sources again; <code>--key</code> limits the recheck.</p>
       <UsageCommands
-        agent="Retry the source lookups for pdf-ref-0019 in paper-audit and show me what changed."
-        cli={'uvx sciskill bib-lint verify paper.pdf \\\n  --output paper-audit \\\n  --key pdf-ref-0019 --refresh --json'}
+        agent="Retry the source lookups for lambert2024tulu in paper-audit and show me what changed."
+        cli={'uvx sciskill bib-lint verify references.bib \\\n  --output paper-audit \\\n  --key lambert2024tulu --refresh --json'}
       />
       <p class="boundary-note">A finished audit does not certify complete PDF extraction. Review extraction warnings; scanned reference lists need OCR outside BibLint. Metadata checks do not establish whether a paper supports your scientific claim.</p>
       <p><a href="https://github.com/Am1n3e/sciskill/blob/main/tools/bib-lint/README.md">Full CLI reference</a> · <a href={`${base}evaluation/`}>Evaluation &amp; limitations</a></p>
