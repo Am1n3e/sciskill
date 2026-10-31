@@ -182,7 +182,7 @@ class PackageTests(unittest.TestCase):
                     with urllib.request.urlopen(
                         f"http://127.0.0.1:{port}/", timeout=1
                     ) as page:
-                        self.assertIn("Science Skills", page.read().decode())
+                        self.assertIn("SciSkill" if tool == "bib-lint" else "Science Skills", page.read().decode())
                     if after_ready:
                         after_ready(f"http://127.0.0.1:{port}")
                     return

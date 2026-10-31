@@ -1,0 +1,91 @@
+---
+import DocLayout from '../../layouts/DocLayout.astro';
+import UsageCommands from '../../components/UsageCommands.astro';
+import GuideScreenshot from '../../components/GuideScreenshot.astro';
+import results from '../../assets/bib-lint/results.jpg';
+import valid from '../../assets/bib-lint/valid.jpg';
+import invalid from '../../assets/bib-lint/invalid.jpg';
+import unresolved from '../../assets/bib-lint/unresolved.jpg';
+const cases = [
+  {
+    id: 'invalid', status: 'Invalid', title: 'A source demonstrates a mismatch',
+    text: 'A source demonstrates a metadata mismatch. Here the citation says 2025; the arXiv record says 2024.',
+    image: invalid,
+    alt: 'Expanded Invalid Tulu reference showing a suggested year correction from 2025 to 2024 and the arXiv evidence link.',
+    caption: 'Open the source link next to the suggested value before editing your reference.',
+  },
+  {
+    id: 'valid', status: 'Valid', title: 'The checked metadata matches',
+    text: 'The checked citation fields match the retrieved record.',
+    image: valid,
+    alt: 'Expanded Valid reference with matching title, authors, year, and arXiv identifier, plus one arXiv source check.',
+    caption: 'The comparison shows which values match and the source used to verify them.',
+  },
+  {
+    id: 'unresolved', status: 'Unresolved', title: 'Could not verify confidently',
+    text: 'A missing record, uncertain field, or incomplete author list prevents a validity decision. This does not mean the reference is invalid.',
+    image: unresolved,
+    alt: 'Expanded Unresolved reference showing uncertain author names and a PMLR source record.',
+    caption: 'Compare the author names with the linked source to resolve the uncertainty.',
+  },
+];
+---
+<DocLayout wide frontmatter={{
+  title: 'BibLint, in practice',
+  description: 'Check a BibTeX file or a PDF reference list. Open the results. Follow each finding back to its evidence.',
+  eyebrow: 'SciSkill / Reference auditing',
+}}>
+  <div class="bib-lint-guide">
+    <section id="start">
+      <h2>1. Check your references</h2>
+      <p>Check <code>references.bib</code>, or use <code>paper.pdf</code> instead.</p>
+      <p class="input-note"><strong>Recommended:</strong> Use the <code>.bib</code> file when available to avoid PDF extraction issues.</p>
+      <UsageCommands
+        agent={'/sciskill bib-lint references.bib\nSave the audit in paper-audit.'}
+        cli={'uvx sciskill bib-lint verify references.bib \\\n  --output paper-audit --json'}
+      />
+    </section>
+
+    <section id="viewer">
+      <h2>2. Open the results</h2>
+      <UsageCommands
+        agent="Open the BibLint viewer."
+        cli="uvx sciskill bib-lint view paper-audit"
+      />
+      <GuideScreenshot image={results} eager
+        alt="BibLint viewer with a summary table of 20 extracted and processed references, result counts, search filters, and the reference table immediately below."
+        caption="The summary shows audit totals. Filter the reference list, then select a title to inspect its checks and source evidence."
+      />
+    </section>
+
+    <section id="findings">
+      <h2>3. Read a finding</h2>
+      <p>Each processed reference is <strong>Valid</strong>, <strong>Invalid</strong>, or <strong>Unresolved</strong>. Select its title to see the reason and source comparison.</p>
+      {cases.map(example => (
+        <details class="finding-example" id={example.id} open={example.id === 'invalid'}>
+          <summary><span class={`finding-status ${example.id}`}>{example.status}</span><span>{example.title}</span></summary>
+          <p>{example.text}</p>
+          <GuideScreenshot image={example.image} alt={example.alt} caption={example.caption} />
+        </details>
+      ))}
+
+    </section>
+  </div>
+</DocLayout>
+
+<style>
+  :global(.doc-content-wide) { max-width: none; min-width: 0; }
+  section { scroll-margin-top: 24px; }
+  .input-note { border-left: 2px solid var(--line); padding-left: 16px; font-size: 14px; }
+  details { border: 1px solid var(--line); border-radius: 4px; padding: 16px; margin: 12px 0; }
+  summary { cursor: pointer; color: var(--ink); font-size: 13px; }
+  summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 5px; }
+  .finding-status { display: inline-block; font-size: 12px; font-weight: 650; margin: 0 12px 0 6px; }
+  .valid { color: #246048; }
+  .invalid { color: #9d2940; }
+  .unresolved { color: #684790; }
+  @media (max-width: 760px) {
+    details { padding: 12px; }
+    summary { line-height: 1.8; }
+  }
+</style>

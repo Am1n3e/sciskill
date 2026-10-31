@@ -81,11 +81,26 @@ def note(item):
         {d["field"] for m in result.get("methods", []) for d in m.get("differences", [])}
     )
     errors = [m["name"] for m in result.get("methods", []) if m.get("status") == "error"]
-    parts = (
-        ["Check " + ", ".join(differences)]
-        if differences
-        else [result.get("reason", "Review evidence")]
+    findings = list(
+        dict.fromkeys(f"{f['field']}: {f['message']}" for f in result.get("input_findings", []))
     )
+    unverified = sorted(
+        {
+            c["field"]
+            for m in result.get("methods", [])
+            if m.get("authority")
+            for c in m.get("comparisons", [])
+            if c["result"] == "unknown"
+        }
+    )
+    if differences:
+        parts = ["Check " + ", ".join(differences)] + findings
+    elif findings:
+        parts = findings
+    elif unverified:
+        parts = ["Unverified: " + ", ".join(unverified)]
+    else:
+        parts = [result.get("reason", "Review evidence")]
     if errors:
         parts.append("Unavailable: " + ", ".join(errors))
     return "; ".join(parts)
@@ -132,16 +147,21 @@ def table_rows(report):
 def display(value):
     if value is None or value == "" or value == []:
         return "—"
-    if isinstance(value, list) and all(isinstance(v, dict) for v in value):
+    if isinstance(value, list) and all(isinstance(v, dict) and "family" in v for v in value):
         return "; ".join(
             " ".join(str(v.get(k) or "") for k in ("given", "family", "suffix")).strip()
             for v in value
         )
+    if isinstance(value, list) and all(
+        isinstance(v, dict) and {"field", "value"} <= v.keys() for v in value
+    ):
+        return "; ".join(f"{v['field']}: {v['value']}" for v in value)
     return json.dumps(value, ensure_ascii=False) if isinstance(value, (dict, list)) else str(value)
 
 
 def comparison_rows(item, show_matches=False):
     original = input_record(item["entry"])
+    agent_url = next((e["url"] for e in item.get("agent_review", {}).get("evidence", [])), None)
     rows = []
     for comparison in item["validations"].get("correctness", {}).get("input_findings", []):
         rows.append(
@@ -164,6 +184,7 @@ def comparison_rows(item, show_matches=False):
             rows.append(
                 {
                     "Source": method["name"],
+                    "URL": source_url(method),
                     "Field": comparison["field"],
                     "Status": field_status(state),
                     "Your value": display(comparison.get("input")),
@@ -176,6 +197,7 @@ def comparison_rows(item, show_matches=False):
         rows.append(
             {
                 "Source": "agent",
+                "URL": agent_url,
                 "Field": comparison["field"],
                 "Status": field_status(comparison["result"]),
                 "Your value": display(comparison.get("input")),
@@ -187,12 +209,14 @@ def comparison_rows(item, show_matches=False):
 
 def suggestions(item):
     result = item["validations"].get("correctness", {})
+    agent_url = next((e["url"] for e in item.get("agent_review", {}).get("evidence", [])), None)
     agent_rows = [
         {
             "Field": c["field"],
             "Current": display(c.get("input")),
             "Suggested": display(c["found"]),
             "Source": "agent",
+            "URL": agent_url,
         }
         for c in item.get("agent_review", {}).get("comparisons", [])
         if c["result"] == "mismatch" and c.get("found") is not None
@@ -217,9 +241,18 @@ def suggestions(item):
                     "Current": display(difference.get("input")),
                     "Suggested": display(difference["found"]),
                     "Source": method["name"],
+                    "URL": source_url(method),
                 }
             )
     return rows
+
+
+def source_url(method):
+    return (
+        method.get("source_url")
+        or (method.get("found_ref") or {}).get("url")
+        or method.get("redirect_url")
+    )
 
 
 def source_rows(methods):
@@ -229,8 +262,10 @@ def source_rows(methods):
     return [
         {
             "Source": m["name"],
-            "Status": [source_status(m["status"])],
-            "URL": m.get("source_url") or (m.get("found_ref") or {}).get("url"),
+            "Name": m.get("display_name") or m["name"],
+            "Status": ["Resolved" if m.get("redirect_url") else source_status(m["status"])],
+            "URL": source_url(m),
+            "Lookup": lookup_label(m),
             "Revision": m.get("adapter_version", ""),
             "Search scope": "; ".join(
                 dict.fromkeys(a["scope"] for a in m.get("lookup_provenance", []))
@@ -239,6 +274,19 @@ def source_rows(methods):
         }
         for m in methods
     ]
+
+
+def lookup_label(method):
+    if method.get("status") == "error" and method.get("requests") == []:
+        return "Not queried"
+    history = method.get("lookup_history", [])
+    strategy = history[-1].get("strategy") if history else None
+    return {
+        "url": "Supplied link",
+        "identifier": "Supplied identifier",
+        "resolve": "DOI resolution",
+        "search": "Source search",
+    }.get(strategy, "Saved source check")
 
 
 def cache_entries(cache_dir, citation_key):

@@ -100,7 +100,8 @@ def test_pending_extraction_warning_already_needs_attention():
     report = pdf_report()
     report["items"][0]["validations"].pop("correctness")
     row = reference_rows(report)[0]
-    assert row["Status"] == "Pending"
+    assert row["Status"] is None
+    assert row["progress"] == "pending"
     assert row["needs_attention"] is True
     assert "title boundary" in row["Note"]
 

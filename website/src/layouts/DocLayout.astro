@@ -1,7 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-interface Props { frontmatter: { title: string; description: string; eyebrow?: string; }; }
-const { frontmatter } = Astro.props;
+interface Props { frontmatter: { title: string; description: string; eyebrow?: string; }; wide?: boolean; }
+const { frontmatter, wide = false } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 ---
 <BaseLayout title={`${frontmatter.title} — Science Skills`} description={frontmatter.description}>
@@ -14,7 +14,7 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
       <a href={`${base}evaluation/`}>Evaluation & limitations</a>
       <a href={`${base}about/`}>About Science Skills</a>
     </aside>
-    <article class="doc-content">
+    <article class:list={['doc-content', { 'doc-content-wide': wide }]}>
       <p class="eyebrow">{frontmatter.eyebrow ?? 'Science Skills / Field guide'}</p>
       <h1>{frontmatter.title}</h1>
       <p class="doc-lead">{frontmatter.description}</p>

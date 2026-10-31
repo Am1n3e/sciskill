@@ -204,7 +204,7 @@ def test_cached_responses_and_integrity(ui, tmp_path, content_type, raw):
 def test_http_assets_and_read_api(browser, tmp_path):
     page = browser.get("/")
     assert page.status_code == 200
-    assert "Science Skills" in page.text and "Audit setup" in page.text
+    assert "SciSkill" in page.text and "BibLint" in page.text
     assert "default-src 'none'" in page.headers["content-security-policy"]
     assert browser.get("/app.js").status_code == browser.get("/styles.css").status_code == 200
     assert browser.get("/api/state").json()["summary"] is None
@@ -217,6 +217,37 @@ def test_http_assets_and_read_api(browser, tmp_path):
     assert browser.get("/api/reference", params={"key": "missing"}).status_code == 422
     assert browser.get("/api/state").headers["cache-control"] == "no-store"
     assert browser.get("/api/state", headers={"Host": "evil.example"}).status_code == 403
+
+
+def test_results_are_the_default_page_without_overview_navigation(browser):
+    from bs4 import BeautifulSoup
+
+    page = BeautifulSoup(browser.get("/").text, "html.parser")
+    assert page.h1.get_text(" ", strip=True) == "SciSkill / BibLint"
+    references = page.select_one("#references-panel")
+    assert references is not None and not references.has_attr("hidden")
+    assert references.select_one("#references-table") is not None
+    assert not page.select("[role=tablist], #overview-panel, #overview-tab")
+    assert page.select_one("#input-summary") is not None
+    assert page.select_one("#run-summary") is not None
+
+
+def test_audit_summary_is_a_table_without_the_read_only_label(browser):
+    from bs4 import BeautifulSoup
+
+    page = BeautifulSoup(browser.get("/").text, "html.parser")
+    summary = page.select_one('table[aria-label="Audit summary"]')
+    assert summary is not None
+    assert summary.select_one("#input-summary th").get_text(strip=True) == "Input"
+    assert [th.get_text(strip=True) for th in summary.select("#run-summary th")] == [
+        "References",
+        "Processed references",
+        "Valid",
+        "Invalid",
+        "Unresolved",
+    ]
+    assert "Read-only" not in page.get_text()
+    assert page.select_one("#access-mode") is None
 
 
 def test_http_write_boundaries(browser, tmp_path):
