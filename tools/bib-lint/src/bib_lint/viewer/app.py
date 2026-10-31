@@ -100,6 +100,7 @@ class ViewerSession:
                     summary=summary(report, rows),
                     metadata=metadata(report, self.report_path),
                     audit_input=report.get("audit_input", {}),
+                    extraction=report.get("extraction"),
                 )
             except (OSError, ValueError, KeyError, TypeError) as exc:
                 if isinstance(exc, FileNotFoundError) and job and job.state in ACTIVE:
@@ -172,7 +173,7 @@ class ViewerSession:
             )
         source = payload.get("bibliography")
         if not source:
-            raise ValueError("Enter a local bibliography path")
+            raise ValueError("Enter a local bibliography or PDF path")
         options = {"output": payload.get("output") or None, "aux": payload.get("aux") or None}
         if action == "parse":
             workspace, _, self.warnings = run_audit(source, preview=True, **options)

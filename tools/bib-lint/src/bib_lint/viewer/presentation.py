@@ -15,10 +15,20 @@ def reference_rows(report):
     for row, item in zip(rows, report["items"], strict=True):
         methods = item["validations"].get("correctness", {}).get("methods", [])
         failed = any(method.get("status") == "error" for method in methods)
+        extraction = item["validations"].get("extraction", {})
+        extraction_warning = extraction.get("state") == "needs_review"
+        diagnostics = extraction.get("diagnostics", [])
+        if diagnostics:
+            row["Note"] += "; PDF extraction: " + "; ".join(d["message"] for d in diagnostics)
         row.update(
             title=item["entry"].get("fields", {}).get("title", ""),
             source_failed=failed,
-            needs_attention=row["Status"] in ATTENTION or row.get("Agent") in ATTENTION or failed,
+            needs_attention=(
+                row["Status"] in ATTENTION
+                or row.get("Agent") in ATTENTION
+                or failed
+                or extraction_warning
+            ),
         )
     return rows
 
@@ -43,6 +53,18 @@ def summary(report, rows):
         "statuses": dict(counts),
         "agent_reviewed": sum(bool(item.get("agent_review")) for item in report["items"]),
         "scope": scope["mode"] if scope else "used" if not unknown else "unknown",
+        **({"extraction": extraction_summary(report)} if "extraction" in report else {}),
+    }
+
+
+def extraction_summary(report):
+    extraction = report["extraction"]
+    return {
+        "state": extraction["state"],
+        "occurrence_count": len(report["items"]),
+        "unresolved_fragments": extraction["unresolved_fragments"],
+        "reference_pages": extraction["reference_pages"],
+        "diagnostics": extraction["diagnostics"],
     }
 
 
@@ -60,6 +82,7 @@ def metadata(report, path):
         "report_path": str(path),
         "bibliography": report.get("audit_input", {}).get("path") or source,
         "updated_at": datetime.fromtimestamp(path.stat().st_mtime, UTC).isoformat(),
+        "input_kind": "pdf" if "extraction" in report else "bibliography",
     }
 
 
@@ -76,4 +99,9 @@ def reference_detail(item):
         "sources": source_rows(result.get("methods", [])),
         "methods": result.get("methods", []),
         "agent_review": item.get("agent_review"),
+        **(
+            {"pdf": item["pdf"], "extraction": item["validations"]["extraction"]}
+            if "pdf" in item
+            else {}
+        ),
     }
