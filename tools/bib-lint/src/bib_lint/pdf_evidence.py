@@ -257,16 +257,38 @@ def extraction_summary(report):
 
 
 def apply_extraction(result, item):
-    """Recompute decisions after excluding comparisons of uncertain input fields."""
-    from bib_lint.verification.consensus import CHECKED_FIELDS, build_consensus
+    """Compare proved PDF presentation variants, then exclude uncertain input fields."""
+    from bib_lint.pdf_presentation import apply_presentation
+    from bib_lint.verification.consensus import build_consensus
 
     extraction = item["validations"].get("extraction")
-    if not extraction or extraction["state"] == "complete":
+    if not extraction:
         return result
-    diagnostics = extraction["diagnostics"]
+    methods, changed = apply_presentation(result["methods"], item)
+    if extraction["state"] == "complete" and not changed:
+        return result
+    affected, findings = _extraction_findings(extraction["diagnostics"])
+    findings = list(result.get("input_findings", [])) + findings
+    for method in methods:
+        for comparison in method.get("comparisons", []):
+            if comparison["field"] in affected:
+                comparison["result"] = "unknown"
+        method["differences"] = [
+            d for d in method.get("differences", []) if d["field"] not in affected
+        ]
+    rebuilt = build_consensus(methods, input_findings=findings)
+    if "complete" in result:
+        rebuilt["complete"] = result["complete"]
+    if extraction["state"] != "complete" and rebuilt["is_correct"] is True:
+        rebuilt["is_correct"] = None
+    return rebuilt
+
+
+def _extraction_findings(diagnostics):
+    from bib_lint.verification.consensus import CHECKED_FIELDS
+
     aliases = {"journal": "venue", "booktitle": "venue", "eprint": "arxiv", "author": "authors"}
-    affected = set()
-    findings = list(result.get("input_findings", []))
+    affected, findings = set(), []
     for diagnostic in diagnostics:
         fields = diagnostic["fields"]
         outcome = diagnostic.get("result", "unknown")
@@ -280,17 +302,4 @@ def apply_extraction(result, item):
                 "result": outcome,
             }
         )
-    methods = copy.deepcopy(result["methods"])
-    for method in methods:
-        for comparison in method.get("comparisons", []):
-            if comparison["field"] in affected:
-                comparison["result"] = "unknown"
-        method["differences"] = [
-            d for d in method.get("differences", []) if d["field"] not in affected
-        ]
-    rebuilt = build_consensus(methods, input_findings=findings)
-    if "complete" in result:
-        rebuilt["complete"] = result["complete"]
-    if rebuilt["is_correct"] is True:
-        rebuilt["is_correct"] = None
-    return rebuilt
+    return affected, findings
