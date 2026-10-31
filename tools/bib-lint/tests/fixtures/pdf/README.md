@@ -1,6 +1,6 @@
 # PDF audit acceptance fixtures
 
-These inputs support the planned real LaTeX → PDF → reference extraction → metadata audit tests. The production PDF adapter is not implemented yet. The test harness validates inputs, prepares official assets, and generates native-style projects; compiles them in an offline pinned container. Initial matrix execution has 20 compiled projects and 16 failures requiring review; PDF extraction tests are not implemented.
+These inputs exercise the real LaTeX → PDF → reference extraction → metadata audit path. The harness validates frozen inputs, prepares official assets, generates native-style projects, and compiles them in an offline pinned container. Public CLI tests give the product only a copied PDF and control scholarly HTTP transport; extraction, provider adapters, comparisons, and consensus run for real.
 
 ## Frozen inputs and independent truth
 
@@ -16,7 +16,7 @@ These inputs support the planned real LaTeX → PDF → reference extraction →
 
 Canonical metadata contains facts only, not audit verdicts or comparison results. Earlier hand-specified direct-BibTeX expectations remain under `source_expectation`. The representative collection records coverage intent rather than frozen live-service outcomes. Four references have no curated primary fixture: the Nature article, book, blog, and institutional standard. This is explicit missing source coverage, not evidence that those references are invalid.
 
-All `pdf_expectation` values are deliberately null. T04 must inspect each compiled rendering before setting a PDF-specific expectation. A source-level Correct or Invalid label is not automatically a PDF verdict. Five cases retain citation-key/AUX/cache checks that remain direct-input tests; their reference occurrences still need PDF extraction coverage.
+The source truth's `pdf_expectation` values remain null: PDF-specific expectations live in `renderings.json` and `stress-renderings.json`, bound to exact compiled PDF hashes. They record native field visibility and author presentation rather than inheriting direct-BibTeX verdicts. Independently measured physical-page/first-line anchors verify provenance. Five cases retain citation-key/AUX/cache checks in the direct-input tests; their visible reference occurrences are still extracted from PDFs.
 
 The three BibTeX inputs are unchanged, including literal keys and original comments. References in those old comments to the former development case files are historical pointers, not required inputs here. Use the new manifest/truth files as the fixture index. If compilation needs TeX-safe build keys, preserve the originals and record a separate reversible mapping without changing citation metadata.
 
@@ -41,7 +41,7 @@ The NeurIPS example writes references manually and permits a consistent citation
 
 ## Test-only compiler pin
 
-The manifest pins the Linux/amd64 TeX Live container by immutable platform digest and records the pdfLaTeX/BibTeX pass sequence. The image was pulled and executed: pdfTeX 1.40.29 and BibTeX 0.99e from TeX Live 2026. The standard bibliography files were found and hashed. Initial compilation exercised all required template families; the matrix still contains deliberate-input build failures requiring review.
+The manifest pins the Linux/amd64 TeX Live container by immutable platform digest and records the pdfLaTeX/BibTeX pass sequence. The executed compiler is pdfTeX 1.40.29 and BibTeX 0.99e from TeX Live 2026. Standard bibliography files are hashed. All 36 original projects are accounted for: 20 compile and 16 fail on deliberately malformed source citations. `build_cases.json` attributes those failures through 26 isolated build-negative reproductions. Explicit renderable subsets retain the other cases; three positive counterparts preserve the ACL-family rendering checks. The acceptance inventory has 39 baseline PDFs plus six held-out native modes. A native compilation failure never counts as a detected PDF citation issue.
 
 The local Docker engine is available. The pinned image supports the standard Linux/amd64 CI runner; an ARM development machine would need compatible emulation. Neither Docker nor TeX becomes a dependency of the installed PDF audit tool.
 
@@ -52,4 +52,4 @@ The local Docker engine is available. The pinned image supports the standard Lin
 - Treat template or bibliography changes as fixture changes requiring new rendering review. Preserve case intent instead of changing expected answers to fit product output.
 - Classify source-case evidence as printed text, URI annotation only, partial, omitted, or unable to compile before assessing the extractor. Do not count omitted information or build failures as successful PDF detections.
 
-See repository-root `tasks/plan.md` and `tasks/todo.md` for the staged implementation and verification commands. `PYTHONPATH=src:tests python -m pdf_e2e.build --check-inputs` validates the frozen inputs and required pins from `tools/bib-lint`. `--prepare-assets` fetches or verifies the pinned archives and stages selected members under `.local/pdf-e2e/assets/`. `--compile --matrix baseline` builds every required project without network access. Missing assets, compiler errors, unresolved citations, and missing/duplicate bibliography occurrences fail the command. Per-project recipes/receipts and the complete `baseline.json` ledger stay under `.local/pdf-e2e/projects/`; failures are never counted as PDF audit detections.
+See [the PDF guide](../../../../../docs/pdf-reference-input.md) for complete reproduction commands. `PYTHONPATH=tests uv run --locked --group dev python -m pdf_e2e.build --check-inputs` validates frozen inputs and required pins from `tools/bib-lint`. `--prepare-assets` fetches or verifies pinned archives and stages selected members under `.local/pdf-e2e/assets/`. `--compile --matrix baseline` builds every required project without network access. Missing assets, unexpected compiler errors, unresolved citations, missing/duplicate bibliography occurrences, or incomplete gold fail. Per-project recipes/receipts and the `baseline.json`/`acceptance.json` ledgers stay under `.local/pdf-e2e/projects/`. Selecting `pytest -m pdf_e2e --pdf-matrix baseline` runs the required PDF-only acceptance tests; `--pdf-matrix stress` selects the six held-out modes.

@@ -1,6 +1,6 @@
 # Implementation plan: PDF reference auditing through conference-paper E2E tests
 
-Status: Gradual implementation is authorized. T01/T02 are complete for 12 venues; UAI is explicitly deferred. T03 input validation, asset preparation, project generation, and offline compilation are implemented. All 36 baseline builds were attempted: 20 compiled, 16 failed on deliberately malformed/incomplete citations. T03/C1 remain open for build-negative isolation/review. PDF runtime extraction, product E2E assertions, and CI integration remain unimplemented.
+Status: Implemented; full acceptance and branch CI validation are in progress. The final task states are recorded in [todo.md](todo.md). UAI is deferred by explicit user instruction.
 
 Specification: [SPEC-pdf-reference-input.md](../SPEC-pdf-reference-input.md).
 Task list target: [todo.md](todo.md). Use these files as the single plan/task index; no external tracker is designated.
@@ -37,9 +37,9 @@ Expected answers must not come from the extractor, matcher, current verdicts, or
 
 | Corpus | Earlier local source | Purpose |
 | --- | --- | --- |
-| Representative | `.local/bib-lint-development/tests/fixtures/e2e/representative-20.bib` | 20 varied reference occurrences; establish expected outcomes per rendered control, without assuming every original entry is error-free |
-| Rule variants | `.local/bib-lint-development/tests/fixtures/e2e/rule-variants.bib` | 31 controlled rules and formatting cases |
-| Adversarial | `.local/bib-lint-development/tests/fixtures/e2e/adversarial.bib` | 35 tricky identity, locator, author, and consistency cases |
+| Representative | `tools/bib-lint/tests/fixtures/pdf/corpora/representative-20.bib` | 20 varied reference occurrences; establish expected outcomes per rendered control, without assuming every original entry is error-free |
+| Rule variants | `tools/bib-lint/tests/fixtures/pdf/corpora/rule-variants.bib` | 31 controlled rules and formatting cases |
+| Adversarial | `tools/bib-lint/tests/fixtures/pdf/corpora/adversarial.bib` | 35 tricky identity, locator, author, and consistency cases |
 
 | Stable venue IDs | Official template source to resolve and pin in T02 |
 | --- | --- |
@@ -71,7 +71,7 @@ A `compile_failure` is attributed to its source/asset and reported separately. R
 - Assert the persisted report and final JSON as well as process status. An unrelated source failure or generic Needs review is not the expected detection.
 - Separate artifact/build failures, extraction failures, metadata-parse failures, verification failures, and oracle/visibility disagreements in test output.
 
-## Architecture decisions and unresolved choices
+## Architecture decisions
 
 1. **Keep one verifier.** PDF handling adapts document evidence to the existing entry/provider boundary. Extraction confidence and unknown fields are preserved through comparison and consensus.
 2. **Start with a thin CLI slice.** After the harness and dependency decision, make one clean and one visibly corrupted compiled-paper case work end to end. Expand by failure family rather than implementing an entire extractor before testing it.
@@ -182,13 +182,13 @@ Benchmark extraction on development fixtures before choosing numeric byte/page/c
 
 Once contracts are fixed, T01 and T02 can be prepared independently; T05 can run alongside T04; different template families and independent gold reviews can be assigned separately. Product tasks that share `audit.py`, `scope.py`, `matching.py`, or consensus are sequential. Viewer backend precedes frontend integration. T19 joins all required slices before CI is made a release gate.
 
-No agents are dispatched by this planning turn. Any later parallel work must have disjoint file ownership, agreed manifest/schema contracts, and one integration owner. Independent reviewers may challenge gold labels; they cannot relabel a failing test to match the product.
+Parallel implementation uses disjoint file ownership, agreed manifest/schema contracts, and one integration owner. Independent reviewers may challenge gold labels; they cannot relabel a failing test to match the product.
 
-## Questions and review decisions
+## Recorded review decisions
 
-- Confirm the explicit 12-venue list as the initial meaning of major AI conferences; add other venues through named manifest entries rather than an unbounded “all” claim.
-- Review the local parser choice, installation footprint, supported dependency versions, and measured resource limits at C3.
-- Review corpus promotion and all visibility exceptions at C2. Keep compiled artifacts and the earlier removed development/evidence tree out of the public diff.
-- Review the PDF schema/CLI extraction-summary proposal before integrating it with product decisions. Existing schema-2/3 and BibTeX contracts remain acceptance gates.
+- The initial scope is the explicit 12-venue list. Additional venues require named manifest entries rather than an unbounded “all” claim.
+- The [decision note](../docs/pdf-reference-input.md#parsing-decision) records the parser choice, platform installation, dependency versions, and measured resource defaults.
+- Rendering manifests record native visibility exceptions and attributed build negatives. Compiled artifacts and development evidence remain outside the public diff.
+- Schema 4 carries sealed PDF evidence and the CLI extraction summary. Existing schema-2/3 and BibTeX contracts remain acceptance gates.
 
-Implementation is authorized in small verified commits. Checkpoints are concrete review points; they must not silently reduce scope, modify expectations, or introduce a service/cloud fallback. Parser choice, measured limits, and rendering exceptions remain explicit review decisions at their named checkpoints.
+Implementation is authorized through the final reviewable PR. Checkpoints verify progress without handing back incomplete slices. They do not reduce scope, change expected answers to fit the product, or introduce a service/cloud fallback.

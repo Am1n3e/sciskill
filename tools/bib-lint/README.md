@@ -77,12 +77,12 @@ citations look identical. `--refresh` repeats source verification and preserves 
 saved extraction. Parse only in the viewer stays offline and does not create a
 source-response cache; Verify performs the normal scholarly-source lookups.
 
-Default extraction limits are 32 MiB input, 200 physical pages, 64 MiB decoded page
-content, 1,000,000 extracted text characters, 3,000 references, and 60 seconds. The
+Default extraction limits are 32 MiB input, 200 physical pages, 64 MiB decoded PDF
+streams, 1,000,000 extracted text characters, 3,000 references, and 60 seconds. The
 parent process enforces the wall-clock deadline; the worker also has a CPU limit
-and a 1.5 GiB address-space limit on Linux. Flate, ASCII85, and ASCIIHex page-content
-compression are supported with bounded decoding; other page-content compression
-receives a controlled unsupported-input failure.
+and a 1.5 GiB address-space limit on Linux. Flate, ASCII85, and ASCIIHex compression
+receive bounded decoding across page content, forms, fonts, and object streams.
+Other content compression receives a controlled unsupported-input failure.
 
 ## Local viewer
 
@@ -99,4 +99,5 @@ in Audit setup. The browser displays comparisons, proposed corrections, primary
 source links, and checksum-verified cached responses; it does not edit the
 bibliography.
 
-For source development and checks, see [Contributing](../../CONTRIBUTING.md).
+For source development and checks, see [Contributing](../../CONTRIBUTING.md) and the
+[PDF acceptance workflow](../../docs/pdf-reference-input.md).

@@ -1,6 +1,6 @@
 # Spec: Audit references from research-paper PDFs
 
-Status: Gradual implementation authorized by the user. The agreed E2E approach is recorded below; citation-parser selection remains an evidence-driven decision in T07.
+Status: Implemented for text-based research PDFs. The implementation and reproducible acceptance commands are documented in [the PDF guide](docs/pdf-reference-input.md). UAI and OCR remain deferred.
 
 ## Objective
 
@@ -8,7 +8,7 @@ A researcher with a paper PDF should be able to audit its reference list without
 
 The feature audits the works listed in the bibliography. It does not audit the input paper's own bibliographic record or whether its citations support its scientific claims.
 
-## Confirmed requirements and proposed scope
+## Requirements and scope
 
 | Requirement | Basis |
 | --- | --- |
@@ -37,7 +37,7 @@ Illustrations or scanned figures do not by themselves make a paper unsupported. 
 
 ## User workflow and commands
 
-The following commands are proposed feature behavior; PDF input is not implemented yet.
+The shared launcher and standalone command support the following workflow:
 
 ```sh
 # Audit every extracted reference. Source files remain unchanged.
@@ -92,13 +92,13 @@ In the viewer, the input field accepts a local PDF path. **Parse only** performs
 
 ### 4. Preserve provenance, checkpoints, and compatibility
 
-PDF reports need a versioned contract for extraction evidence and its effect on verdicts. Proposed PDF report schema: version 4. Continue reading existing version-2 and version-3 BibTeX/JSON reports without inventing PDF provenance. Update validators, viewer, resume logic, and package tests together.
+PDF reports use schema version 4 for extraction evidence and its effect on verdicts. Existing version-2 and version-3 BibTeX/JSON reports remain readable without invented PDF provenance. Validators, viewer, resume logic, and package tests share this boundary.
 
 Minimum document provenance:
 
 - Original PDF name and SHA-256, total physical page count, and identified reference-page ranges.
 - Extractor/parser identifiers and versions, extraction settings, and versioned diagnostics.
-- Extraction coverage state: `complete`, `needs_review`, or `failed`. “Complete” describes the extractor's supported checks, not a universal accuracy guarantee.
+- Extraction coverage state: `complete` or `needs_review` in a successful report; failures return a structured failed command result before report replacement. “Complete” describes the extractor's supported checks, not a universal accuracy guarantee.
 
 Minimum per-reference provenance:
 
@@ -127,15 +127,13 @@ The CLI final-result envelope keeps its current fields and gains an extraction s
 | Input exceeds documented parser resource limits | Controlled resource-limit failure; no uncontrolled retry or service fallback |
 | Interrupted lookup or provider outage | Existing checkpoint/resume behavior, with extraction evidence retained |
 
-Keep limits on PDF bytes, pages, decoded content, extracted text, reference count, and extraction time explicit and testable. Their numeric defaults require measurement on the agreed corpus before implementation approval. Do not fetch links, execute PDF actions, or extract arbitrary embedded files while parsing the document.
+The defaults are 32 MiB input, 200 physical pages, 64 MiB decoded PDF streams, one million extracted text characters, 3,000 references, and 60 seconds. Decoded-stream accounting includes nested forms, fonts, and object streams. Limits are explicit and independently testable. Do not fetch links, execute PDF actions, or extract arbitrary embedded files while parsing the document.
 
 ## Tech stack and dependency decision
 
 Keep the current Python 3.12+, `httpx`, `pybtex`, pytest, Ruff, and local HTML/CSS/JavaScript architecture. No frontend framework or separate parser service is required.
 
-Use an in-process, layout-aware PDF library. `pdfplumber` is a candidate because it exposes text and geometric information; its documentation says it works best on machine-generated PDFs. `pypdf` is another local text-extraction candidate, but extracting text alone does not parse bibliographic fields. See [pdfplumber](https://github.com/jsvine/pdfplumber) and [pypdf extraction](https://pypdf.readthedocs.io/en/stable/user/extract-text.html).
-
-The structured citation parser is an open technical decision. Do not assume a few regular expressions can reliably split every author/title/venue combination. Compare a bounded deterministic parser with an existing local parser against independently annotated examples. Select a dependency only after checking accuracy, macOS/Linux installation, license compatibility, and packaging requirements. A server, API key, or mandatory manual service startup fails the confirmed requirement. No dependency is added by this spec.
+The runtime uses pinned `pdfplumber==0.11.10` and a bounded citation grammar in a disposable local Python worker. Original geometry and font evidence support field boundaries; uncertain boundaries remain diagnostic. `pypdf` and ReportLab are development dependencies for independent gold and synthetic inputs. The [decision note](docs/pdf-reference-input.md#parsing-decision) records alternatives, installation constraints, resource measurements, and dependency bounds. A server, API key, or mandatory manual service startup fails the confirmed requirement.
 
 ## Project structure and code style
 
@@ -199,7 +197,7 @@ Existing development check commands:
 
 ```sh
 # From tools/bib-lint:
-uv run --group dev pytest -q -m 'not package'
+uv run --locked --group dev pytest -q -m 'not package and not pdf_e2e'
 uv run --group dev pytest -q tests/test_package.py
 uv run --group dev ruff check .
 uv run --group dev ruff format --check .
@@ -214,13 +212,19 @@ uv build
 ## Boundaries
 
 - **Always:** preserve source bytes and provenance; keep extraction local; validate PDF/report boundaries; retain uncertainty; use TDD and independent expectations; maintain existing verification behavior for BibTeX/JSON; keep research artifacts and local agent setup ignored.
-- **Resolve during review:** first-release OCR scope; citation-parser dependency and installation footprint; concrete resource limits; report-schema and extraction-summary contract. A change to these approved requirements needs an updated spec before code changes.
+- **Recorded decisions:** OCR is deferred; the worker uses pinned pdfplumber and a bounded local grammar; resource defaults and schema 4 are documented above. A change to these requirements needs an updated spec before code changes.
 - **Never:** upload PDF content for extraction by default; require an unapproved service; invent missing metadata; silently discard undecodable reference pages or unresolved occurrences; treat failed extraction as an empty successful audit; overwrite source files; remove failing tests to obtain green results.
 
-## Open questions for review
+## Review record
 
-1. Confirm the proposed first-release target: ordinary text-based research PDFs, with OCR deferred and unreadable reference pages flagged.
-2. Choose the local citation-parser approach after evaluating annotated examples. The no-service requirement is settled; the package or local executable is not selected.
-3. Validate the pinned official template assets, independent rendering expectations, and measured resource limits. The agreed first corpus will be generated by compiling the earlier bibliographies, rather than depending on a separately supplied PDF.
+The first-release target is ordinary text-based research PDFs, with OCR deferred
+and unreadable reference pages flagged. The [decision note](docs/pdf-reference-input.md)
+records the selected local parser, package requirements, measured limits, and
+reproducible matrix. Official assets and rendering expectations are checksum-bound;
+the corpus comes from compiling the earlier bibliographies. Independent review
+covers runtime isolation, evidence validation, exact issue assertions, matrix
+completeness, physical provenance, and CI failure gates.
 
-The implementation plan and ordered tasks live in `tasks/plan.md` and `tasks/todo.md`. Implement in verified increments and retain the explicit decision/review checkpoints.
+The [implementation plan](tasks/plan.md) and [task checklist](tasks/todo.md) retain
+the approved scope and verification checkpoints. The user authorized completion
+through a reviewable PR without handing back incomplete increments.
