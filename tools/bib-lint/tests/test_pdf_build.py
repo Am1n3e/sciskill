@@ -48,137 +48,145 @@ def test_required_venue_cannot_use_an_unresolved_asset(tmp_path):
         check_templates(fixtures)
 
 
-def test_prepare_assets_copies_only_verified_members(tmp_path):
+def _vendored_kit(tmp_path, monkeypatch):
     import hashlib
-    import zipfile
 
-    from pdf_e2e.assets import prepare_asset
+    from pdf_e2e import assets
 
-    archive = tmp_path / "kit.zip"
-    with zipfile.ZipFile(archive, "w") as zipped:
-        zipped.writestr("kit/native.sty", b"% official style\n")
-        zipped.writestr("kit/unselected.tex", b"not a build input")
+    root = tmp_path / "vendored"
+    kit = root / "kit"
+    kit.mkdir(parents=True)
+    (kit / "native.sty").write_bytes(b"% official style\n")
+    (kit / "LICENSE").write_bytes(b"Original license notice\n")
+    monkeypatch.setattr(assets, "VENDORED_ROOT", root, raising=False)
     pin = {
-        "url": "https://conference.example/kit.zip",
-        "sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
-        "bytes": archive.stat().st_size,
-        "root": "kit/",
+        "sha256": "0" * 64,
         "files": [
             {"path": "native.sty", "sha256": hashlib.sha256(b"% official style\n").hexdigest()}
         ],
+        "notices": [
+            {"path": "LICENSE", "sha256": hashlib.sha256(b"Original license notice\n").hexdigest()}
+        ],
     }
-    destination = prepare_asset("kit", pin, tmp_path)
+    return kit, pin
+
+
+def test_prepare_assets_is_offline_and_copies_only_verified_members_and_notices(
+    tmp_path, monkeypatch
+):
+    import socket
+
+    from pdf_e2e.assets import prepare_asset
+
+    kit, pin = _vendored_kit(tmp_path, monkeypatch)
+    (kit / "unselected.tex").write_bytes(b"not a build input")
+    monkeypatch.setattr(
+        socket, "socket", lambda *args, **kwargs: pytest.fail("Asset network request")
+    )
+    cache = tmp_path / "cache"
+    destination = prepare_asset("kit", pin, cache)
     assert (destination / "native.sty").read_bytes() == b"% official style\n"
+    assert (destination / "LICENSE").read_bytes() == b"Original license notice\n"
     assert not (destination / "unselected.tex").exists()
-    (destination / "native.sty").write_text("changed")
+    (destination / "native.sty").write_text("changed cache")
     assert (
-        prepare_asset("kit", pin, tmp_path).joinpath("native.sty").read_bytes()
+        prepare_asset("kit", pin, cache).joinpath("native.sty").read_bytes()
         == b"% official style\n"
     )
 
 
-def test_prepare_assets_rejects_archive_drift(tmp_path):
+@pytest.mark.parametrize("filename", ["native.sty", "LICENSE"])
+def test_prepare_assets_rejects_vendored_member_or_notice_drift(tmp_path, monkeypatch, filename):
     from pdf_e2e.assets import prepare_asset
 
-    (tmp_path / "kit.zip").write_bytes(b"altered archive")
+    kit, pin = _vendored_kit(tmp_path, monkeypatch)
+    (kit / filename).write_bytes(b"changed")
     with pytest.raises(ValueError, match="checksum"):
-        prepare_asset("kit", {"sha256": "0" * 64}, tmp_path)
+        prepare_asset("kit", pin, tmp_path / "cache")
 
 
-def test_prepare_assets_rejects_member_path_escape(tmp_path):
-    import hashlib
-    import zipfile
-
+def test_missing_vendored_member_fails_even_with_a_populated_cache(tmp_path, monkeypatch):
     from pdf_e2e.assets import prepare_asset
 
-    archive = tmp_path / "kit.zip"
-    with zipfile.ZipFile(archive, "w") as zipped:
-        zipped.writestr("../escaped.sty", b"no")
-    pin = {
-        "sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
-        "bytes": archive.stat().st_size,
-        "root": "",
-        "files": [{"path": "../escaped.sty", "sha256": hashlib.sha256(b"no").hexdigest()}],
-    }
+    kit, pin = _vendored_kit(tmp_path, monkeypatch)
+    cache = tmp_path / "cache"
+    prepare_asset("kit", pin, cache)
+    (kit / "native.sty").unlink()
+    with pytest.raises(ValueError, match="Missing.*native.sty"):
+        prepare_asset("kit", pin, cache)
+
+
+@pytest.mark.parametrize("member", ["../escaped.sty", "/escaped.sty", "nested\\escaped.sty"])
+def test_prepare_assets_rejects_member_path_escape(tmp_path, monkeypatch, member):
+    from pdf_e2e.assets import prepare_asset
+
+    _, pin = _vendored_kit(tmp_path, monkeypatch)
+    pin["files"][0]["path"] = member
     with pytest.raises(ValueError, match="Unsafe"):
-        prepare_asset("kit", pin, tmp_path)
+        prepare_asset("kit", pin, tmp_path / "cache")
     assert not (tmp_path / "escaped.sty").exists()
 
 
-def test_stress_builds_verify_staged_template_members(tmp_path):
-    import hashlib
-
-    from pdf_e2e.assets import verified_asset
-
-    pin = {
-        "sha256": "0" * 64,
-        "files": [{"path": "native.sty", "sha256": hashlib.sha256(b"official").hexdigest()}],
-    }
-    member = tmp_path / pin["sha256"] / "native.sty"
-    member.parent.mkdir()
-    member.write_bytes(b"official")
-    assert verified_asset(pin, tmp_path) == member.parent
-    member.write_bytes(b"changed")
-    with pytest.raises(ValueError, match="checksum.*native.sty"):
-        verified_asset(pin, tmp_path)
-
-
-@pytest.mark.parametrize("resolved", [None, "https://conference.example/official-kit.zip"])
-def test_asset_download_uses_pinned_resolved_url_with_original_url_fallback(
-    tmp_path, monkeypatch, resolved
-):
-    import hashlib
-    import io
-    import zipfile
-    from contextlib import contextmanager
-
-    import httpx
+def test_prepare_assets_rejects_symlinked_vendored_members(tmp_path, monkeypatch):
     from pdf_e2e.assets import prepare_asset
 
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w") as zipped:
-        zipped.writestr("kit/native.sty", b"% verified style\n")
-    raw = buffer.getvalue()
-    pin = {
-        "url": "https://conference.example/landing",
-        "sha256": hashlib.sha256(raw).hexdigest(),
-        "bytes": len(raw),
-        "root": "kit/",
-        "files": [
-            {"path": "native.sty", "sha256": hashlib.sha256(b"% verified style\n").hexdigest()}
-        ],
-    }
-    if resolved:
-        pin["resolved_url"] = resolved
-    requested = []
-
-    @contextmanager
-    def stream(method, url, **kwargs):
-        requested.append((method, url))
-        yield httpx.Response(200, content=raw, request=httpx.Request(method, url))
-
-    monkeypatch.setattr(httpx, "stream", stream)
-    output = prepare_asset("kit", pin, tmp_path)
-    assert requested == [("GET", resolved or pin["url"])]
-    assert (output / "native.sty").read_bytes() == b"% verified style\n"
+    kit, pin = _vendored_kit(tmp_path, monkeypatch)
+    target = tmp_path / "outside.sty"
+    (kit / "native.sty").rename(target)
+    (kit / "native.sty").symlink_to(target)
+    with pytest.raises(ValueError, match="symlink"):
+        prepare_asset("kit", pin, tmp_path / "cache")
 
 
-def test_resolved_asset_download_still_enforces_stream_size(monkeypatch):
-    from contextlib import contextmanager
+def test_stress_builds_verify_staged_members_and_notices(tmp_path, monkeypatch):
+    from pdf_e2e.assets import prepare_asset, verified_asset
 
-    import httpx
-    from pdf_e2e.assets import _download
+    _, pin = _vendored_kit(tmp_path, monkeypatch)
+    cache = tmp_path / "cache"
+    destination = prepare_asset("kit", pin, cache)
+    assert verified_asset(pin, cache) == destination
+    (destination / "LICENSE").write_bytes(b"changed")
+    with pytest.raises(ValueError, match="checksum.*LICENSE"):
+        verified_asset(pin, cache)
 
-    @contextmanager
-    def stream(method, url, **kwargs):
-        yield httpx.Response(200, content=b"too large", request=httpx.Request(method, url))
 
-    monkeypatch.setattr(httpx, "stream", stream)
-    with pytest.raises(ValueError, match="archive size"):
-        _download(
-            {
-                "url": "https://conference.example/landing",
-                "resolved_url": "https://conference.example/kit.zip",
-                "bytes": 1,
-            }
-        )
+def test_asset_archive_identity_cannot_escape_cache(tmp_path, monkeypatch):
+    from pdf_e2e.assets import prepare_asset
+
+    _, pin = _vendored_kit(tmp_path, monkeypatch)
+    pin["sha256"] = "../escaped"
+    with pytest.raises(ValueError, match="archive SHA-256"):
+        prepare_asset("kit", pin, tmp_path / "cache")
+
+
+def test_stress_build_rejects_unverified_extra_cached_files(tmp_path, monkeypatch):
+    from pdf_e2e.assets import prepare_asset, verified_asset
+
+    _, pin = _vendored_kit(tmp_path, monkeypatch)
+    cache = tmp_path / "cache"
+    staged = prepare_asset("kit", pin, cache)
+    (staged / "shadow.sty").write_bytes(b"not pinned")
+    with pytest.raises(ValueError, match="inventory"):
+        verified_asset(pin, cache)
+
+
+def test_required_vendored_assets_match_every_frozen_member_and_notice(tmp_path, monkeypatch):
+    import socket
+
+    from pdf_e2e.assets import VENDORED_ROOT, prepare_asset, verified_asset
+
+    monkeypatch.setattr(
+        socket, "socket", lambda *args, **kwargs: pytest.fail("Asset network request")
+    )
+    manifest = json.loads((FIXTURES / "templates.json").read_text())
+    assert {p.name for p in VENDORED_ROOT.iterdir() if p.is_dir()} == set(manifest["assets"])
+    for asset_id, pin in manifest["assets"].items():
+        staged = prepare_asset(asset_id, pin, tmp_path / "cache")
+        assert verified_asset(pin, tmp_path / "cache") == staged
+        expected = {m["path"] for m in pin["files"] + pin.get("notices", [])}
+        assert {str(p.relative_to(staged)) for p in staged.rglob("*") if p.is_file()} == expected
+        assert {
+            str(p.relative_to(VENDORED_ROOT / asset_id))
+            for p in (VENDORED_ROOT / asset_id).rglob("*")
+            if p.is_file()
+        } == expected

@@ -93,7 +93,8 @@
           "sha256": "c3fc2894e83d2517ca18b66741d6c595986d97957dc08ec08bb2125a7ec4555a"
         }
       ],
-      "attribution": "Official conference author kit or conference-linked official repository. Preserve notices when preparing local projects; downloaded vendor files are not tracked in this repository."
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": []
     },
     "icml": {
       "status": "downloaded_and_checksum_verified",
@@ -130,7 +131,8 @@
           "sha256": "7cdcf90f6a59c5219e7f15c88f7ed09fcaf598dad91e6cdddc4dc3cb0e397a95"
         }
       ],
-      "attribution": "Official conference author kit or conference-linked official repository. Preserve notices when preparing local projects; downloaded vendor files are not tracked in this repository."
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": []
     },
     "iclr": {
       "status": "downloaded_and_checksum_verified",
@@ -167,7 +169,8 @@
           "sha256": "797deef41724e93761426ac0cbcca46279a91cc650dd1f0ce76a4f08d2098ea6"
         }
       ],
-      "attribution": "Official conference author kit or conference-linked official repository. Preserve notices when preparing local projects; downloaded vendor files are not tracked in this repository."
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": []
     },
     "aaai": {
       "status": "downloaded_and_checksum_verified",
@@ -192,7 +195,8 @@
           "sha256": "6f90c4d7a36f4a038daf187fdd6cec9fe578aba819733b49551574a37feecd35"
         }
       ],
-      "attribution": "Official conference author kit or conference-linked official repository. Preserve notices when preparing local projects; downloaded vendor files are not tracked in this repository."
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": []
     },
     "ijcai": {
       "status": "downloaded_and_checksum_verified",
@@ -217,7 +221,8 @@
           "sha256": "72c53a0febca9745a9a6febdc1e49327d2b6ac4f161e1d7a210dd47e5f5dda40"
         }
       ],
-      "attribution": "Official conference author kit or conference-linked official repository. Preserve notices when preparing local projects; downloaded vendor files are not tracked in this repository."
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": []
     },
     "aistats": {
       "status": "downloaded_and_checksum_verified",
@@ -246,7 +251,8 @@
           "sha256": "4c95c0442152f17d460c0402080efd56334c1265bc0d809460eb2e23ee17696d"
         }
       ],
-      "attribution": "Official conference author kit or conference-linked official repository. Preserve notices when preparing local projects; downloaded vendor files are not tracked in this repository."
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": []
     },
     "acl": {
       "status": "downloaded_and_checksum_verified",
@@ -275,7 +281,13 @@
           "sha256": "6fbb306202290f4b68e74ac1460a8b27398500cb6dfeb4492e74c457eae7cd1e"
         }
       ],
-      "attribution": "Official conference author kit or conference-linked official repository. Preserve notices when preparing local projects; downloaded vendor files are not tracked in this repository."
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": [
+        {
+          "path": "README.md",
+          "sha256": "f5e4fe5096e8bc045b586a2351409f29ce6d55e0268a434602a06011f571d882"
+        }
+      ]
     },
     "cvpr": {
       "status": "downloaded_and_checksum_verified",
@@ -332,7 +344,13 @@
           "sha256": "594291f94cf3b925908dc127a93f3525c1998e96abf37a14f69d6077a7e58bd7"
         }
       ],
-      "attribution": "Official conference author kit or conference-linked official repository. Preserve notices when preparing local projects; downloaded vendor files are not tracked in this repository."
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": [
+        {
+          "path": "README.md",
+          "sha256": "82c198ab5fb54cc77dd476206bb81287928e757753611e469a20f7a7e598c1a4"
+        }
+      ]
     },
     "eccv": {
       "status": "downloaded_and_checksum_verified",
@@ -365,7 +383,21 @@
           "sha256": "564cb6156e2400e3755a58bed9caabccb3067dd37a48efcb66851a56d4475c4c"
         }
       ],
-      "attribution": "Official conference author kit or conference-linked official repository. Preserve notices when preparing local projects; downloaded vendor files are not tracked in this repository."
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": [
+        {
+          "path": "LICENSE",
+          "sha256": "82d8789febf72672fc2c6ce0b3f4b6ae17bad4b7c195b436179d8b71529c81a6"
+        },
+        {
+          "path": "README.md",
+          "sha256": "2892b0207b3c6bb4ebd45efbe75cb25da74f9163871b76add5d1e05870654491"
+        },
+        {
+          "path": "lncs_readme.txt",
+          "sha256": "7dbe59c722450e662ff2ffa248fb4338ea3bbcdaabc3ad6d648be7054aa062d1"
+        }
+      ]
     }
   },
   "venues": [
