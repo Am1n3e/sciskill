@@ -73,12 +73,14 @@ Dependencies: T06.
 
 ## Final verification
 
-- Offline regressions: 1,436 passed; one existing skip; package tests selected separately.
+- Offline regressions: 1,456 passed; one existing skip; package tests selected separately.
 - Standalone installed-package test: passed. Shared launcher/package checks: 15 passed.
 - Conference PDFs: all 39 baseline and 6 stress reports satisfy the final frozen
   field, anchor, required-issue and verdict assertions. Four DOI-primary baseline
   cells were rerun through the CLI after updating their source-policy expectations.
-  Inputs, rendering gold, reference truth and compiled PDFs were unchanged.
+  After adversarial review, five baseline author cases and all six stress cases were
+  rerun. Eight independently reviewed gold rows now require explicit printed author
+  mismatches. Bibliographies, canonical facts, PDF hashes and anchors are unchanged.
 - Quality: Ruff lint, formatting (146 files) and McCabe complexity <= 10 passed.
 - Both source distributions and wheels built successfully, including Huey at runtime.
 - Mutation: reversing the direct-lookup early-stop condition failed both public
@@ -93,3 +95,28 @@ Dependencies: T06.
   Synthetic no-network measurements describe queue overhead, not provider latency.
 - Generated databases, reports, benchmark output, build artifacts and PDFs remain
   outside version control.
+
+
+## Adversarial review follow-up
+
+Three independent reviewers challenged runtime recovery, citation/PDF evidence,
+and test validity/complexity. All required findings were reproduced before fixes:
+
+- Partial worker startup now joins only started threads and always releases queue
+  ownership. Four startup boundaries verify immediate reopening with no leaked threads.
+- A failed checkpoint write cannot consume and merge the same worker result twice.
+  Resume uses cached evidence and records one request and one history entry.
+- Unrelated native and DOI-resolved arXiv identities remain Invalid; plausible
+  publication/preprint versions still require review. Orchestration version 7
+  recomputes previous verdicts without rewriting cached source evidence.
+- Cross-column PDF link rectangles remain evidence but cannot route either reference
+  as a certain locator. Real narrow/wide two-column PDFs cover both paths.
+- PDF author uncertainty requires a unique adjacent name occurrence and a proved
+  comma separator. Explicit conjunctions, semicolons, absent evidence and repeated
+  names retain demonstrated mismatches. Native bibliography output independently
+  confirms the eight stronger printed-author gold checks.
+
+The installed-wheel test now performs a complete offline public audit through real
+SQLite workers, then resumes without requests. Compact gold retains reviewed checks.
+A mutation removing occurrence uniqueness fails its repeated-name regression.
+Final reviewer rechecks found no remaining required issues or broader redesign need.
