@@ -262,6 +262,7 @@ def extraction_summary(report):
 
 def apply_extraction(result, item):
     """Compare proved PDF presentation variants, then exclude uncertain input fields."""
+    from bib_lint.pdf_candidates import candidate_findings
     from bib_lint.pdf_presentation import apply_presentation
     from bib_lint.verification.consensus import build_consensus
 
@@ -269,10 +270,15 @@ def apply_extraction(result, item):
     if not extraction:
         return result
     methods, changed = apply_presentation(result["methods"], item)
-    if extraction["state"] == "complete" and not changed:
+    candidates = [
+        finding
+        for finding in candidate_findings(item, methods)
+        if finding not in result.get("input_findings", [])
+    ]
+    if extraction["state"] == "complete" and not changed and not candidates:
         return result
     affected, findings = _extraction_findings(extraction["diagnostics"])
-    findings = list(result.get("input_findings", [])) + findings
+    findings = list(result.get("input_findings", [])) + findings + candidates
     for method in methods:
         for comparison in method.get("comparisons", []):
             if comparison["field"] in affected:
