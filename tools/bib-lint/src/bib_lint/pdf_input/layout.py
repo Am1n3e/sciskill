@@ -264,28 +264,25 @@ def occurrences(lines):
         bases[line["_column"]].append(line["x0"])
     margins = {column: min(xs) for column, xs in bases.items()}
     labels = [_label(line) for line in lines]
-    labelled = any(match and match[1] for match in labels) or any(
-        match and match[2] == "1" for match in labels
-    )
+    labelled = any(match and (match[1] or match[2] == "1") for match in labels)
     wrap_gap = _wrap_gap(lines)
     groups = []
-    for line in lines:
-        match = _label(line)
-        prior = groups[-1][-1] if groups else None
-        new = (
-            bool(match) and (bool(match[1]) or int(match[2]) <= len(lines))
-            if labelled
-            else line["x0"] <= margins[line["_column"]] + 2
-        )
+    for line, match in zip(lines, labels, strict=True):
+        previous = groups[-1][-1] if groups else None
+        if labelled:
+            starts_reference = bool(match) and (bool(match[1]) or int(match[2]) <= len(lines))
+        else:
+            starts_reference = line["x0"] <= margins[line["_column"]] + 2
         if (
             not labelled
-            and prior
-            and line["page"] == prior["page"]
-            and line["_column"] == prior["_column"]
+            and previous
+            and line["page"] == previous["page"]
+            and line["_column"] == previous["_column"]
+            and abs(line["x0"] - previous["x0"]) < 2
+            and line["top"] - previous["bottom"] < wrap_gap
         ):
-            if abs(line["x0"] - prior["x0"]) < 2 and line["top"] - prior["bottom"] < wrap_gap:
-                new = False
-        if not groups or new:
+            starts_reference = False
+        if not groups or starts_reference:
             groups.append([])
         groups[-1].append(line)
     return groups

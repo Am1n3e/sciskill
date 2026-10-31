@@ -322,36 +322,37 @@ def _trim_locator(value):
     return value or original
 
 
+def _printed_locator(match, group=1):
+    value = _trim_locator(match[group])
+    return value, {"span": (match.start(group), match.start(group) + len(value))}
+
+
 def _locator_choices(text, uris):
     values = defaultdict(list)
     for match in LABELLED_LOCATOR.finditer(text):
-        value = _trim_locator(match[2])
-        values[match[1].lower()].append(
-            (value, None, (match.start(2), match.start(2) + len(value)))
-        )
-    supplied = [(m[0], None, m.span()) for m in URL.finditer(text)]
-    supplied.extend((u["uri"], i, None) for i, u in enumerate(uris))
-    for raw, uri_index, span in supplied:
-        if uri_index is None:
-            raw = _trim_locator(raw)
-            raw = re.sub(r"^(https?)\s*:\s*//", r"\1://", raw, flags=re.I)
-        values["url"].append((raw, uri_index, span))
-        for provider, value in url_locators(raw):
-            values[provider].append((value, uri_index, span))
+        values[match[1].lower()].append(_printed_locator(match, 2))
+    supplied = [(match[0], {"span": match.span()}) for match in URL.finditer(text)]
+    supplied.extend((uri["uri"], {"uri": index}) for index, uri in enumerate(uris))
+    for value, origin in supplied:
+        if "span" in origin:
+            value = _trim_locator(value)
+            value = re.sub(r"^(https?)\s*:\s*//", r"\1://", value, flags=re.I)
+        values["url"].append((value, origin))
+        for provider, identifier in url_locators(value):
+            values[provider].append((identifier, origin))
     for match in DOI.finditer(text):
-        value = _trim_locator(match[1])
-        values["doi"].append((value, None, (match.start(1), match.start(1) + len(value))))
+        values["doi"].append(_printed_locator(match))
     stripped = URL.sub(lambda m: " " * len(m[0]), text)
     stripped = DOI.sub(lambda m: " " * len(m[0]), stripped)
     for match in re.finditer(r"(?:arxiv\s*:\s*)?(\d{4}\.\d{4,5}[^\s,;]*)", stripped, re.I):
-        value = _trim_locator(match[1])
-        values["arxiv"].append((value, None, (match.start(1), match.start(1) + len(value))))
+        values["arxiv"].append(_printed_locator(match))
     return values
 
 
-def _locator_findings(provider, canonical):
+def _locator_findings(provider, values):
     if provider == "url":
         return []
+    canonical = [locator(provider, value) for value in values]
     findings = []
     if any(value is None for value in canonical):
         findings.append(
@@ -388,18 +389,14 @@ def _empty_locator_findings(text):
 def _locators(text, uris):
     fields, evidence, diagnostics = {}, {}, []
     for provider, choices in _locator_choices(text, uris).items():
-        by_value = {}
-        for choice in choices:
-            by_value.setdefault(choice[0], choice)
-        unique = list(by_value.values())
-        aliases = ("url",) if provider == "url" else ALIASES.get(provider, (provider,))
-        for alias, (value, uri_index, span) in zip(aliases, unique, strict=False):
+        origins = {}
+        for value, origin in choices:
+            origins.setdefault(value, origin)
+        aliases = ALIASES.get(provider, (provider,))
+        for alias, (value, origin) in zip(aliases, origins.items(), strict=False):
             fields[alias] = value
-            evidence[alias] = {"uri": uri_index} if uri_index is not None else {"span": span}
-        canonical = (
-            [locator(provider, value) for value, _, _ in unique] if provider != "url" else []
-        )
-        diagnostics.extend(_locator_findings(provider, canonical))
+            evidence[alias] = origin.copy()
+        diagnostics.extend(_locator_findings(provider, origins))
     diagnostics.extend(_empty_locator_findings(text))
     if "arxiv" in fields:
         fields["eprint"] = fields["arxiv"]
@@ -671,14 +668,18 @@ def parse_reference(lines, key, uris):
         fields["year"] = year
     if title:
         fields["title"] = title.strip(" .,")
-    venue = _venue(tail, styles, text, (label.end() if label else 0) + title_start + len(title))
+    venue = _venue(tail, styles, text, base + title_start + len(title))
     if venue:
         fields["journal"] = venue
     _numeric_context(fields, locator_evidence, content, title_start + len(title))
     persons = _parsed_authors(authors, diagnostics)
-    named_authors = any(person["kind"] != "others" for person in persons.get("author", []))
-    for field in ("title", "authors", "year"):
-        if not (named_authors if field == "authors" else fields.get(field)):
+    required_fields = {
+        "title": fields.get("title"),
+        "authors": any(person["kind"] != "others" for person in persons.get("author", [])),
+        "year": fields.get("year"),
+    }
+    for field, value in required_fields.items():
+        if not value:
             diagnostics.append(
                 diagnostic(
                     "missing_" + field, f"No reliable printed {field} could be recovered", [field]
