@@ -819,3 +819,15 @@ def test_generic_italic_preprint_status_is_not_a_publication_venue():
     assert "journal" not in item["entry"]["fields"]
     assert "Preprint" in item["pdf"]["text"]
     assert input_record(item["entry"])["record_type"] == "preprint"
+
+
+@pytest.mark.parametrize("authors", ["others", "et al."])
+def test_only_truncation_sentinel_retains_evidence_but_named_authors_are_unknown(authors):
+    item = citation(f"{authors}. 2024. Example Paper. Journal.")
+    assert item["entry"]["persons"]["author"][0]["kind"] == "others"
+    assert authors in item["pdf"]["text"]
+    assert any(
+        d["code"] == "missing_authors" and d["fields"] == ["authors"]
+        for d in item["pdf"]["diagnostics"]
+    )
+    assert item["validations"]["extraction"]["state"] == "needs_review"

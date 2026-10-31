@@ -674,8 +674,9 @@ def parse_reference(lines, key, uris):
         fields["journal"] = venue
     _numeric_context(fields, locator_evidence, content, title_start + len(title))
     persons = _parsed_authors(authors, diagnostics)
+    named_authors = any(person["kind"] != "others" for person in persons.get("author", []))
     for field in ("title", "authors", "year"):
-        if not (persons.get("author") if field == "authors" else fields.get(field)):
+        if not (named_authors if field == "authors" else fields.get(field)):
             diagnostics.append(
                 diagnostic(
                     "missing_" + field, f"No reliable printed {field} could be recovered", [field]
