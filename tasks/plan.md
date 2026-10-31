@@ -1,6 +1,6 @@
 # Implementation plan: locator-first provider queues
 
-Status: In progress. Tasks and verification evidence are in [todo.md](todo.md).
+Status: Complete. Tasks and verification evidence are in [todo.md](todo.md).
 
 ## Goal
 

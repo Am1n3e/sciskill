@@ -39,33 +39,57 @@ Files: verification/__init__.py, verification/workflow.py, tests/test_resume.py,
 Dependencies: T02, T03.
 
 ## T05: Resolver handoff
-- [ ] Resolve DOI redirects without following unknown hosts; hand paper URLs to provider queues.
-- [ ] Normalize supported provider PDF links to authoritative metadata records.
-- [ ] Preserve all original identifiers and locator diagnostics.
+- [x] Resolve DOI redirects without following unknown hosts; hand paper URLs to provider queues.
+- [x] Normalize supported provider PDF links to authoritative metadata records.
+- [x] Preserve all original identifiers and locator diagnostics.
 Verification: redirects, unsafe destinations, chains, PDF-link and conflicting DOI tests.
 Files: verification/routing.py, verification/resolver.py, tests/test_routing.py,
        tests/test_queued_audit.py.
 Dependencies: T04.
 
 ## Checkpoint C2
-- [ ] BibTeX and PDF audit through the production CLI, with correct evidence and resume.
+- [x] BibTeX and PDF audit through the production CLI, with correct evidence and resume.
 
 ## T06: Product acceptance
-- [ ] Verify CLI/viewer stop/resume, progress and machine envelopes.
-- [ ] Verify source errors remain findings while local execution failures stop the audit.
-- [ ] Verify installed distributions include Huey and work without development modules.
+- [x] Verify CLI/viewer stop/resume, progress and machine envelopes.
+- [x] Verify source errors remain findings while local execution failures stop the audit.
+- [x] Verify installed distributions include Huey and work without development modules.
 Verification: full offline regressions, package tests and shared launcher checks.
 Files: CLI/viewer regression tests, package tests and acceptance harness as required.
 Dependencies: T05.
 
 ## T07: Review and simplify
-- [ ] Review correctness, lifecycle, concurrency, safety and dependencies.
-- [ ] Remove prototype duplication and unnecessary scheduler/verdict abstractions.
-- [ ] Document actual retrieval policy, rate scope, recovery and limits.
-- [ ] Run mutation check, full regression suite, quality checks and package builds.
+- [x] Review correctness, lifecycle, concurrency, safety and dependencies.
+- [x] Remove prototype duplication and unnecessary scheduler/verdict abstractions.
+- [x] Document actual retrieval policy, rate scope, recovery and limits.
+- [x] Run mutation check, full regression suite, quality checks and package builds.
 Verification: review findings addressed; tests retain their original strength.
 Files: evaluation prototype files, README/skill docs, affected implementation and tests.
 Dependencies: T06.
 
 ## Complete
-- [ ] All tasks and verification evidence recorded; working tree ready for review.
+- [x] All tasks and verification evidence recorded; working tree ready for review.
+
+
+## Final verification
+
+- Offline regressions: 1,436 passed; one existing skip; package tests selected separately.
+- Standalone installed-package test: passed. Shared launcher/package checks: 15 passed.
+- Conference PDFs: all 39 baseline and 6 stress reports satisfy the final frozen
+  field, anchor, required-issue and verdict assertions. Four DOI-primary baseline
+  cells were rerun through the CLI after updating their source-policy expectations.
+  Inputs, rendering gold, reference truth and compiled PDFs were unchanged.
+- Quality: Ruff lint, formatting (146 files) and McCabe complexity <= 10 passed.
+- Both source distributions and wheels built successfully, including Huey at runtime.
+- Mutation: reversing the direct-lookup early-stop condition failed both public
+  audit cases as expected; the production implementation was restored unchanged.
+- Independent review: queue error propagation and earlier locator evidence retention
+  findings fixed; final review found no further actionable issues.
+- Simplification: removed duplicate prototype scheduler/verifier modules; migrated
+  their acceptance contracts and benchmark to production components; reused JMLR's
+  existing URL normalization rather than maintaining another conversion.
+- Offline 100-citation benchmark: 100 direct tasks versus 600 full-fanout tasks;
+  0.20s versus 0.92s, 12 runtime threads, 240 KiB versus 408 KiB SQLite files.
+  Synthetic no-network measurements describe queue overhead, not provider latency.
+- Generated databases, reports, benchmark output, build artifacts and PDFs remain
+  outside version control.
