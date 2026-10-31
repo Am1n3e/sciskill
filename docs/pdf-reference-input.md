@@ -31,6 +31,13 @@ names, missing metadata, clipping, ambiguous text, and competing locators remain
 visible. Uncertain compared fields cannot establish an Invalid or Correct verdict;
 a reliably recovered discrepancy in another field can still be Invalid.
 
+If typesetting removes every identity locator, a nearby retrieved title is not
+proof that the citation refers to that record. With compatible ordered authors
+and the same year, the PDF adapter can report a `candidate_title_discrepancy` for
+review, retaining the exact input/found titles and the rejected candidate. It
+does not select that candidate as canonical or manufacture an Invalid verdict.
+References containing only “others” or “et al.” explicitly retain unknown authors.
+
 The runtime dependency bounds include `cryptography>=48,<49`: version 48 has
 binary wheels for Intel macOS as well as ARM macOS and Linux. The initially
 resolved version 50 attempted a native Rust/OpenSSL build on Intel macOS. The
@@ -73,6 +80,9 @@ identify source-case order, field visibility, PDF checksums, and build selection
 The oracle distinguishes printed fields, annotation-only fields, omitted source
 information, and build negatives. Punctuation-only placeholders and visible empty
 labels are retained as uncertain occurrences; they are not silently discarded.
+Native author-count truncation and source name grouping lost through typography
+are explicit annotations. Complete printed DOI values, including encoded and
+wrapped forms, are checked separately from the final verdict.
 
 ## Reproduce the checks
 
