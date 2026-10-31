@@ -56,6 +56,8 @@ class PackageTests(unittest.TestCase):
             names = wheel.namelist()
             for package in ("bib_lint/viewer", "rebuttal_desk"):
                 self.assertIn(f"{package}/static/index.html", names)
+            self.assertIn("bib_lint/pdf_input/worker.py", names)
+            self.assertIn("bib_lint/pdf_evidence.py", names)
             self.assertFalse(
                 any(".local/" in name or "references.json" in name for name in names)
             )
@@ -93,7 +95,64 @@ class PackageTests(unittest.TestCase):
             with self.subTest(tool=tool):
                 self.check_viewer(tool, path)
 
-    def check_viewer(self, tool, path):
+    def test_pdf_preview_runs_from_installed_shared_entrypoint(self):
+        source = self.directory / "research paper.PDF"
+        write_research_pdf(source)
+        original = source.read_bytes()
+
+        def preview(base_url):
+            import http.cookiejar
+
+            browser = urllib.request.build_opener(
+                urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())
+            )
+            with browser.open(base_url + "/api/state") as response:
+                state = json.loads(response.read())
+            request = urllib.request.Request(
+                base_url + "/api/action",
+                data=json.dumps(
+                    {
+                        "action": "parse",
+                        "bibliography": str(source),
+                        "output": str(self.directory / "pdf-audit"),
+                    }
+                ).encode(),
+                headers={
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": state["csrf"],
+                },
+            )
+            with browser.open(request, timeout=30) as response:
+                state = json.loads(response.read())
+            self.assertIsNone(state["error"])
+            self.assertEqual(state["metadata"]["input_kind"], "pdf")
+            self.assertEqual(state["summary"]["completed"], 0)
+            self.assertEqual(state["summary"]["extraction"]["occurrence_count"], 1)
+            with browser.open(base_url + "/api/reference?key=pdf-ref-0001") as response:
+                detail = json.loads(response.read())
+            self.assertEqual(detail["pdf"]["fragments"][0]["page"], 1)
+            self.assertEqual(detail["entry"]["fields"]["title"], "An Example Paper")
+            self.assertFalse((self.directory / "pdf-audit/cache").exists())
+
+        self.check_viewer("bib-lint", "", after_ready=preview)
+        self.assertEqual(source.read_bytes(), original)
+        invalid = self.directory / "invalid.pdf"
+        invalid.write_bytes(b"not a PDF")
+        result = subprocess.run(
+            [*self.command, "bib-lint", "verify", str(invalid), "--json"],
+            cwd=self.directory,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 2)
+        envelope = json.loads(result.stdout)
+        self.assertEqual(envelope["extraction"]["state"], "failed")
+        self.assertTrue(envelope["error"]["diagnostics"])
+        self.assertFalse((self.directory / "invalid.bib-lint").exists())
+
+    def check_viewer(self, tool, path, after_ready=None):
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", 0))
             port = sock.getsockname()[1]
@@ -121,6 +180,8 @@ class PackageTests(unittest.TestCase):
                         f"http://127.0.0.1:{port}/", timeout=1
                     ) as page:
                         self.assertIn("Science Skills", page.read().decode())
+                    if after_ready:
+                        after_ready(f"http://127.0.0.1:{port}")
                     return
                 except (urllib.error.URLError, TimeoutError):
                     if process.poll() is not None:
@@ -133,3 +194,37 @@ class PackageTests(unittest.TestCase):
             if process.poll() is None:
                 os.killpg(process.pid, signal.SIGINT)
             process.communicate(timeout=10)
+
+
+def write_research_pdf(path):
+    """Write a tiny real text PDF using only stdlib in the installed-package gate."""
+    content = (
+        b"BT /F1 12 Tf 50 700 Td (References) Tj 0 -20 Td "
+        b"([1] Jane Smith. An Example Paper. Example Journal, 2025.) Tj ET"
+    )
+    objects = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        (
+            b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+            b"/Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>"
+        ),
+        b"<< /Length "
+        + str(len(content)).encode()
+        + b" >>\nstream\n"
+        + content
+        + b"\nendstream",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman >>",
+    ]
+    raw = bytearray(b"%PDF-1.4\n")
+    offsets = []
+    for index, obj in enumerate(objects, 1):
+        offsets.append(len(raw))
+        raw.extend(str(index).encode() + b" 0 obj\n" + obj + b"\nendobj\n")
+    xref = len(raw)
+    raw.extend(f"xref\n0 {len(objects) + 1}\n0000000000 65535 f \n".encode())
+    raw.extend(b"".join(f"{offset:010d} 00000 n \n".encode() for offset in offsets))
+    raw.extend(
+        f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode()
+    )
+    path.write_bytes(raw)
