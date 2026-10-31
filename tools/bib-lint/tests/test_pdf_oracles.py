@@ -410,3 +410,49 @@ def test_resolving_wrong_doi_requires_the_linked_papers_title_conflict():
         {"field": "doi", "results": ["mismatch"]}
     ]
     assert visible_checks(case, "eccv", {"title": "text", "doi": "text", "url": "text"}) == checks
+
+
+def test_reviewed_printed_mismatch_survives_erased_source_grouping():
+    import copy
+
+    from pdf_e2e.build import FIXTURES, read_json
+    from pdf_e2e.oracles import expand_project
+
+    project = copy.deepcopy(
+        next(
+            project
+            for project in read_json(FIXTURES / "renderings.json")["projects"]
+            if project["venue"] == "iclr" and project["corpus"] == "representative-20"
+        )
+    )
+    row = next(row for row in project["cases"] if row["k"] == "songTrialErrorExplorationBased2024")
+    assert row["author_grouping_erased"] and row["arxiv_locator_erased"]
+    row["printed_mismatches"] = [{"field": "authors", "source": "acl_anthology"}]
+    project["cases"] = [row]
+    expanded = expand_project(project, read_json(FIXTURES / "truth.json"))["cases"][0]
+    assert expanded["expected_statuses"] == ["Invalid"]
+    assert not expanded["author_structure_visible"]
+    assert {"field": "authors", "source": "acl_anthology", "results": ["mismatch"]} in expanded[
+        "required_checks"
+    ]
+
+
+def test_compact_gold_preserves_reviewed_printed_mismatches():
+    from pdf_e2e.oracles import compact_oracles
+
+    checks = [{"field": "authors", "source": "acl_anthology"}]
+    case = {
+        "source_key": "example",
+        "expected_fields": {},
+        "visibility": {},
+        "classification": "text",
+        "anchor": {"page": 1, "box": [0, 0, 100, 10]},
+        "rendering_issues": [],
+        "expected_authors": [],
+        "author_structure_visible": False,
+        "arxiv_locator_erased": True,
+        "identity_locator_erased": False,
+        "printed_mismatches": checks,
+    }
+    result = compact_oracles({"projects": [{"selection": {}, "cases": [case]}]})
+    assert result["projects"][0]["cases"][0]["printed_mismatches"] == checks

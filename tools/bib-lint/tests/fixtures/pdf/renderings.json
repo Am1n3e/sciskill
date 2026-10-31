@@ -251,6 +251,7 @@
     }
   ],
   "case_columns": {
+    "printed_mismatches": "Independently reviewed printed field conflicts with identified sources",
     "k": "source citation key",
     "t": "fields printed as text",
     "a": "fields retained only in annotations",
@@ -290,7 +291,7 @@
         {"k":"JMLR:v22:20-1364","t":["title","year","journal","url"],"a":[],"anchor":{"page":3,"box":[108.0,433.613,504.003,443.576]}},
         {"k":"pmlr-v70-shi17a","t":["title","year","booktitle","url"],"a":[],"anchor":{"page":3,"box":[108.0,484.964,504.003,494.927]},"author_grouping_erased":true},
         {"k":"shinnReflexionLanguageAgents2023","t":["title","year","journal"],"a":[],"anchor":{"page":3,"box":[108.0,547.225,504.003,557.188]},"author_grouping_erased":true,"arxiv_locator_erased":true},
-        {"k":"songTrialErrorExplorationBased2024","t":["title","year","booktitle","doi"],"a":[],"anchor":{"page":3,"box":[108.0,598.577,504.003,608.54]},"author_grouping_erased":true,"arxiv_locator_erased":true},
+        {"k":"songTrialErrorExplorationBased2024","t":["title","year","booktitle","doi"],"a":[],"anchor":{"page":3,"box":[108.0,598.577,504.003,608.54]},"author_grouping_erased":true,"arxiv_locator_erased":true,"printed_mismatches":[{"field":"authors","source":"acl_anthology"}]},
         {"k":"tanEnhancingWebAgents2026","t":["title","year"],"a":[],"anchor":{"page":3,"box":[108.0,671.746,504.003,681.709]},"arxiv_locator_erased":true},
         {"k":"thomas2015hcpi","t":["title","year","booktitle"],"a":[],"anchor":{"page":3,"box":[108.0,701.28,504.003,711.243]}},
         {"k":"you2025datawiseagentnotebookcentricllmagent","t":["title","year","booktitle","doi","url"],"a":[],"anchor":{"page":4,"box":[108.0,74.152,504.003,84.115]}}
@@ -542,7 +543,7 @@
         {"k":"JMLR:v22:20-1364","t":["title","year","journal","url"],"a":[],"anchor":{"page":3,"box":[108.0,443.416,504.003,453.379]}},
         {"k":"pmlr-v70-shi17a","t":["title","year","booktitle","url"],"a":[],"anchor":{"page":3,"box":[108.0,494.76,504.003,504.723]},"author_grouping_erased":true},
         {"k":"shinnReflexionLanguageAgents2023","t":["title","year","journal"],"a":[],"anchor":{"page":3,"box":[108.0,557.062,504.003,567.025]},"author_grouping_erased":true,"arxiv_locator_erased":true},
-        {"k":"songTrialErrorExplorationBased2024","t":["title","year","booktitle","doi"],"a":[],"anchor":{"page":3,"box":[108.0,608.186,504.003,618.368]},"author_grouping_erased":true,"arxiv_locator_erased":true},
+        {"k":"songTrialErrorExplorationBased2024","t":["title","year","booktitle","doi"],"a":[],"anchor":{"page":3,"box":[108.0,608.186,504.003,618.368]},"author_grouping_erased":true,"arxiv_locator_erased":true,"printed_mismatches":[{"field":"authors","source":"acl_anthology"}]},
         {"k":"tanEnhancingWebAgents2026","t":["title","year"],"a":[],"anchor":{"page":3,"box":[108.0,681.666,504.003,691.629]},"arxiv_locator_erased":true},
         {"k":"thomas2015hcpi","t":["title","year","booktitle"],"a":[],"anchor":{"page":3,"box":[108.0,711.092,504.003,721.055]}},
         {"k":"you2025datawiseagentnotebookcentricllmagent","t":["title","year","booktitle","doi","url"],"a":[],"anchor":{"page":4,"box":[108.0,84.013,504.003,93.976]}}
@@ -1047,7 +1048,7 @@
         {"k":"JMLR:v22:20-1364","t":["title","year","journal"],"a":["url"],"anchor":{"page":2,"box":[306.142,278.78,524.408,288.743]}},
         {"k":"pmlr-v70-shi17a","t":["title","year","booktitle"],"a":["url"],"anchor":{"page":2,"box":[306.142,343.382,524.406,353.345]},"author_grouping_erased":true},
         {"k":"shinnReflexionLanguageAgents2023","t":["title","year","journal"],"a":[],"anchor":{"page":2,"box":[306.142,429.902,525.658,439.865]},"author_grouping_erased":true,"arxiv_locator_erased":true},
-        {"k":"songTrialErrorExplorationBased2024","t":["title","year","booktitle"],"a":["doi"],"anchor":{"page":2,"box":[306.142,505.463,524.408,515.426]},"author_grouping_erased":true,"arxiv_locator_erased":true},
+        {"k":"songTrialErrorExplorationBased2024","t":["title","year","booktitle"],"a":["doi"],"anchor":{"page":2,"box":[306.142,505.463,524.408,515.426]},"author_grouping_erased":true,"arxiv_locator_erased":true,"printed_mismatches":[{"field":"authors","source":"acl_anthology"}]},
         {"k":"tanEnhancingWebAgents2026","t":["title","year","eprint"],"a":[],"anchor":{"page":2,"box":[306.142,624.86,526.062,634.823]}},
         {"k":"thomas2015hcpi","t":["title","year","booktitle"],"a":[],"anchor":{"page":2,"box":[306.142,667.544,526.064,677.507]}},
         {"k":"you2025datawiseagentnotebookcentricllmagent","t":["title","year","booktitle"],"a":["doi"],"anchor":{"page":2,"box":[306.142,721.188,525.658,731.151]}}
@@ -1174,7 +1175,7 @@
         {"k":"JMLR:v22:20-1364","t":["title","year","journal"],"a":["url"],"anchor":{"page":2,"box":[306.142,278.78,524.408,288.743]}},
         {"k":"pmlr-v70-shi17a","t":["title","year","booktitle"],"a":["url"],"anchor":{"page":2,"box":[306.142,343.382,524.406,353.345]},"author_grouping_erased":true},
         {"k":"shinnReflexionLanguageAgents2023","t":["title","year","journal"],"a":[],"anchor":{"page":2,"box":[306.142,429.902,525.658,439.865]},"author_grouping_erased":true,"arxiv_locator_erased":true},
-        {"k":"songTrialErrorExplorationBased2024","t":["title","year","booktitle"],"a":["doi"],"anchor":{"page":2,"box":[306.142,505.463,524.408,515.426]},"author_grouping_erased":true,"arxiv_locator_erased":true},
+        {"k":"songTrialErrorExplorationBased2024","t":["title","year","booktitle"],"a":["doi"],"anchor":{"page":2,"box":[306.142,505.463,524.408,515.426]},"author_grouping_erased":true,"arxiv_locator_erased":true,"printed_mismatches":[{"field":"authors","source":"acl_anthology"}]},
         {"k":"tanEnhancingWebAgents2026","t":["title","year","eprint"],"a":[],"anchor":{"page":2,"box":[306.142,624.86,526.062,634.823]}},
         {"k":"thomas2015hcpi","t":["title","year","booktitle"],"a":[],"anchor":{"page":2,"box":[306.142,667.544,526.064,677.507]}},
         {"k":"you2025datawiseagentnotebookcentricllmagent","t":["title","year","booktitle"],"a":["doi"],"anchor":{"page":2,"box":[306.142,721.188,525.658,731.151]}}
@@ -1301,7 +1302,7 @@
         {"k":"JMLR:v22:20-1364","t":["title","year","journal"],"a":["url"],"anchor":{"page":2,"box":[306.142,278.78,524.408,288.743]}},
         {"k":"pmlr-v70-shi17a","t":["title","year","booktitle"],"a":["url"],"anchor":{"page":2,"box":[306.142,343.382,524.406,353.345]},"author_grouping_erased":true},
         {"k":"shinnReflexionLanguageAgents2023","t":["title","year","journal"],"a":[],"anchor":{"page":2,"box":[306.142,429.902,525.658,439.865]},"author_grouping_erased":true,"arxiv_locator_erased":true},
-        {"k":"songTrialErrorExplorationBased2024","t":["title","year","booktitle"],"a":["doi"],"anchor":{"page":2,"box":[306.142,505.463,524.408,515.426]},"author_grouping_erased":true,"arxiv_locator_erased":true},
+        {"k":"songTrialErrorExplorationBased2024","t":["title","year","booktitle"],"a":["doi"],"anchor":{"page":2,"box":[306.142,505.463,524.408,515.426]},"author_grouping_erased":true,"arxiv_locator_erased":true,"printed_mismatches":[{"field":"authors","source":"acl_anthology"}]},
         {"k":"tanEnhancingWebAgents2026","t":["title","year","eprint"],"a":[],"anchor":{"page":2,"box":[306.142,624.86,526.062,634.823]}},
         {"k":"thomas2015hcpi","t":["title","year","booktitle"],"a":[],"anchor":{"page":2,"box":[306.142,667.544,526.064,677.507]}},
         {"k":"you2025datawiseagentnotebookcentricllmagent","t":["title","year","booktitle"],"a":["doi"],"anchor":{"page":2,"box":[306.142,721.188,525.658,731.151]}}

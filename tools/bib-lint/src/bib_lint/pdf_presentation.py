@@ -135,7 +135,8 @@ def _author_presentation(item, original, found):
 
 def _author_comparison(item, original, found):
     alternate = _author_presentation(item, original, found)
-    if _ambiguous_adjacent_groups(alternate, found):
+    source, _ = _field_source(item, "authors")
+    if _ambiguous_adjacent_groups(alternate, found, source):
         return "unknown"
     if alternate == original:
         return None
@@ -146,9 +147,10 @@ def _author_comparison(item, original, found):
     )
 
 
-def _ambiguous_adjacent_groups(original, found):
+def _ambiguous_adjacent_groups(original, found, source):
     if len(original) != len(found) + 1:
         return False
+    source = " ".join(source.split())
     for index, canonical in enumerate(found):
         first, last = original[index : index + 2]
         if (
@@ -163,6 +165,10 @@ def _ambiguous_adjacent_groups(original, found):
         if normalize(given) != normalize(canonical.get("given")) or normalize(
             last.get("family")
         ) != normalize(canonical.get("family")):
+            continue
+        pair = rf"(?<!\w){re.escape(given)}\s*,\s*{re.escape(last['family'])}(?!\w)"
+        occurrences = re.findall(rf"(?<!\w){re.escape(given)}(?!\w)", source, re.IGNORECASE)
+        if len(occurrences) != 1 or not re.search(pair, source, re.IGNORECASE):
             continue
         alternate = (
             original[:index] + [{"given": given, "family": last["family"]}] + original[index + 2 :]

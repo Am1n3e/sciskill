@@ -517,6 +517,7 @@ def compact_oracles(gold):
         "arxiv_locator_erased": "native text and actual URI actions retain no arXiv locator",
         "identity_locator_erased": "no identifier establishes which work has the disputed title",
         "issues": "native typesetter locator defects confirmed by actual PDF URI actions",
+        "printed_mismatches": "Reviewed printed field conflicts with identified sources",
     }
     compact["projects"] = []
     for project in gold["projects"]:
@@ -547,6 +548,8 @@ def compact_oracles(gold):
                 row["arxiv_locator_erased"] = True
             if case["identity_locator_erased"]:
                 row["identity_locator_erased"] = True
+            if case.get("printed_mismatches"):
+                row["printed_mismatches"] = case["printed_mismatches"]
             result["cases"].append(row)
         compact["projects"].append(result)
     return compact
@@ -632,6 +635,12 @@ def expand_project(project, truth):
                 "found": record["metadata"]["title"],
                 "source": record["provider"],
             }
+        if row.get("printed_mismatches"):
+            rendered = expanded["cases"][-1]
+            rendered["required_checks"].extend(
+                {**check, "results": ["mismatch"]} for check in row["printed_mismatches"]
+            )
+            rendered["expected_statuses"] = ["Invalid"]
     return expanded
 
 

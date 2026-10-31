@@ -198,19 +198,53 @@ def test_non_pdf_bibtex_hyphens_are_never_reinterpreted():
     assert apply_extraction(result, item)["is_correct"] is False
 
 
-def test_adjacent_name_fragments_are_reviewed_without_rewriting_the_input():
+@pytest.mark.parametrize(
+    ("separator", "correct"),
+    [
+        (", ", None),
+        (" and ", False),
+        (", and ", False),
+        (" & ", False),
+        ("; ", False),
+        (None, False),
+    ],
+)
+def test_adjacent_name_fragments_require_ambiguous_printed_separator(separator, correct):
     item = _author_item()
     item["entry"]["persons"]["author"] = [
         {"first": ["Bill"], "last": ["Yuchen"], "lineage": [], "kind": "person"},
         {"first": [], "last": ["Lin"], "lineage": [], "kind": "person"},
     ]
+    text = "Bill Yuchen" + (separator or " ") + "Lin"
+    item["pdf"]["fragments"][0]["text"] = text
+    item["pdf"]["field_evidence"]["authors"] = (
+        [{"fragment": 0, "start": 0, "end": len(text)}] if separator else []
+    )
     before = copy.deepcopy(item)
     original = input_record(item["entry"])
     found = {**original, "authors": [{"given": "Bill Yuchen", "family": "Lin"}]}
     method = select_result("primary", original, [found], authority=True, lookup="url")
     result = apply_extraction(build_consensus([method]), item)
-    assert result["is_correct"] is None
+    assert result["is_correct"] is correct
     assert item == before
+
+
+def test_a_repeated_name_cannot_borrow_another_occurrences_comma():
+    item = _author_item()
+    first = {"first": ["Bill"], "last": ["Yuchen"], "kind": "person"}
+    last = {"first": [], "last": ["Lin"], "kind": "person"}
+    item["entry"]["persons"]["author"] = [first, last, first.copy(), last.copy()]
+    text = "Bill Yuchen and Lin and Bill Yuchen, Lin"
+    item["pdf"]["fragments"][0]["text"] = text
+    item["pdf"]["field_evidence"]["authors"] = [{"fragment": 0, "start": 0, "end": len(text)}]
+    original = input_record(item["entry"])
+    found = {
+        **original,
+        "authors": [{"given": "Bill Yuchen", "family": "Lin"}] + original["authors"][2:],
+    }
+    method = select_result("primary", original, [found], authority=True, lookup="url")
+    result = apply_extraction(build_consensus([method]), item)
+    assert result["is_correct"] is False
 
 
 def test_many_proved_breaks_match_without_enumerating_exponential_variants():
