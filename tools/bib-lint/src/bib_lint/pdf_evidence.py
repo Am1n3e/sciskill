@@ -247,3 +247,41 @@ def extraction_summary(report):
         "occurrence_count": len(report["items"]),
         **{k: extraction[k] for k in ("unresolved_fragments", "reference_pages", "diagnostics")},
     }
+
+
+def apply_extraction(result, item):
+    """Recompute decisions after excluding comparisons of uncertain input fields."""
+    from bib_lint.verification.consensus import CHECKED_FIELDS, build_consensus
+
+    extraction = item["validations"].get("extraction")
+    if not extraction or extraction["state"] == "complete":
+        return result
+    diagnostics = extraction["diagnostics"]
+    aliases = {"journal": "venue", "booktitle": "venue", "eprint": "arxiv", "author": "authors"}
+    affected = set()
+    findings = list(result.get("input_findings", []))
+    for diagnostic in diagnostics:
+        fields = diagnostic["fields"]
+        affected.update(aliases.get(field, field) for field in (fields or CHECKED_FIELDS))
+        findings.append(
+            {
+                "field": ", ".join(fields) or "reference",
+                "code": diagnostic["code"],
+                "message": diagnostic["message"],
+                "result": "unknown",
+            }
+        )
+    methods = copy.deepcopy(result["methods"])
+    for method in methods:
+        for comparison in method.get("comparisons", []):
+            if comparison["field"] in affected:
+                comparison["result"] = "unknown"
+        method["differences"] = [
+            d for d in method.get("differences", []) if d["field"] not in affected
+        ]
+    rebuilt = build_consensus(methods, input_findings=findings)
+    if "complete" in result:
+        rebuilt["complete"] = result["complete"]
+    if rebuilt["is_correct"] is True:
+        rebuilt["is_correct"] = None
+    return rebuilt

@@ -150,3 +150,41 @@ def test_pdf_extraction_failure_is_structured_and_preserves_workspace(
     assert result["extraction"]["state"] == "failed"
     assert result["error"]["diagnostics"][0]["code"] == "unreadable_reference_page"
     assert not source.with_name("research paper.bib-lint").exists()
+
+
+def test_pdf_workflow_applies_uncertainty_before_saving_source_outcomes(pdf_input, monkeypatch):
+    source, _, _ = pdf_input
+    module = sys.modules["bib_lint.pdf_input"]
+    original_extract = module.extract_pdf
+
+    def uncertain(path):
+        report = original_extract(path)
+        diagnostics = [
+            {
+                "code": "uncertain_year",
+                "message": "Year interpretation is uncertain",
+                "fields": ["year"],
+            }
+        ]
+        report["items"][0]["pdf"]["diagnostics"] = diagnostics
+        report["items"][0]["validations"]["extraction"] = {
+            "state": "needs_review",
+            "diagnostics": diagnostics,
+        }
+        return seal_extraction(report)
+
+    def wrong_year(record, client):
+        canonical = copy.deepcopy(record)
+        canonical["year"] = "2024"
+        return select_result("test", record, [canonical], authority=True)
+
+    monkeypatch.setattr(module, "extract_pdf", uncertain)
+    workspace, report, _ = run_audit(
+        source, client=FakeClient(), methods=fixture_registry({"test": wrong_year})
+    )
+    item = report["items"][0]
+    assert report["verification_run"]["orchestration_version"] == 5
+    assert item["validations"]["correctness"]["is_correct"] is None
+    assert item["validations"]["correctness"]["input_findings"][0]["code"] == "uncertain_year"
+    saved = json.loads(workspace.final.read_text())
+    assert saved["items"][0]["validations"]["correctness"]["is_correct"] is None
