@@ -3,34 +3,34 @@
 Specification: [PDF reference input](../SPEC-pdf-reference-input.md).
 Architecture and reproducible commands: [PDF guide](../docs/pdf-reference-input.md).
 
-The implementation follows the approved thin-slice TDD plan. UAI and OCR are
+The implementation follows the approved thin-slice TDD plan. Automated checks and their current results are attached to [PR #8](https://github.com/Am1n3e/sciskill/pull/8). UAI and OCR are
 explicitly deferred. The earlier bibliography fixtures remain unchanged. Generated
 projects, PDFs, compiler logs, caches, and audit reports stay under ignored
 `.local/pdf-e2e/`.
 
 | Task | Implementation and verification | State |
 | --- | --- | --- |
-| T01: Freeze the earlier bibliography cases | Exact 20/31/35-entry inputs, SHA-256 inventory, 86 case designs, 24 independently curated source records | Complete |
-| T02: Pin official conference templates | 12 venue configurations, nine checksum-verified official assets, immutable TeX image | Complete |
-| T03: Generate and compile projects | All 36 original cells accounted for; isolated native build negatives, renderable subsets, and positive counterparts | Complete |
-| T04, T04a–d: Rendering gold | Native bibliography order, field visibility, author presentation, omitted information, and independently measured physical PDF evidence | Final validation |
-| T05: Controlled scholarly HTTP | Protocol-shaped replay for the six real adapters, canonical facts independent of mutations, unexpected requests rejected | Complete |
-| T06: PDF-only E2E harness | Public CLI, actual isolated worker, protected source/truth files, real providers and consensus | Complete |
-| T07: Select the local parser | Pinned pdfplumber, local bounded grammar, documented alternatives and measured limits | Complete |
-| T08: PDF evidence/report boundary | Strict schema 4, physical page/box/span validation, sealed evidence and content/version/settings identity; schemas 2/3 retained | Complete |
-| T09: First compiled-PDF CLI slice | Clean and visibly corrupt compiled references through extraction, verification, and persisted report | Complete |
-| T10: Columns and pages | Unequal columns, hanging indents, cross-page continuations, repeated headers, review gutters and appendix boundaries | Complete |
-| T11: Names and text | Initials, accents, ligatures, suffixes, corporate names, truncation, proved line-end hyphen presentation; original fragments preserved | Complete |
-| T12: Locators | Printed and annotation evidence, versions, wrapped IDs, malformed/empty IDs and secondary conflicts | Complete |
-| T13: Decision precedence | Uncertainty cannot fabricate Correct or Invalid; independent reliable mismatches retained | Complete |
-| T14: Unsupported/bounded inputs | Corrupt/encrypted/image-only inputs, coverage diagnostics, byte/page/text/reference/time/decoded-stream limits | Complete |
-| T15: Resume and refresh | Reuse unchanged sealed extraction; refresh lookups only; reject changed bytes/versions/settings/tampering without replacement | Complete |
-| T16: CLI and packages | Uppercase/spaced paths, generated keys, structured final envelope, standalone/shared installation outside checkout | Complete |
-| T17: Viewer APIs | Offline parse, same audit semantics, extraction coverage and original evidence | Complete |
-| T18: Browser presentation | Actual PDF flow, page/field/URI evidence, separate coverage banner, inert untrusted content, keyboard and responsive checks | Complete |
-| T19: Full matrix | 39 baseline acceptance PDFs and six held-out native modes; exact fields/findings, clean outcomes, occurrences and locations | Final validation |
-| T20: CI/release gate | Offline checks, Linux/macOS packages, pinned compilation and baseline/stress tests; bounded failure artifacts | Branch validation |
-| T21: Documentation and final checks | User/skill documentation, decision note, source-only public artifacts, independent review, builds and PR | Final validation |
+| T01: Freeze the earlier bibliography cases | Exact 20/31/35-entry inputs, SHA-256 inventory, 86 case designs, 24 independently curated source records | Implemented |
+| T02: Pin official conference templates | 12 venue configurations, nine checksum-verified official assets, immutable TeX image | Implemented |
+| T03: Generate and compile projects | All 36 original cells accounted for; isolated native build negatives, renderable subsets, and positive counterparts | Implemented |
+| T04, T04a–d: Rendering gold | Native bibliography order, field visibility, author presentation, omitted information, and independently measured physical PDF evidence | Implemented |
+| T05: Controlled scholarly HTTP | Protocol-shaped replay for the six real adapters, canonical facts independent of mutations, unexpected requests rejected | Implemented |
+| T06: PDF-only E2E harness | Public CLI, actual isolated worker, protected source/truth files, real providers and consensus | Implemented |
+| T07: Select the local parser | Pinned pdfplumber, local bounded grammar, documented alternatives and measured limits | Implemented |
+| T08: PDF evidence/report boundary | Strict schema 4, physical page/box/span validation, sealed evidence and content/version/settings identity; schemas 2/3 retained | Implemented |
+| T09: First compiled-PDF CLI slice | Clean and visibly corrupt compiled references through extraction, verification, and persisted report | Implemented |
+| T10: Columns and pages | Unequal columns, hanging indents, cross-page continuations, repeated headers, review gutters and appendix boundaries | Implemented |
+| T11: Names and text | Initials, accents, ligatures, suffixes, corporate names, truncation, proved line-end hyphen presentation; original fragments preserved | Implemented |
+| T12: Locators | Printed and annotation evidence, versions, wrapped IDs, malformed/empty IDs and secondary conflicts | Implemented |
+| T13: Decision precedence | Uncertainty cannot fabricate Correct or Invalid; independent reliable mismatches retained | Implemented |
+| T14: Unsupported/bounded inputs | Corrupt/encrypted/image-only inputs, coverage diagnostics, byte/page/text/reference/time/decoded-stream limits | Implemented |
+| T15: Resume and refresh | Reuse unchanged sealed extraction; refresh lookups only; reject changed bytes/versions/settings/tampering without replacement | Implemented |
+| T16: CLI and packages | Uppercase/spaced paths, generated keys, structured final envelope, standalone/shared installation outside checkout | Implemented |
+| T17: Viewer APIs | Offline parse, same audit semantics, extraction coverage and original evidence | Implemented |
+| T18: Browser presentation | Actual PDF flow, page/field/URI evidence, separate coverage banner, inert untrusted content, keyboard and responsive checks | Implemented |
+| T19: Full matrix | 39 baseline acceptance PDFs and six held-out native modes; exact fields/findings, clean outcomes, occurrences and locations | Implemented |
+| T20: CI/release gate | Offline checks, Linux/macOS packages, pinned compilation and baseline/stress tests; bounded failure artifacts | Implemented |
+| T21: Documentation and final checks | User/skill documentation, decision note, source-only public artifacts, independent review, builds and PR | Implemented |
 
 The independent review found and reproduced worker import isolation, nested-stream
 expansion, unequal-column, malformed-evidence, ambiguous-title and locator-loss

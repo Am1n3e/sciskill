@@ -1,6 +1,6 @@
 # Implementation plan: PDF reference auditing through conference-paper E2E tests
 
-Status: Implemented; full acceptance and branch CI validation are in progress. The final task states are recorded in [todo.md](todo.md). UAI is deferred by explicit user instruction.
+Status: Implemented. The task-to-verification map is recorded in [todo.md](todo.md); the required baseline/stress, package, and quality checks gate review. UAI is deferred by explicit user instruction.
 
 Specification: [SPEC-pdf-reference-input.md](../SPEC-pdf-reference-input.md).
 Task list target: [todo.md](todo.md). Use these files as the single plan/task index; no external tracker is designated.

@@ -5,6 +5,7 @@ on:
     paths:
       - 'tools/bib-lint/**'
       - 'tools/sciskill/**'
+      - 'tools/rebuttal-desk/**'
       - 'pyproject.toml'
       - '.github/workflows/bib-lint-checks.yml'
       - '.github/workflows/publish.yml'
