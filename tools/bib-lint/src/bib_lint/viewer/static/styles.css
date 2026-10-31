@@ -30,12 +30,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .workspace-header h1 { white-space: nowrap; font-size: 20px; font-weight: 650; margin: 0; }
 .workspace-header h1 span { color: #999; font-weight: 400; margin-inline: 4px; }
 .header-actions { display: flex; white-space: nowrap; align-items: center; gap: 12px; }
-.input-summary { font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
-.input-summary p { margin: 4px 0; }
-.context-label { color: var(--muted); margin-right: 12px; }
-.input-options { color: var(--muted); font-size: 12px; }
-.run-summary { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; border-bottom: 1px solid var(--line); padding: 12px 0 16px; margin-bottom: 16px; font-size: 13px; font-variant-numeric: tabular-nums; }
-.run-summary:empty { display: none; }
+.audit-summary { margin-bottom: 20px; }
+.audit-summary table { min-width: 720px; }
+.audit-summary th, .audit-summary td { padding: 8px 12px; }
+.audit-summary th { font-size: 12px; }
+#input-summary th { vertical-align: top; white-space: nowrap; }
+#input-summary td { font-size: 12px; }
+#run-summary td { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .muted { color: var(--muted); }
 .small { font-size: 12px; line-height: 1.5; }
 p { line-height: 1.6; }

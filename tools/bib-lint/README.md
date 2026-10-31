@@ -123,9 +123,10 @@ performs new lookups. The interface uses a loopback Python server and bundled
 HTML/CSS/JavaScript with no frontend installation. Use `--port PORT` or
 `--no-browser` when needed.
 
-The viewer opens directly on the reference table, with saved inputs/options and
-compact result counts above it. Select a reference to expand field comparisons and
-source evidence beneath its row. PDF evidence, cached responses, and raw diagnostics
+The viewer opens directly on the reference table, with a summary table of the input,
+saved options, extracted references (for PDFs), processed references, and result
+counts above it. Select a reference to expand field comparisons and source evidence
+beneath its row. PDF evidence, cached responses, and raw diagnostics
 are optional disclosures in that same page. DOI resolution is identified separately
 from paper metadata. Extraction warnings remain visible; routine completion notices
 do not obscure results. Unknown citation scope never hides known findings.

@@ -50,23 +50,23 @@ function pdfPanel(panel){
   panel.append(table(['Physical page','URI target'],evidence.uris,(tr,row)=>{cell(tr,row.page);cell(tr,safeLink(row.uri,row.uri));},'comparison-table'));
 }
 function renderHeader(){
-  const context=$('input-summary'),counts=$('run-summary');context.replaceChildren();counts.replaceChildren();
-  $('access-mode').hidden=!state.read_only;
   $('setup').hidden=Boolean(state.read_only);
-  if(!state.summary)return;
+  $('audit-summary').hidden=!state.summary;if(!state.summary)return;
   const m=state.metadata,s=state.summary,input=state.audit_input||{};
-  const line=node('p');line.append(node('span','Input','context-label'),node('code',typeof m.bibliography==='string'?m.bibliography:m.report_path));context.append(line);
+  $('summary-input').replaceChildren(node('code',typeof m.bibliography==='string'?m.bibliography:m.report_path));
   const options=[];
   if(input.aux)options.push(`AUX: ${input.aux}`);
   if(m.output_directory)options.push(`Output: ${m.output_directory}`);
   if(input.encoding)options.push(`Encoding: ${input.encoding}`);
   if(input.include_source)options.push('Include source');
-  options.push(s.scope==='unknown'?'Scope unknown':m.input_kind==='pdf'?'All extracted references':s.scope==='used'?`${s.used} cited entries`:'All entries');
-  context.append(node('p',options.join(' · '),'input-options'));
-  counts.append(node('strong',`${number.format(s.total)} references`));
-  counts.append(node('span',s.scope==='unknown'?`${s.completed} saved results`:`${s.completed}/${s.eligible} finished`,'muted'));
-  for(const label of ['Correct','Invalid','Needs review','Partial match','Unresolved','Pending']){
-    if(s.statuses[label])counts.append(badge(label,`${s.statuses[label]} ${label.toLowerCase()}`));
+  if(s.scope==='unknown')options.push('Citation scope unknown; counts reflect saved results');
+  if(s.eligible!==s.total)options.push(`${number.format(s.eligible)} ${s.eligible===1?'reference':'references'} selected for checking`);
+  if(s.skipped)options.push(`${number.format(s.skipped)} ${s.skipped===1?'reference':'references'} skipped`);
+  $('summary-options-row').hidden=!options.length;
+  $('summary-options').textContent=options.join(' · ');
+  $('summary-total-label').textContent=m.input_kind==='pdf'?'Extracted references':'References';
+  for(const [id,value] of Object.entries({total:s.total,processed:s.completed,correct:s.statuses.Correct||0,invalid:s.statuses.Invalid||0,review:s.statuses['Needs review']||0,partial:s.statuses['Partial match']||0,unresolved:s.statuses.Unresolved||0,pending:s.statuses.Pending||0})){
+    $(`summary-${id}`).textContent=number.format(value);
   }
 }
 function renderReferences(){

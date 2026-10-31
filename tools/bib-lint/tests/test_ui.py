@@ -232,6 +232,27 @@ def test_results_are_the_default_page_without_overview_navigation(browser):
     assert page.select_one("#run-summary") is not None
 
 
+def test_audit_summary_is_a_table_without_the_read_only_label(browser):
+    from bs4 import BeautifulSoup
+
+    page = BeautifulSoup(browser.get("/").text, "html.parser")
+    summary = page.select_one('table[aria-label="Audit summary"]')
+    assert summary is not None
+    assert summary.select_one("#input-summary th").get_text(strip=True) == "Input"
+    assert [th.get_text(strip=True) for th in summary.select("#run-summary th")] == [
+        "References",
+        "Processed references",
+        "Correct",
+        "Invalid",
+        "Needs review",
+        "Partial match",
+        "Unresolved",
+        "Pending",
+    ]
+    assert "Read-only" not in page.get_text()
+    assert page.select_one("#access-mode") is None
+
+
 def test_http_write_boundaries(browser, tmp_path):
     token = browser.get("/api/state").json()["csrf"]
     assert browser.post("/api/action", json={"action": "parse"}).status_code == 403
