@@ -6,8 +6,8 @@ import threading
 from pathlib import Path
 from time import perf_counter, sleep
 
-from evaluation.provider_queues import ProviderQueues
-from evaluation.url_first import run_entries
+from bib_lint.verification.queues import ProviderQueues
+from bib_lint.verification.routing import plan_lookups
 
 URLS = (
     "https://arxiv.org/abs/2401.12345",
@@ -22,7 +22,7 @@ URLS = (
 def _measure(folder, entries, full_fanout, latency):
     folder.mkdir(parents=True, exist_ok=False)
 
-    def lookup(entry, provider, phase):
+    def lookup(entry, provider, phase, state):
         if latency:
             sleep(latency)
         return {"outcome": "resolved", "status": "synthetic", "key": entry["key"]}
@@ -31,16 +31,17 @@ def _measure(folder, entries, full_fanout, latency):
     start = perf_counter()
     with ProviderQueues(folder, lookup) as queues:
         extra_threads = threading.active_count() - baseline_threads
-        if full_fanout:
-            futures = [
-                queues.submit(entry, provider, "search")
-                for entry in entries
-                for provider in queues.providers
-            ]
-            for future in futures:
-                future.get(blocking=True, timeout=60)
-        else:
-            run_entries(entries, queues)
+        futures = [
+            queues.submit(entry, name, "search" if full_fanout else "url")
+            for entry in entries
+            for name in (
+                queues.providers
+                if full_fanout
+                else [plan_lookups(entry, queues.providers)[0].provider]
+            )
+        ]
+        for future in futures:
+            future.get(blocking=True, timeout=60)
     return {
         "submitted": queues.submitted,
         "wall_seconds": round(perf_counter() - start, 4),

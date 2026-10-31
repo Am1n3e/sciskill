@@ -73,6 +73,11 @@ def test_installed_wheel_and_local_install_modes(tmp_path):
         "bib_lint/pdf_input/layout.py",
         "bib_lint/pdf_input/citations.py",
         "bib_lint/verification/input_checks.py",
+        "bib_lint/verification/queues.py",
+        "bib_lint/verification/workflow.py",
+        "bib_lint/verification/traffic.py",
+        "bib_lint/verification/routing.py",
+        "bib_lint/verification/resolver.py",
         "bib_lint/viewer/app.py",
         "bib_lint/viewer/server.py",
         "bib_lint/viewer/presentation.py",
@@ -99,6 +104,7 @@ def test_installed_wheel_and_local_install_modes(tmp_path):
         assert "Requires-Dist: streamlit" not in metadata
         assert "Requires-Dist: pdfplumber" in metadata
         assert "Requires-Dist: cryptography" in metadata
+        assert "Requires-Dist: huey" in metadata
         dependencies = [line for line in metadata.splitlines() if line.startswith("Requires-Dist:")]
         assert not any("pytest" in line or "coverage" in line for line in dependencies)
     with tarfile.open(next(artifacts.glob("*.tar.gz"))) as archive:
