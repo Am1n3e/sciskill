@@ -188,3 +188,26 @@ def test_pdf_workflow_applies_uncertainty_before_saving_source_outcomes(pdf_inpu
     assert item["validations"]["correctness"]["input_findings"][0]["code"] == "uncertain_year"
     saved = json.loads(workspace.final.read_text())
     assert saved["items"][0]["validations"]["correctness"]["is_correct"] is None
+
+
+def test_legacy_json_verify_api_checks_pdf_identity_before_using_checkpoint(tmp_path):
+    from bib_lint.verification import verify_file
+
+    source = tmp_path / "input.json"
+    destination = tmp_path / "output.json"
+    checkpoint = tmp_path / "output.tmp.json"
+    original = seal_extraction(pdf_report())
+    changed = copy.deepcopy(original)
+    changed["extraction"]["document"]["sha256"] = "b" * 64
+    seal_extraction(changed)
+    source.write_text(json.dumps(original))
+    checkpoint.write_text(json.dumps(changed))
+    before = checkpoint.read_bytes()
+    with pytest.raises(ValueError, match="different inputs"):
+        verify_file(
+            source,
+            output=destination,
+            client=FakeClient(),
+            methods=fixture_registry({"test": _found}),
+        )
+    assert checkpoint.read_bytes() == before

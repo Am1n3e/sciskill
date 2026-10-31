@@ -146,6 +146,8 @@ _validate_report = validate_report
 
 
 def _fingerprint(report):
+    if report["schema_version"] == 4:
+        return fingerprint(report)
     inputs = [
         {"entry": i["entry"], "is_used": i["validations"].get("is_used")} for i in report["items"]
     ]
