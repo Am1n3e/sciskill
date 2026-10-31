@@ -131,6 +131,8 @@ def test_same_pdf_bytes_under_a_new_name_can_resume(pdf_input, tmp_path):
     renamed.write_bytes(source.read_bytes())
     _, report, _ = audit(renamed, output=output)
     assert report["verification_run"]["complete"] and len(calls) == 1
+    assert report["audit_input"]["path"] == str(renamed)
+    assert json.loads((output / "report.json").read_text())["audit_input"]["path"] == str(renamed)
 
 
 def test_pdf_extraction_failure_is_structured_and_preserves_workspace(

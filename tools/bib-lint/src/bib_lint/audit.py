@@ -171,6 +171,8 @@ def run_audit(
                 raise ValueError(
                     "Workspace belongs to different inputs; choose a new output directory"
                 )
+            if report["schema_version"] == 4 and Path(source).suffix.lower() == ".pdf":
+                saved["audit_input"] = report["audit_input"]
             report = saved
         if preview:
             if not workspace.active().exists():
