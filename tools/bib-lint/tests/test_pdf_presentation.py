@@ -2,6 +2,7 @@
 
 import copy
 
+import pytest
 from pdf_support import pdf_report
 
 from bib_lint.pdf_evidence import apply_extraction
@@ -125,6 +126,27 @@ def test_wrapped_author_does_not_hide_a_different_given_name():
     canonical[1].update(given="David", family="Kanervisto")
     result = apply_extraction(_decision(item, authors=canonical), item)
     assert result["is_correct"] is False
+
+
+@pytest.mark.parametrize("inverted", [False, True])
+def test_wrapped_family_with_initial_given_name_remains_unknown_instead_of_invalid(inverted):
+    item = _author_item()
+    person = item["entry"]["persons"]["author"][1]
+    person.update(first=["A."], bibtex="Kan-ervisto, A." if inverted else "A. Kan-ervisto")
+    item["pdf"]["fragments"][0]["text"] = (
+        "Jane Smith and Kan-" if inverted else "Jane Smith and A. Kan-"
+    )
+    if inverted:
+        item["pdf"]["fragments"][1]["text"] = "ervisto, A. Example Paper. Journal, 2025."
+        item["pdf"]["field_evidence"]["authors"][1]["end"] = len("ervisto, A.")
+    item["pdf"]["field_evidence"]["authors"][0]["end"] = len(item["pdf"]["fragments"][0]["text"])
+    canonical = copy.deepcopy(input_record(item["entry"])["authors"])
+    canonical[1].update(given="Antonin", family="Kanervisto")
+    result = apply_extraction(_decision(item, authors=canonical), item)
+    assert result["is_correct"] is None
+    comparison = next(c for c in result["methods"][0]["comparisons"] if c["field"] == "authors")
+    assert comparison["result"] == "unknown"
+    assert not result["methods"][0]["differences"]
 
 
 def test_name_word_boundaries_are_never_collapsed_without_a_line_end_hyphen():

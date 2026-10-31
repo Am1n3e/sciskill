@@ -158,7 +158,7 @@ def apply_presentation(methods, item):
                 continue
             field = comparison["field"]
             state = _comparison(item, field, original, found)
-            if state in {"match", "partial_match"} and state != comparison["result"]:
+            if state in {"match", "partial_match", "unknown"} and state != comparison["result"]:
                 comparison["result"] = state
                 changed = True
                 matched.add(field)
