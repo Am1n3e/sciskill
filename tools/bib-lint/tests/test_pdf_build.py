@@ -46,3 +46,60 @@ def test_required_venue_cannot_use_an_unresolved_asset(tmp_path):
     path.write_text(json.dumps(data))
     with pytest.raises(ValueError, match="Unpinned.*icml"):
         check_templates(fixtures)
+
+
+def test_prepare_assets_copies_only_verified_members(tmp_path):
+    import hashlib
+    import zipfile
+
+    from pdf_e2e.assets import prepare_asset
+
+    archive = tmp_path / "kit.zip"
+    with zipfile.ZipFile(archive, "w") as zipped:
+        zipped.writestr("kit/native.sty", b"% official style\n")
+        zipped.writestr("kit/unselected.tex", b"not a build input")
+    pin = {
+        "url": "https://conference.example/kit.zip",
+        "sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
+        "bytes": archive.stat().st_size,
+        "root": "kit/",
+        "files": [
+            {"path": "native.sty", "sha256": hashlib.sha256(b"% official style\n").hexdigest()}
+        ],
+    }
+    destination = prepare_asset("kit", pin, tmp_path)
+    assert (destination / "native.sty").read_bytes() == b"% official style\n"
+    assert not (destination / "unselected.tex").exists()
+    (destination / "native.sty").write_text("changed")
+    assert (
+        prepare_asset("kit", pin, tmp_path).joinpath("native.sty").read_bytes()
+        == b"% official style\n"
+    )
+
+
+def test_prepare_assets_rejects_archive_drift(tmp_path):
+    from pdf_e2e.assets import prepare_asset
+
+    (tmp_path / "kit.zip").write_bytes(b"altered archive")
+    with pytest.raises(ValueError, match="checksum"):
+        prepare_asset("kit", {"sha256": "0" * 64}, tmp_path)
+
+
+def test_prepare_assets_rejects_member_path_escape(tmp_path):
+    import hashlib
+    import zipfile
+
+    from pdf_e2e.assets import prepare_asset
+
+    archive = tmp_path / "kit.zip"
+    with zipfile.ZipFile(archive, "w") as zipped:
+        zipped.writestr("../escaped.sty", b"no")
+    pin = {
+        "sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
+        "bytes": archive.stat().st_size,
+        "root": "",
+        "files": [{"path": "../escaped.sty", "sha256": hashlib.sha256(b"no").hexdigest()}],
+    }
+    with pytest.raises(ValueError, match="Unsafe"):
+        prepare_asset("kit", pin, tmp_path)
+    assert not (tmp_path / "escaped.sty").exists()

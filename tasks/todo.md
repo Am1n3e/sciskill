@@ -60,7 +60,7 @@ Generated projects, PDFs, build logs, temporary probes, and run output go under 
 **Dependencies:** T01, T02. **Estimated scope:** M, four files.
 **Files likely touched:** `tests/pdf_e2e/{__init__.py,build.py,paper_body.tex}`, `tests/test_pdf_build.py`.
 
-**Progress (T03a):** Added the input/template integrity command and five focused tests. They reject byte drift, missing case inventory, and unresolved required pins; the frozen 86-case / 36-build inventory passes. Project generation and compiler execution are the next slice.
+**Progress (T03a):** Added the input/template integrity command and five focused tests. They reject byte drift, missing case inventory, and unresolved required pins; the frozen 86-case / 36-build inventory passes. Asset preparation now verifies archives/members, rejects changed content and path escapes, and stages all nine official kits under ignored storage. Eight focused tests pass. Project generation and compiler execution are the next slice. T03 is split into independently committed validator, asset, generator, and compiler slices to keep each change reviewable.
 
 ## C1: Reproducible build checkpoint
 

@@ -7,8 +7,11 @@ from collections import Counter
 from pathlib import Path
 
 from bib_lint.parser import parse_file
+from pdf_e2e.assets import prepare_asset
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures/pdf"
+
+CACHE = FIXTURES.parents[4] / ".local/pdf-e2e/assets"
 
 
 def digest(raw: bytes) -> str:
@@ -71,9 +74,19 @@ def check_templates(fixtures: Path = FIXTURES) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--check-inputs", action="store_true", required=True)
-    parser.parse_args()
-    print(json.dumps({"inputs": check_inputs(), "templates": check_templates()}))
+    actions = parser.add_mutually_exclusive_group(required=True)
+    actions.add_argument("--check-inputs", action="store_true")
+    actions.add_argument("--prepare-assets", action="store_true")
+    parser.add_argument("--cache", type=Path, default=CACHE)
+    args = parser.parse_args()
+    result = {"inputs": check_inputs(), "templates": check_templates()}
+    if args.prepare_assets:
+        manifest = read_json(FIXTURES / "templates.json")
+        result["prepared_assets"] = {
+            name: str(prepare_asset(name, pin, args.cache))
+            for name, pin in manifest["assets"].items()
+        }
+    print(json.dumps(result))
 
 
 if __name__ == "__main__":
