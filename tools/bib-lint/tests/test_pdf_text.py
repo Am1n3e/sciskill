@@ -384,3 +384,307 @@ def test_incomplete_initial_author_at_end_is_retained_without_parser_crash():
     item = citation("Gupta, T. ")
     assert item["pdf"]["fragments"][0]["text"] == "Gupta, T. "
     assert item["validations"]["extraction"]["state"] == "needs_review"
+
+
+def test_multiple_and_hyphenated_initials_do_not_terminate_author_block():
+    item = citation("Liang, J. H. a. P. and Kwon, Y.-D. Example Paper, 2025.")
+    assert item["entry"]["fields"]["title"] == "Example Paper"
+    people = item["entry"]["persons"]["author"]
+    assert people[0]["first"] == ["J."]
+    assert people[0]["middle"] == ["H.", "a.", "P."]
+    assert people[1]["first"] == ["Y.-D."]
+
+
+def test_given_initial_with_trailing_comma_still_belongs_to_same_author():
+    item = citation("Gelman, A., Carlin, J. B., and Stern, H. S. Bayesian Data Analysis, 2013.")
+    assert item["entry"]["fields"]["title"] == "Bayesian Data Analysis"
+    people = item["entry"]["persons"]["author"]
+    assert people[1]["first"] == ["J."] and people[1]["middle"] == ["B."]
+
+
+def test_inverted_and_normal_suffixes_preserve_the_same_structured_lineage():
+    inverted = citation("Gupta, Jr., T., Weihs, L., and Kembhavi, A. Example Paper, 2024.")
+    normal = citation("Tanmay Gupta, Jr., Luca Weihs, and Aniruddha Kembhavi. Example Paper, 2024.")
+    assert (
+        inverted["entry"]["fields"]["title"]
+        == normal["entry"]["fields"]["title"]
+        == "Example Paper"
+    )
+    for item in (inverted, normal):
+        people = item["entry"]["persons"]["author"]
+        assert len(people) == 3
+        assert people[0]["last"] == ["Gupta"]
+        assert people[0]["lineage"] == ["Jr."]
+
+
+def test_legitimate_surname_an_in_a_long_author_list_is_not_an_article_word():
+    item = citation("Daya Guo, Wei An, and Zhen Zhang. Example Paper. Journal, 2025.")
+    assert item["entry"]["fields"]["title"] == "Example Paper"
+    assert [p["last"] for p in item["entry"]["persons"]["author"]] == [["Guo"], ["An"], ["Zhang"]]
+
+
+def test_semicolon_author_list_does_not_treat_and_as_a_surname_particle():
+    item = citation("Gupta, T.; Weihs, L.; and Kembhavi, A. 2024. Example Paper.")
+    people = item["entry"]["persons"]["author"]
+    assert len(people) == 3
+    assert people[-1]["prelast"] == [] and people[-1]["last"] == ["Kembhavi"]
+
+
+def test_year_only_prefix_is_a_date_and_never_a_placeholder_person():
+    item = citation("2025. Measuring AI Ability to Complete Long Tasks. METR Blog.")
+    assert item["entry"]["fields"]["year"] == "2025"
+    assert item["entry"]["fields"]["title"] == "Measuring AI Ability to Complete Long Tasks"
+    assert not item["entry"]["persons"].get("author")
+
+
+def test_colon_after_a_final_unabbreviated_surname_is_an_author_boundary():
+    item = citation("Smith, J., Doe: Example Paper. In: A Conference (2024).")
+    assert item["entry"]["fields"]["title"] == "Example Paper"
+    assert item["entry"]["fields"]["year"] == "2024"
+
+
+def test_parenthesized_citation_date_and_url_are_not_part_of_the_title():
+    item = citation("Smith, J.: Example Paper (2024), https://arxiv.org/abs/2406.12276v1")
+    assert item["entry"]["fields"]["title"] == "Example Paper"
+    assert item["entry"]["fields"]["year"] == "2024"
+
+
+def test_visual_space_after_url_scheme_is_retained_as_evidence_and_parsed_locally():
+    item = citation("Jane Smith. Example Paper (2025), https: //arxiv.org/abs/2406.12276v1")
+    assert item["entry"]["fields"]["title"] == "Example Paper"
+    assert item["entry"]["fields"]["url"] == "https://arxiv.org/abs/2406.12276v1"
+    assert item["entry"]["fields"]["year"] == "2025"
+    assert "https: //" in item["pdf"]["fragments"][0]["text"]
+
+
+def test_semicolon_style_author_year_boundary_precedes_a_title_colon():
+    item = citation("Gupta, T.; Weihs, L.; and Kembhavi, A. 2024. CodeNav: Beyond tool-use.")
+    assert item["entry"]["fields"]["title"] == "CodeNav: Beyond tool-use"
+    assert [p["last"] for p in item["entry"]["persons"]["author"]] == [
+        ["Gupta"],
+        ["Weihs"],
+        ["Kembhavi"],
+    ]
+
+
+@pytest.mark.parametrize("authors", ["others", "Tanmay Gupta, et al."])
+def test_colon_style_truncation_prefix_does_not_become_part_of_the_title(authors):
+    item = citation(f"{authors}: CodeNav: Beyond tool-use (2024).")
+    assert item["entry"]["fields"]["title"] == "CodeNav: Beyond tool-use"
+    assert item["entry"]["persons"]["author"][-1]["kind"] == "others"
+
+
+@pytest.mark.parametrize("placeholder", ["???", "????a", "????b"])
+def test_typesetter_unknown_year_placeholder_is_not_a_paper_title(placeholder):
+    item = citation(f"Gupta, T. {placeholder}. CodeNav: Beyond tool-use. arXiv:2406.12276v1.")
+    assert item["entry"]["fields"]["title"] == "CodeNav: Beyond tool-use"
+    assert "year" not in item["entry"]["fields"]
+    assert any(issue["code"] == "missing_year" for issue in item["pdf"]["diagnostics"])
+
+
+def test_typesetter_empty_reference_placeholder_does_not_invent_metadata():
+    item = citation("????")
+    assert item["entry"]["fields"] == {}
+    assert item["entry"]["persons"] == {}
+    assert item["pdf"]["text"] == "????"
+    assert item["validations"]["extraction"]["state"] == "needs_review"
+
+
+def test_explicit_malformed_doi_is_preserved_for_existing_locator_checks():
+    item = citation("Jane Smith. Example Paper. Journal, 2025. doi:10.123/example.")
+    assert item["entry"]["fields"]["doi"] == "10.123/example"
+    assert item["pdf"]["field_evidence"]["doi"]
+
+
+def test_explicit_legacy_arxiv_locator_preserves_its_version_pin():
+    item = citation("Jane Smith. Example Paper. Journal, 2006. arXiv:cs/0601001v2.")
+    assert item["entry"]["fields"]["arxiv"] == "cs/0601001v2"
+    assert item["entry"]["fields"]["eprint"] == "cs/0601001v2"
+
+
+def test_unquoted_multisentence_title_without_typographic_boundary_needs_review():
+    item = citation(
+        "Jane Smith. A Comprehensive Study of Attention Networks. Why? Journal, 2025. "
+        "doi:10.1234/example."
+    )
+    issues = [
+        issue for issue in item["pdf"]["diagnostics"] if issue["code"] == "ambiguous_boundary"
+    ]
+    assert issues
+    assert {"title", "venue"} <= {field for issue in issues for field in issue["fields"]}
+    assert item["validations"]["extraction"]["state"] == "needs_review"
+
+
+def test_distinct_italic_venue_proves_where_a_multisentence_title_ends():
+    text = "Jane Smith. A Comprehensive Study of Attention Networks. Why? Journal, 2025."
+    fragment = line(text)
+    start = text.index("Journal")
+    fragment["_spans"] = [
+        {"start": 0, "end": start, "font": "Times-Roman", "size": 10},
+        {"start": start, "end": start + len("Journal"), "font": "Times-Italic", "size": 10},
+    ]
+    item = parse_reference([fragment], "pdf-ref-0001", [])
+    assert item["entry"]["fields"]["title"] == "A Comprehensive Study of Attention Networks. Why?"
+    assert item["entry"]["fields"]["journal"] == "Journal"
+    assert not any(d["code"] == "ambiguous_boundary" for d in item["pdf"]["diagnostics"])
+
+
+def test_wrapped_arxiv_decimal_identifier_joins_a_numeric_continuation():
+    item = parse_reference(
+        [
+            line("Jane Smith. Example Paper. Journal, 2024."),
+            line("URL https://arxiv.org/abs/2406.", x=65, top=113),
+            line("12276v1.", x=65, top=126),
+        ],
+        "pdf-ref-0001",
+        [],
+    )
+    assert item["entry"]["fields"]["url"] == "https://arxiv.org/abs/2406.12276v1"
+    assert not any(d["code"] == "locator_conflict" for d in item["pdf"]["diagnostics"])
+
+
+def test_wrapped_doi_year_dot_joins_hyphenated_suffix():
+    item = parse_reference(
+        [
+            line("Jane Smith. Example Paper. Journal, 2025."),
+            line("doi:10.18653/v1/2025.", x=65, top=113),
+            line("emnlp-main.58.", x=65, top=126),
+        ],
+        "pdf-ref-0001",
+        [],
+    )
+    assert item["entry"]["fields"]["doi"] == "10.18653/v1/2025.emnlp-main.58"
+
+
+def test_single_footer_digit_is_not_glued_to_a_terminal_url_period():
+    item = parse_reference(
+        [
+            line("Jane Smith. Example Paper. Journal, 2025."),
+            line("https://example.org/paper.", x=65, top=113),
+            line("4", x=65, top=126),
+        ],
+        "pdf-ref-0001",
+        [],
+    )
+    assert item["entry"]["fields"]["url"] == "https://example.org/paper"
+
+
+@pytest.mark.parametrize("label,field", [("doi", "doi"), ("arXiv", "arxiv")])
+def test_explicit_punctuation_only_locator_is_not_silently_erased(label, field):
+    item = citation(f"Jane Smith. Example Paper. Journal, 2025. {label}:.")
+    assert item["entry"]["fields"][field] == "."
+    assert item["pdf"]["field_evidence"][field]
+
+
+@pytest.mark.parametrize("label,field", [("doi", "doi"), ("arXiv", "arxiv")])
+def test_empty_explicit_locator_label_requires_review_without_placeholder_values(label, field):
+    item = citation(f"Jane Smith. Example Paper. Journal, 2025. {label}:")
+    assert field not in item["entry"]["fields"]
+    assert any(field in d["fields"] for d in item["pdf"]["diagnostics"])
+    assert item["validations"]["extraction"]["state"] == "needs_review"
+
+
+def test_malformed_secondary_doi_annotation_cannot_hide_behind_correct_printed_doi():
+    uri = {
+        "uri": "https://doi.org/https://doi.org/10.1234/example",
+        "page": 1,
+        "x0": 50,
+        "top": 100,
+        "x1": 550,
+        "bottom": 110,
+    }
+    item = parse_reference(
+        [line("Jane Smith. Example Paper. Journal, 2025. doi:10.1234/example.")],
+        "pdf-ref-0001",
+        [uri],
+    )
+    assert item["entry"]["fields"]["doi"] == "10.1234/example"
+    assert item["pdf"]["uris"][0] == uri
+    assert any("doi" in issue["fields"] for issue in item["pdf"]["diagnostics"])
+    assert item["validations"]["extraction"]["state"] == "needs_review"
+
+
+def test_annotation_target_terminal_punctuation_is_not_erased_as_prose():
+    uri = {
+        "uri": "https://arxiv.org/abs/2406.12276v1.",
+        "page": 1,
+        "x0": 50,
+        "top": 100,
+        "x1": 550,
+        "bottom": 110,
+    }
+    item = parse_reference(
+        [line("Jane Smith. Example Paper. Journal, 2024. https://arxiv.org/abs/2406.12276v1.")],
+        "pdf-ref-0001",
+        [uri],
+    )
+    assert item["pdf"]["uris"][0]["uri"].endswith("v1.")
+    assert any("arxiv" in issue["fields"] for issue in item["pdf"]["diagnostics"])
+
+
+@pytest.mark.parametrize("continuation", ["Why?.", "Part II."])
+def test_unquoted_additional_title_sentence_is_not_a_reliable_venue(continuation):
+    item = citation(
+        f"Jane Smith. A Comprehensive Study of Attention Networks. {continuation} Journal, 2025."
+    )
+    assert any(d["code"] == "ambiguous_boundary" for d in item["pdf"]["diagnostics"])
+    assert item["validations"]["extraction"]["state"] == "needs_review"
+
+
+def test_native_journal_pagination_is_not_part_of_the_venue():
+    item = citation("Jane Smith. Example Paper. Journal of Example Research, (268):1–8, 2025.")
+    assert item["entry"]["fields"]["journal"] == "Journal of Example Research"
+
+
+def test_standalone_publication_year_suffix_does_not_invent_a_venue():
+    item = citation("Jane Smith. Example Paper. 2025f.")
+    assert item["entry"]["fields"]["year"] == "2025"
+    assert "journal" not in item["entry"]["fields"]
+
+
+def test_printed_volume_is_routing_context_with_precise_original_evidence():
+    item = citation("Jane Smith. Example Paper. Journal of Example Research, 22(268):1–8, 2031.")
+    assert item["entry"]["fields"]["journal"] == "Journal of Example Research"
+    assert item["entry"]["fields"]["volume"] == "22"
+    assert item["entry"]["fields"]["year"] == "2031"
+    evidence = item["pdf"]["field_evidence"]["volume"]
+    assert (
+        "".join(
+            item["pdf"]["fragments"][m["fragment"]]["text"][m["start"] : m["end"]] for m in evidence
+        )
+        == "22"
+    )
+
+
+def test_typesetter_counted_author_truncation_is_an_others_sentinel():
+    item = citation("Jane Smith, John Brown, and 175 others. 2025. Example Paper. Journal.")
+    names = item["entry"]["persons"]["author"]
+    assert len(names) == 3
+    assert names[-1]["kind"] == "others"
+    assert names[-1]["last"] == ["others"]
+
+
+def test_counted_author_truncation_across_a_discretionary_hyphen_is_preserved():
+    item = parse_reference(
+        [
+            line("Jane Smith, John Brown, and 175 oth-"),
+            line("ers. 2025. Example Paper. Journal.", top=113),
+        ],
+        "pdf-ref-0001",
+        [],
+    )
+    assert item["entry"]["persons"]["author"][-1]["kind"] == "others"
+    assert item["entry"]["fields"]["title"] == "Example Paper"
+
+
+def test_book_edition_is_separate_printed_context_and_not_part_of_title():
+    item = citation("Jane Smith. 2013. Bayesian Data Analysis, 3rd edition. Example Publisher.")
+    assert item["entry"]["fields"]["title"] == "Bayesian Data Analysis"
+    assert item["entry"]["fields"]["edition"] == "3rd"
+    assert item["pdf"]["field_evidence"]["edition"]
+
+
+def test_preprint_locator_cannot_be_promoted_into_a_missing_title():
+    item = citation("Jane Smith. 2024. Preprint, arXiv:2406.12276v1.")
+    assert "title" not in item["entry"]["fields"]
+    assert any(d["code"] == "missing_title" for d in item["pdf"]["diagnostics"])
