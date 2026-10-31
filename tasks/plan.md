@@ -1,6 +1,6 @@
 # Implementation plan: PDF reference auditing through conference-paper E2E tests
 
-Status: The user authorized gradual implementation. T01 and T02 are complete. UAI is deferred by explicit user instruction; all 12 in-scope venue configurations have verified pins and the baseline is 36 projects. Compiler tooling, PDF runtime behavior, dependencies, and CI integration remain unimplemented.
+Status: Gradual implementation is authorized. T01/T02 are complete for 12 venues; UAI is explicitly deferred. T03 input validation, asset preparation, project generation, and offline compilation are implemented. All 36 baseline builds were attempted: 20 compiled, 16 failed on deliberately malformed/incomplete citations. T03/C1 remain open for build-negative isolation/review. PDF runtime extraction, product E2E assertions, and CI integration remain unimplemented.
 
 Specification: [SPEC-pdf-reference-input.md](../SPEC-pdf-reference-input.md).
 Task list target: [todo.md](todo.md). Use these files as the single plan/task index; no external tracker is designated.

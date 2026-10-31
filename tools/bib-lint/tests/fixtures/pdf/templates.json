@@ -21,7 +21,7 @@
     "engine": "pdflatex",
     "bibliography_processor": "bibtex",
     "metadata_verified": true,
-    "compiler_execution_verified": false,
+    "compiler_execution_verified": true,
     "commands": [
       [
         "pdflatex",
@@ -51,9 +51,23 @@
     ],
     "runtime_requirement": false,
     "notes": [
-      "Container metadata and immutable platform digest resolved; layers have not been pulled or compiler commands executed. Verify engine/package versions during T03.",
-      "Standard plainnat/apalike bibliography files are pinned transitively by this immutable image; record their actual paths/hashes during compilation."
-    ]
+      "Image pulled and executed offline. All required template families compiled the representative corpus with these tools.",
+      "Standard bibliography paths/hashes were checked inside the immutable image. Docker and TeX are test-only dependencies."
+    ],
+    "versions": {
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.29 (TeX Live 2026)",
+      "bibtex": "BibTeX 0.99e (TeX Live 2026)"
+    },
+    "standard_bibliographies": {
+      "plainnat": {
+        "path": "/opt/texlive/texdir/texmf-dist/bibtex/bst/natbib/plainnat.bst",
+        "sha256": "21eefa76f1c967f5074776fcef096c0f8f2b9e42347e84b62e1dbb121dcae486"
+      },
+      "apalike": {
+        "path": "/opt/texlive/texdir/texmf-dist/bibtex/bst/base/apalike.bst",
+        "sha256": "fb8a6ffdc617e668ed16d4718b56626b5b96a78806bc91e47734cbbac0db218b"
+      }
+    }
   },
   "assets": {
     "neurips": {

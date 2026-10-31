@@ -70,3 +70,22 @@ def test_project_cache_changes_with_body_and_tracks_all_inputs(tmp_path, monkeyp
     assert second != first
     assert first.joinpath("main.tex").read_bytes() != second.joinpath("main.tex").read_bytes()
     assert json.loads(first.joinpath("recipe.json").read_text()) == recipe
+
+
+def test_icml_has_the_required_corresponding_author():
+    from pdf_e2e.projects import paper_source
+
+    venue = next(v for v in read_json(FIXTURES / "templates.json")["venues"] if v["id"] == "icml")
+    assert r"\icmlcorrespondingauthor{Anonymous Author}{anonymous@example.org}" in paper_source(
+        venue, ["ref0001"]
+    )
+
+
+@pytest.mark.parametrize("name", ["cvpr", "iccv"])
+def test_vision_bibliography_uses_native_small_font(name):
+    from pdf_e2e.projects import paper_source
+
+    venue = next(v for v in read_json(FIXTURES / "templates.json")["venues"] if v["id"] == name)
+    source = paper_source(venue, ["ref0001"])
+    assert "{\\small\n\\bibliographystyle{ieeenat_fullname}" in source
+    assert "\\bibliography{references}\n}" in source

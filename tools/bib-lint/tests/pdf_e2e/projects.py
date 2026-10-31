@@ -55,7 +55,8 @@ def _opening(family: str) -> str:
         return rf"""\icmltitlerunning{{{TITLE}}}
 \begin{{document}}\twocolumn[\icmltitle{{{TITLE}}}
 \begin{{icmlauthorlist}}\icmlauthor{{Anonymous Author}}{{anon}}\end{{icmlauthorlist}}
-\icmlaffiliation{{anon}}{{Anonymous Institution}}\vskip 0.3in]
+\icmlaffiliation{{anon}}{{Anonymous Institution}}
+\icmlcorrespondingauthor{{Anonymous Author}}{{anonymous@example.org}}\vskip 0.3in]
 \printAffiliationsAndNotice{{}}"""
     if family == "aistats":
         return rf"""\begin{{document}}\twocolumn[\aistatstitle{{{TITLE}}}
@@ -87,7 +88,10 @@ def paper_source(venue: dict, keys: list[str]) -> str:
         if bibliography["selected_by_style"]
         else (r"\bibliographystyle{" + bibliography["style"] + "}")
     )
-    ending = style + "\n" + r"\bibliography{references}" + "\n" + r"\end{document}"
+    references = style + "\n" + r"\bibliography{references}"
+    if venue["family"] == "cvpr":
+        references = "{\\small\n" + references + "\n}"
+    ending = references + "\n" + r"\end{document}"
     return "\n".join([*preamble, _opening(venue["family"]), body, ending]) + "\n"
 
 
