@@ -23,6 +23,9 @@ class RequestContext:
     def consume_attempt(self):
         if self.attempts >= self.policy.max_attempts:
             raise LookupFailure("incomplete_search", "HTTP attempt budget exhausted")
+        consume = getattr(self._client, "attempt_budget", None)
+        if consume:
+            consume()
         self.attempts += 1
 
     def shortlist(self, candidate):

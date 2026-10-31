@@ -2,9 +2,11 @@
 
 import hashlib
 import json
+import math
 import re
 import time
 from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from urllib.parse import quote, urlsplit
 
@@ -15,9 +17,22 @@ from bib_lint.verification.cache import ResponseCache
 
 
 class LookupFailure(Exception):
-    def __init__(self, code: str, message: str):
+    def __init__(self, code: str, message: str, *, retry_after=None):
         self.code = code
+        self.retry_after = retry_after
         super().__init__(message)
+
+
+def retry_delay(value, fallback=2):
+    try:
+        seconds = float(value)
+    except (TypeError, ValueError):
+        try:
+            date = parsedate_to_datetime(value)
+            seconds = date.replace(tzinfo=date.tzinfo or UTC).timestamp() - time.time()
+        except (TypeError, ValueError, OverflowError):
+            return fallback
+    return max(0, seconds) if math.isfinite(seconds) else fallback
 
 
 def _http_error_message(response):
@@ -51,14 +66,12 @@ class MetadataClient:
         self, request, host, method, key, public_url, evidence, policy, budget
     ):
         interval = policy.interval if policy else 1.0
-        backoffs = policy.backoffs if policy else (2, 4)
+        backoffs = () if self.managed_retries else policy.backoffs if policy else (2, 4)
         max_delay = policy.max_retry_after if policy else 10
         for attempt in range(len(backoffs) + 1):
             if budget is not None:
                 budget.consume_attempt()
-            delay = interval - (time.monotonic() - self.last_request.get(host, 0))
-            if delay > 0:
-                time.sleep(delay)
+            self._pace(method, host, interval)
             self.last_request[host] = time.monotonic()
             evidence["attempts"] += 1
             try:
@@ -108,6 +121,14 @@ class MetadataClient:
             break
         return response, metadata
 
+    def _pace(self, method, host, interval):
+        if self.traffic is not None:
+            self.traffic.wait(method, interval, self.stop)
+            return
+        delay = interval - (time.monotonic() - self.last_request.get(host, 0))
+        if delay > 0:
+            time.sleep(delay)
+
     def _cached_response(self, saved, public_url, key, request):
         raw, metadata = saved
         body = raw.decode(metadata.get("encoding", "utf-8"), errors="replace")
@@ -150,6 +171,8 @@ class MetadataClient:
         self.last_request = {}
         self.evidence = []
         self.progress = None
+        self.managed_retries = False
+        self.traffic = self.stop = self.attempt_budget = None
 
     def emit(self, message):
         if self.progress:
@@ -230,18 +253,7 @@ class MetadataClient:
         response, metadata = self._request_with_retries(
             request, host, method, key, public_url, evidence, policy, budget
         )
-        if response.status_code == 404:
-            raise LookupFailure("not_found", _http_error_message(response))
-        if response.status_code == 429:
-            raise LookupFailure(
-                "rate_limited", "Provider rate limit reached; " + _http_error_message(response)
-            )
-        if response.status_code in {401, 403}:
-            raise LookupFailure("access_denied", _http_error_message(response))
-        if 300 <= response.status_code < 400:
-            raise LookupFailure("redirect", response.headers.get("Location", ""))
-        if response.status_code != 200:
-            raise LookupFailure("http_error", _http_error_message(response))
+        self._check_response(response, method)
         evidence.update(
             retrieved_at=metadata["retrieved_at"],
             cache_key=key,
@@ -249,6 +261,25 @@ class MetadataClient:
             sha256=metadata["sha256"],
         )
         return response.text
+
+    def _check_response(self, response, method):
+        status = response.status_code
+        if status == 200:
+            return
+        if 300 <= status < 400:
+            raise LookupFailure("redirect", response.headers.get("Location", ""))
+        code = {404: "not_found", 401: "access_denied", 403: "access_denied", 429: "rate_limited"}
+        delay = None
+        if status == 429 or (status >= 500 and "Retry-After" in response.headers):
+            delay = retry_delay(response.headers.get("Retry-After"))
+            if self.traffic is not None:
+                self.traffic.defer(method, delay)
+        prefix = "Provider rate limit reached; " if status == 429 else ""
+        raise LookupFailure(
+            code.get(status, "http_error"),
+            prefix + _http_error_message(response),
+            retry_after=delay,
+        )
 
     def json(self, url, **kwargs):
         try:
