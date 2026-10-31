@@ -135,3 +135,21 @@ def test_pdf_diagnostic_result_has_a_closed_vocabulary(value):
     seal_extraction(report)
     with pytest.raises(ValueError, match="diagnostic result"):
         validate_report(report)
+
+
+@pytest.mark.parametrize("pages", [[{}], [None], [1, "2"]])
+def test_invalid_reference_page_lists_fail_with_a_controlled_schema_error(pages):
+    from bib_lint.pdf_evidence import seal_extraction
+
+    report = sealed()
+    report["extraction"]["reference_pages"] = pages
+    seal_extraction(report)
+    with pytest.raises(ValueError, match="page"):
+        validate_report(report)
+
+
+def test_pdf_report_schema_version_is_an_integer():
+    report = sealed()
+    report["schema_version"] = 4.0
+    with pytest.raises(ValueError, match="schema"):
+        validate_report(report)

@@ -222,7 +222,12 @@ def _coverage(extraction, sizes):
     if type(count) is not int or count < 0:
         raise ValueError("PDF unresolved fragment count must be a nonnegative integer")
     pages = extraction.get("reference_pages")
-    if not isinstance(pages, list) or not pages or pages != sorted(set(pages)):
+    if (
+        not isinstance(pages, list)
+        or not pages
+        or any(type(p) is not int for p in pages)
+        or pages != sorted(set(pages))
+    ):
         raise ValueError("PDF reference pages must be an ordered unique list")
     for page in pages:
         _page(page, len(sizes))

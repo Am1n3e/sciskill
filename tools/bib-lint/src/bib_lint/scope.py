@@ -27,7 +27,11 @@ def validate_outcome(method):
 
 
 def validate_report(report):
-    if not isinstance(report, dict) or report.get("schema_version") not in (2, 3, 4):
+    if (
+        not isinstance(report, dict)
+        or type(report.get("schema_version")) is not int
+        or report.get("schema_version") not in (2, 3, 4)
+    ):
         raise ValueError("Expected a bib-lint schema version 2, 3 or 4 report")
     if not isinstance(report.get("items"), list):
         raise ValueError("Report must contain items")
