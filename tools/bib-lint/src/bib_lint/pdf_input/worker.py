@@ -18,15 +18,19 @@ def _uris(group, hyperlinks):
     return [
         uri
         for uri in hyperlinks
-        if any(
-            uri["page"] == line["page"]
-            and uri["top"] <= line["bottom"] + 2
-            and uri["bottom"] >= line["top"] - 2
-            and uri["x0"] <= line["x1"] + 2
-            and uri["x1"] >= line["x0"] - 2
-            for line in group
-        )
+        if any(_covers_line(uri, line) for line in group)
     ]
+
+
+def _covers_line(uri, line):
+    height = min(uri["bottom"] - uri["top"], line["bottom"] - line["top"])
+    overlap = min(uri["bottom"], line["bottom"]) - max(uri["top"], line["top"])
+    return (
+        uri["page"] == line["page"]
+        and height > 0
+        and overlap > height / 2
+        and min(uri["x1"], line["x1"]) > max(uri["x0"], line["x0"])
+    )
 
 
 def _page(page, limits, start, number_styles):
