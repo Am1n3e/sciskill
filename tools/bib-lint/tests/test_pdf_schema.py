@@ -114,3 +114,24 @@ def test_pdf_cannot_claim_aux_usage():
     seal_extraction(report)
     with pytest.raises(ValueError, match="usage"):
         validate_report(report)
+
+
+@pytest.mark.parametrize("value", [True, "match", "invalid", None])
+def test_pdf_diagnostic_result_has_a_closed_vocabulary(value):
+    from bib_lint.pdf_evidence import seal_extraction
+
+    report = sealed()
+    diagnostic = {
+        "code": "conflict",
+        "message": "Printed conflict",
+        "fields": ["arxiv"],
+        "result": value,
+    }
+    report["items"][0]["pdf"]["diagnostics"] = [diagnostic]
+    report["items"][0]["validations"]["extraction"] = {
+        "state": "needs_review",
+        "diagnostics": [diagnostic],
+    }
+    seal_extraction(report)
+    with pytest.raises(ValueError, match="diagnostic result"):
+        validate_report(report)

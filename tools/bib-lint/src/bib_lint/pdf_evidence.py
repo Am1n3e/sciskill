@@ -79,6 +79,8 @@ def _diagnostics(diagnostics, pages, *, item=False):
             raise ValueError("PDF diagnostic must be an object")
         _text(diagnostic.get("code"), "diagnostic code")
         _text(diagnostic.get("message"), "diagnostic message")
+        if diagnostic.get("result", "unknown") not in ("unknown", "mismatch"):
+            raise ValueError("PDF diagnostic result must be unknown or mismatch")
         if "page" in diagnostic:
             _page(diagnostic["page"], pages)
         if item and (
@@ -262,13 +264,15 @@ def apply_extraction(result, item):
     findings = list(result.get("input_findings", []))
     for diagnostic in diagnostics:
         fields = diagnostic["fields"]
-        affected.update(aliases.get(field, field) for field in (fields or CHECKED_FIELDS))
+        outcome = diagnostic.get("result", "unknown")
+        if outcome == "unknown":
+            affected.update(aliases.get(field, field) for field in (fields or CHECKED_FIELDS))
         findings.append(
             {
                 "field": ", ".join(fields) or "reference",
                 "code": diagnostic["code"],
                 "message": diagnostic["message"],
-                "result": "unknown",
+                "result": outcome,
             }
         )
     methods = copy.deepcopy(result["methods"])

@@ -117,3 +117,13 @@ def test_saved_pdf_diagnostics_are_visible_even_before_verifier_recomputes(verdi
         "correctness": {"complete": True, "is_correct": verdict, "methods": []},
     }
     assert reference_status(validations) == "Needs review"
+
+
+def test_reliably_printed_conflict_does_not_suppress_a_real_source_mismatch():
+    item, result = _case(warning_fields=["year"], changed={"year": "2024"})
+    item["validations"]["extraction"]["diagnostics"][0]["result"] = "mismatch"
+    result, status = _apply(item, result)
+    assert result["is_correct"] is False and status == "Invalid"
+    assert result["input_findings"][0]["result"] == "mismatch"
+    check = next(c for c in result["methods"][0]["comparisons"] if c["field"] == "year")
+    assert check["result"] == "mismatch"
