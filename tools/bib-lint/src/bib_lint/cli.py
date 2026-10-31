@@ -8,6 +8,7 @@ from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 from bib_lint.audit import Workspace, audit_summary, run_audit
+from bib_lint.pdf_evidence import extraction_summary
 from bib_lint.scope import validate_report
 
 
@@ -28,8 +29,10 @@ def arguments(prog="bib-lint"):
         package_version = version("sciskill")
     parser.add_argument("--version", action="version", version=f"bib-lint {package_version}")
     commands = parser.add_subparsers(dest="command", required=True)
-    verify = commands.add_parser("verify", help="Parse and verify a bibliography or import JSON")
-    verify.add_argument("path", help="Input .bib or .json file (never modified)")
+    verify = commands.add_parser(
+        "verify", help="Extract PDF references, verify BibTeX or import JSON"
+    )
+    verify.add_argument("path", help="Input .bib, .pdf or .json file (never modified)")
     verify.add_argument("--aux", type=Path, help="Compiled AUX: verify only cited entries")
     verify.add_argument(
         "-o", "--output", type=Path, help="Audit directory (default: <stem>.bib-lint)"
@@ -55,7 +58,7 @@ def final_result(status, workspace=None, report=None, warnings=None, error=None)
             f"{summary['source_failures']} source lookups failed; inspect per-source errors. "
             "Resume preserves these outcomes. Use --refresh (optionally --key) to retry."
         )
-    return {
+    result = {
         "schema_version": 1,
         "command": "verify",
         "status": status,
@@ -70,6 +73,9 @@ def final_result(status, workspace=None, report=None, warnings=None, error=None)
         "warnings": warnings,
         "error": error,
     }
+    if report is not None and report.get("schema_version") == 4:
+        result["extraction"] = extraction_summary(report)
+    return result
 
 
 def emit(result, machine):
@@ -164,14 +170,21 @@ def main(argv=None, *, prog="bib-lint"):
                 if isinstance(exc, ArgumentError)
                 else "audit_failed"
             )
-            emit(
-                final_result(
-                    "interrupted" if interrupted else "failed",
-                    workspace,
-                    report,
-                    warnings,
-                    {"code": code, "message": message},
-                ),
-                machine,
+            result = final_result(
+                "interrupted" if interrupted else "failed",
+                workspace,
+                report,
+                warnings,
+                {"code": code, "message": message},
             )
+            if hasattr(exc, "diagnostics"):
+                result["error"]["diagnostics"] = exc.diagnostics
+                result["extraction"] = {
+                    "state": "failed",
+                    "occurrence_count": 0,
+                    "unresolved_fragments": 0,
+                    "reference_pages": [],
+                    "diagnostics": exc.diagnostics,
+                }
+            emit(result, machine)
         return 130 if interrupted else 2

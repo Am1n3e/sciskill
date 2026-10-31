@@ -8,6 +8,7 @@ from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
 
+from bib_lint.pdf_evidence import apply_extraction
 from bib_lint.scope import eligible_items, fingerprint, selected_items, validate_report
 from bib_lint.status import reference_status, source_status
 from bib_lint.storage import ReportLockError, report_lock, report_paths
@@ -145,6 +146,8 @@ _validate_report = validate_report
 
 
 def _fingerprint(report):
+    if report["schema_version"] == 4:
+        return fingerprint(report)
     inputs = [
         {"entry": i["entry"], "is_used": i["validations"].get("is_used")} for i in report["items"]
     ]
@@ -256,6 +259,7 @@ def verify_report_locked(
                 merged.update({m["name"]: m for m in results})
                 results = [merged[name] for name in registry if name in merged]
                 result = _consensus_with_input(results, item["entry"].get("fields", {}))
+                result = apply_extraction(result, item)
                 result["complete"] = len(results) == len(registry)
                 if not result["complete"]:
                     result["is_correct"] = None
@@ -271,6 +275,7 @@ def verify_report_locked(
                 progress=progress,
                 checkpoint=save_method,
             )
+            result = apply_extraction(result, item)
             result["complete"] = True
             item["validations"]["correctness"] = result
             report.setdefault("summary", {})["verification"] = _totals(report)
@@ -345,7 +350,7 @@ def _prepare_run(report, registry, selected, refresh):
         "fingerprint": input_hash,
         "methods": list(registry),
         "policy_version": POLICY_VERSION,
-        "orchestration_version": 4,
+        "orchestration_version": 5 if report["schema_version"] == 4 else 4,
         "provider_protocol_version": 1,
         "providers": [p.descriptor.serialize() for p in registry.values()],
     }

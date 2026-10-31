@@ -14,6 +14,10 @@ dist/
 # Private local research workspaces
 .local/
 
+# Repo-local agent skills and configuration
+/.agent/
+/.agents/
+
 # Local Python test and lint artifacts
 __pycache__/
 *.py[cod]

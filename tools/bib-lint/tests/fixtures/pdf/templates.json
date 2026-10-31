@@ -1,0 +1,759 @@
+{
+  "schema_version": 1,
+  "status": "official_template_pins_verified",
+  "verified_venue_count": 12,
+  "required_venue_count": 12,
+  "baseline_corpus_count": 3,
+  "required_baseline_builds": 36,
+  "completion_policy": "All 12 in-scope venues are required. Reject missing or changed assets; do not silently omit a required venue.",
+  "asset_policy": {
+    "cache": "repository-root .local/pdf-e2e/assets/",
+    "vendoring": false,
+    "mutability": "Reject checksum drift. Template updates require a reviewed manifest change and new rendering expectations."
+  },
+  "toolchain": {
+    "kind": "test_only_container",
+    "source": "https://github.com/xu-cheng/latex-docker",
+    "image": "ghcr.io/xu-cheng/texlive-alpine@sha256:0768bec1654eb3692aace2faca186d190f86d5f510ae20d71a5145d67aff081c",
+    "index_digest": "sha256:c06416ebbc69c8e90e07d1f1a6f7a3f9b334e773daa3543ce879ea533317c3a7",
+    "platform": "linux/amd64",
+    "created": "2026-10-01T17:02:55.987011757Z",
+    "engine": "pdflatex",
+    "bibliography_processor": "bibtex",
+    "metadata_verified": true,
+    "compiler_execution_verified": true,
+    "commands": [
+      [
+        "pdflatex",
+        "-no-shell-escape",
+        "-interaction=nonstopmode",
+        "-halt-on-error",
+        "main.tex"
+      ],
+      [
+        "bibtex",
+        "main"
+      ],
+      [
+        "pdflatex",
+        "-no-shell-escape",
+        "-interaction=nonstopmode",
+        "-halt-on-error",
+        "main.tex"
+      ],
+      [
+        "pdflatex",
+        "-no-shell-escape",
+        "-interaction=nonstopmode",
+        "-halt-on-error",
+        "main.tex"
+      ]
+    ],
+    "runtime_requirement": false,
+    "notes": [
+      "Image pulled and executed offline. All required template families compiled the representative corpus with these tools.",
+      "Standard bibliography paths/hashes were checked inside the immutable image. Docker and TeX are test-only dependencies."
+    ],
+    "versions": {
+      "pdflatex": "pdfTeX 3.141592653-2.6-1.40.29 (TeX Live 2026)",
+      "bibtex": "BibTeX 0.99e (TeX Live 2026)"
+    },
+    "standard_bibliographies": {
+      "plainnat": {
+        "path": "/opt/texlive/texdir/texmf-dist/bibtex/bst/natbib/plainnat.bst",
+        "sha256": "21eefa76f1c967f5074776fcef096c0f8f2b9e42347e84b62e1dbb121dcae486"
+      },
+      "apalike": {
+        "path": "/opt/texlive/texdir/texmf-dist/bibtex/bst/base/apalike.bst",
+        "sha256": "fb8a6ffdc617e668ed16d4718b56626b5b96a78806bc91e47734cbbac0db218b"
+      }
+    }
+  },
+  "assets": {
+    "neurips": {
+      "status": "downloaded_and_checksum_verified",
+      "instructions_url": "https://neurips.cc/Conferences/2026/CallForPapers",
+      "url": "https://media.neurips.cc/Conferences/NeurIPS2026/Formatting_Instructions_For_NeurIPS_2026.zip",
+      "resolved_url": "https://media.neurips.cc/Conferences/NeurIPS2026/Formatting_Instructions_For_NeurIPS_2026.zip",
+      "sha256": "82473931e3ef710fcd3f4a8cd4119b9de32e56825f90f9e5a6d55f2d01b817d9",
+      "bytes": 20259,
+      "revision": null,
+      "root": "",
+      "files": [
+        {
+          "path": "neurips_2026.tex",
+          "sha256": "cf4cee7991665306d1daaa3985be4feec7f8889d6d072ffa12f99a8e1537d797"
+        },
+        {
+          "path": "checklist.tex",
+          "sha256": "780ba13c480f652dcc42e69ed61a752ce0ea270f15d332d4a45b059dabad84f6"
+        },
+        {
+          "path": "neurips_2026.sty",
+          "sha256": "c3fc2894e83d2517ca18b66741d6c595986d97957dc08ec08bb2125a7ec4555a"
+        }
+      ],
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": []
+    },
+    "icml": {
+      "status": "downloaded_and_checksum_verified",
+      "instructions_url": "https://icml.cc/Conferences/2026/AuthorInstructions",
+      "url": "https://media.icml.cc/Conferences/ICML2026/Styles/icml2026.zip",
+      "resolved_url": "https://media.icml.cc/Conferences/ICML2026/Styles/icml2026.zip",
+      "sha256": "8b29290f5828e176debb57ea9cc00252502973d55ea561a2f18a7f0a326bfc6c",
+      "bytes": 228368,
+      "revision": null,
+      "root": "",
+      "files": [
+        {
+          "path": "algorithm.sty",
+          "sha256": "93fd0eb31c112eb405833db8f1d7f5d238c7e691b1c05680d7276e68f36d564a"
+        },
+        {
+          "path": "algorithmic.sty",
+          "sha256": "48d18794a5d97c0479a588cc2eac0917992feb9da83acc4631b8f55757d80f9b"
+        },
+        {
+          "path": "example_paper.tex",
+          "sha256": "c2ca8140bf255d1ff77d1278eb3eefed4018b4b1e71065b8e1ccbc68b74c8acf"
+        },
+        {
+          "path": "fancyhdr.sty",
+          "sha256": "9130c52f91087abc6d223164ffa587e207e3257fcbcd069ef09ecb5391043f14"
+        },
+        {
+          "path": "icml2026.bst",
+          "sha256": "0ec3d5eb9b02efb7e0b44a32f3775882f42a743d0bdc618f34e6936309b98764"
+        },
+        {
+          "path": "icml2026.sty",
+          "sha256": "7cdcf90f6a59c5219e7f15c88f7ed09fcaf598dad91e6cdddc4dc3cb0e397a95"
+        }
+      ],
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": []
+    },
+    "iclr": {
+      "status": "downloaded_and_checksum_verified",
+      "instructions_url": "https://iclr.cc/Conferences/2027/AuthorGuidelines",
+      "url": "https://media.iclr.cc/Conferences/ICLR2027/iclr-2027-style-files.zip",
+      "resolved_url": "https://media.iclr.cc/Conferences/ICLR2027/iclr-2027-style-files.zip",
+      "sha256": "0d940dfa9398ae99a18f24a85a8a683f367204b6af6d17d2899e60a67102529e",
+      "bytes": 39348,
+      "revision": null,
+      "root": "iclr2027/",
+      "files": [
+        {
+          "path": "math_commands.tex",
+          "sha256": "90473c4d0542070db244cea73ef962d6cddc5b2a746757e6a40ddf5fdfb90ba9"
+        },
+        {
+          "path": "fancyhdr.sty",
+          "sha256": "b56ec4434b9f4607529a4b23dc68ad8d4b94f1f631c8cddaf7da78140d53a5ea"
+        },
+        {
+          "path": "iclr2027_conference.bst",
+          "sha256": "2d67552db7ed38ccfccb5957b52f95656e25c249724761d3cf5f7922ad1844c5"
+        },
+        {
+          "path": "iclr2027_conference.tex",
+          "sha256": "03e556d6e5593e498fd39f262ec2d184ebfe8693cbf47fb7cea3402d8d5166ac"
+        },
+        {
+          "path": "natbib.sty",
+          "sha256": "88bc70c0e48461934cab5b2accef06b74a8b3ac45ad03ccd3f2a6b7e0d6d530d"
+        },
+        {
+          "path": "iclr2027_conference.sty",
+          "sha256": "797deef41724e93761426ac0cbcca46279a91cc650dd1f0ce76a4f08d2098ea6"
+        }
+      ],
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": []
+    },
+    "aaai": {
+      "status": "downloaded_and_checksum_verified",
+      "instructions_url": "https://aaai.org/conference/aaai/aaai-26/main-technical-track-call/",
+      "url": "https://aaai.org/authorkit26-1/",
+      "resolved_url": "https://aaai.org/wp-content/uploads/2025/07/AuthorKit26-1.zip",
+      "sha256": "d2844ec68a4a9396d749fcca5b5784809617b670863e8d4fecbfb00e444fc3af",
+      "bytes": 7024737,
+      "revision": null,
+      "root": "AuthorKit26/AnonymousSubmission/LaTeX/",
+      "files": [
+        {
+          "path": "aaai2026.bst",
+          "sha256": "ac26e2c66047435c0ed25f21ae36ad42d731cf3d794c4a8b5f05a62141a27294"
+        },
+        {
+          "path": "anonymous-submission-latex-2026.tex",
+          "sha256": "9112a7c5283ef9080e4dd44a3e115b7775be35d3135f33b03d2e482f65c704ee"
+        },
+        {
+          "path": "aaai2026.sty",
+          "sha256": "6f90c4d7a36f4a038daf187fdd6cec9fe578aba819733b49551574a37feecd35"
+        }
+      ],
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": []
+    },
+    "ijcai": {
+      "status": "downloaded_and_checksum_verified",
+      "instructions_url": "https://ijcai.org/authors_kit/",
+      "url": "https://ijcai.org/sites/default/files/Guidelines/FormattingGuidelines-IJCAI-27.zip",
+      "resolved_url": "https://ijcai.org/sites/default/files/Guidelines/FormattingGuidelines-IJCAI-27.zip",
+      "sha256": "1f829e86070353eb72220864632c4e6c5a6dd160c35380e68de14a242078b663",
+      "bytes": 65957,
+      "revision": null,
+      "root": "",
+      "files": [
+        {
+          "path": "ijcai27.sty",
+          "sha256": "cdf7ca9a28c6b1ba60cde0f42019ccea3722838242b69471db572d21f879d3b2"
+        },
+        {
+          "path": "ijcai27.tex",
+          "sha256": "e55c680ffad8213b91da9091a5238e8e0281cc019b7f7b29654776f14d85ab05"
+        },
+        {
+          "path": "named.bst",
+          "sha256": "72c53a0febca9745a9a6febdc1e49327d2b6ac4f161e1d7a210dd47e5f5dda40"
+        }
+      ],
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": []
+    },
+    "aistats": {
+      "status": "downloaded_and_checksum_verified",
+      "instructions_url": "https://virtual.aistats.org/Conferences/2026/CallForPapers",
+      "url": "https://aistats.org/aistats2026/AISTATS2026PaperPack.zip",
+      "resolved_url": "https://aistats.org/aistats2026/AISTATS2026PaperPack.zip",
+      "sha256": "7eb3c52735e16446e4b9f59de579599d7ca5714ca0412e0def1c32003882565c",
+      "bytes": 266185,
+      "revision": null,
+      "root": "AISTATS2026PaperPack/",
+      "files": [
+        {
+          "path": "supplement.tex",
+          "sha256": "5c553253a0f75988893e654af6416fd0e2d0c4d5216c576cd37c4fd104f1851b"
+        },
+        {
+          "path": "sample_paper.tex",
+          "sha256": "a78429d0a5cbe45469319776275f5ac5f6a26305ac25d3d5852d39eda3fda849"
+        },
+        {
+          "path": "fancyhdr.sty",
+          "sha256": "b56ec4434b9f4607529a4b23dc68ad8d4b94f1f631c8cddaf7da78140d53a5ea"
+        },
+        {
+          "path": "aistats2026.sty",
+          "sha256": "4c95c0442152f17d460c0402080efd56334c1265bc0d809460eb2e23ee17696d"
+        }
+      ],
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": []
+    },
+    "acl": {
+      "status": "downloaded_and_checksum_verified",
+      "instructions_url": "https://github.com/acl-org/acl-style-files",
+      "url": "https://codeload.github.com/acl-org/acl-style-files/zip/d5adc823ff0f80f98c80405ca0ab66c68e684409",
+      "resolved_url": "https://codeload.github.com/acl-org/acl-style-files/zip/d5adc823ff0f80f98c80405ca0ab66c68e684409",
+      "sha256": "35b158b724d04435a657ab214fe4da5f2b57808fc15ca0f24b751bc07b1d1c73",
+      "bytes": 37969,
+      "revision": "d5adc823ff0f80f98c80405ca0ab66c68e684409",
+      "root": "acl-style-files-d5adc823ff0f80f98c80405ca0ab66c68e684409/",
+      "files": [
+        {
+          "path": "acl.sty",
+          "sha256": "19dfeddc2c0e448f3926a0bef048a9db3f3611b46265b760caabd7ada4f361de"
+        },
+        {
+          "path": "acl_latex.tex",
+          "sha256": "339c9ee9705c1767d44ef24b85365c0bb8619ecc3fcf66172bf1356292389614"
+        },
+        {
+          "path": "acl_lualatex.tex",
+          "sha256": "0d9987ba833331a996f9abcd1a03eebba7d7ae331145793e7ddb6b5ae8db27b3"
+        },
+        {
+          "path": "acl_natbib.bst",
+          "sha256": "6fbb306202290f4b68e74ac1460a8b27398500cb6dfeb4492e74c457eae7cd1e"
+        }
+      ],
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": [
+        {
+          "path": "README.md",
+          "sha256": "f5e4fe5096e8bc045b586a2351409f29ce6d55e0268a434602a06011f571d882"
+        }
+      ]
+    },
+    "cvpr": {
+      "status": "downloaded_and_checksum_verified",
+      "instructions_url": "https://github.com/cvpr-org/author-kit",
+      "url": "https://codeload.github.com/cvpr-org/author-kit/zip/a2369342011145be8c85e5ad21a9b61f9fa53473",
+      "resolved_url": "https://codeload.github.com/cvpr-org/author-kit/zip/a2369342011145be8c85e5ad21a9b61f9fa53473",
+      "sha256": "5d8e151fc9abdd6e641bc30571c40b762a1998f1b8c441ec25d9a5f3deb8d303",
+      "bytes": 31515,
+      "revision": "a2369342011145be8c85e5ad21a9b61f9fa53473",
+      "root": "author-kit-a2369342011145be8c85e5ad21a9b61f9fa53473/",
+      "files": [
+        {
+          "path": "cvpr.sty",
+          "sha256": "ae8e51adc7270b118833b2092310ca1151a19fab0c09b1ab35a485ac4004ac0f"
+        },
+        {
+          "path": "fig/teaser.tex",
+          "sha256": "17a5bd63167d6fab7c2ad2c678b9522fac199bee19b782018ceefffed32ac3ca"
+        },
+        {
+          "path": "ieeenat_fullname.bst",
+          "sha256": "e38e6166bd7b1e6d23a1b79dcdb55c656e4fcdbe91bdf6b50d827e6b5d1aacfc"
+        },
+        {
+          "path": "main.tex",
+          "sha256": "391ada680eec864708cfbca25661ba47d95996c24fa349c9133afc9f3a222f96"
+        },
+        {
+          "path": "preamble.tex",
+          "sha256": "080e0bae5ff30626292192ee2b4d1afca432ed2d2c939486c1bb37856166f8c1"
+        },
+        {
+          "path": "rebuttal.tex",
+          "sha256": "ef185377321633a2511716a66533cb968eb75856e8f6b6dead61a4419ffcedac"
+        },
+        {
+          "path": "sec/0_abstract.tex",
+          "sha256": "ac059e9cb8595bab8f7795d088d71e321ee46e8397d5cfb56957107d43c868ed"
+        },
+        {
+          "path": "sec/1_intro.tex",
+          "sha256": "3a7e9d973dad94c7f6d101e7e1eb3bad8edb80e6335a6f4014e8a2f40a3e8175"
+        },
+        {
+          "path": "sec/2_formatting.tex",
+          "sha256": "72b0eb3b2b255c0dd67f3ee295f5e52f3bbbe4a2aa29c7dd790c69a5954a5994"
+        },
+        {
+          "path": "sec/3_finalcopy.tex",
+          "sha256": "ae261b3daaff50cf609bb3ca7dfd030bb1e835fd85aa4fda45cdaf53cc35cc1a"
+        },
+        {
+          "path": "sec/X_suppl.tex",
+          "sha256": "594291f94cf3b925908dc127a93f3525c1998e96abf37a14f69d6077a7e58bd7"
+        }
+      ],
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": [
+        {
+          "path": "README.md",
+          "sha256": "82c198ab5fb54cc77dd476206bb81287928e757753611e469a20f7a7e598c1a4"
+        }
+      ]
+    },
+    "eccv": {
+      "status": "downloaded_and_checksum_verified",
+      "instructions_url": "https://eccv.ecva.net/Conferences/2026/SubmissionPolicies",
+      "url": "https://codeload.github.com/paolo-favaro/paper-template/zip/da8c09c40239d5665757527e77388f4716a6564a",
+      "resolved_url": "https://codeload.github.com/paolo-favaro/paper-template/zip/da8c09c40239d5665757527e77388f4716a6564a",
+      "sha256": "1c1c8a188decf1f1adfccadb0585ccc95cef17f7ef846f4a5291ba1c5407b4a1",
+      "bytes": 657190,
+      "revision": "da8c09c40239d5665757527e77388f4716a6564a",
+      "root": "paper-template-da8c09c40239d5665757527e77388f4716a6564a/",
+      "files": [
+        {
+          "path": "eccv.sty",
+          "sha256": "07785f87dd4741a761e5064d6752e59dbca308b7999de35df983e70dc0a33d80"
+        },
+        {
+          "path": "eccvabbrv.sty",
+          "sha256": "1c9aba814d428d8d90bfdfde53e3ad8edc9f1db0e5f12e052f713fd5b38e483f"
+        },
+        {
+          "path": "llncs.cls",
+          "sha256": "8152fe7afa929cbd3f3679d6f7c1d562525414ed9c5940a69e86cd923416cb2b"
+        },
+        {
+          "path": "main.tex",
+          "sha256": "ac91a7eb6d0991301bca2b1879177495f176dfc7737c77f5d1079852f33fd7e9"
+        },
+        {
+          "path": "splncs04.bst",
+          "sha256": "564cb6156e2400e3755a58bed9caabccb3067dd37a48efcb66851a56d4475c4c"
+        }
+      ],
+      "attribution": "Unmodified official template sources and original notices vendored in tests/assets/pdf. Original archive identity and selected-member checksums are preserved.",
+      "notices": [
+        {
+          "path": "LICENSE",
+          "sha256": "82d8789febf72672fc2c6ce0b3f4b6ae17bad4b7c195b436179d8b71529c81a6"
+        },
+        {
+          "path": "README.md",
+          "sha256": "2892b0207b3c6bb4ebd45efbe75cb25da74f9163871b76add5d1e05870654491"
+        },
+        {
+          "path": "lncs_readme.txt",
+          "sha256": "7dbe59c722450e662ff2ffa248fb4338ea3bbcdaabc3ad6d648be7054aa062d1"
+        }
+      ]
+    }
+  },
+  "venues": [
+    {
+      "id": "neurips",
+      "asset": "neurips",
+      "year": 2026,
+      "family": "neurips",
+      "sample": "neurips_2026.tex",
+      "document_class": {
+        "name": "article",
+        "options": []
+      },
+      "style_package": {
+        "name": "neurips_2026",
+        "options": []
+      },
+      "engine": "pdflatex",
+      "bibliography": {
+        "style": "plainnat",
+        "origin": "pinned_texlive",
+        "selected_by_style": false
+      },
+      "mode": "review",
+      "macros": {},
+      "notes": [
+        "The official example contains manually written references and permits any consistent citation style. plainnat is an explicit benchmark choice, not a bundled NeurIPS bst."
+      ]
+    },
+    {
+      "id": "icml",
+      "asset": "icml",
+      "year": 2026,
+      "family": "icml",
+      "sample": "example_paper.tex",
+      "document_class": {
+        "name": "article",
+        "options": []
+      },
+      "style_package": {
+        "name": "icml2026",
+        "options": []
+      },
+      "engine": "pdflatex",
+      "bibliography": {
+        "style": "icml2026",
+        "origin": "author_kit",
+        "selected_by_style": false
+      },
+      "mode": "review",
+      "macros": {},
+      "notes": []
+    },
+    {
+      "id": "iclr",
+      "asset": "iclr",
+      "year": 2027,
+      "family": "iclr",
+      "sample": "iclr2027_conference.tex",
+      "document_class": {
+        "name": "article",
+        "options": []
+      },
+      "style_package": {
+        "name": "iclr2027_conference",
+        "options": []
+      },
+      "engine": "pdflatex",
+      "bibliography": {
+        "style": "iclr2027_conference",
+        "origin": "author_kit",
+        "selected_by_style": false
+      },
+      "mode": "review",
+      "macros": {},
+      "notes": [
+        "Review mode leaves iclrfinalcopy unset."
+      ]
+    },
+    {
+      "id": "aaai",
+      "asset": "aaai",
+      "year": 2026,
+      "family": "aaai",
+      "sample": "anonymous-submission-latex-2026.tex",
+      "document_class": {
+        "name": "article",
+        "options": [
+          "letterpaper"
+        ]
+      },
+      "style_package": {
+        "name": "aaai2026",
+        "options": [
+          "submission"
+        ]
+      },
+      "engine": "pdflatex",
+      "bibliography": {
+        "style": "aaai2026",
+        "origin": "author_kit",
+        "selected_by_style": true
+      },
+      "mode": "review",
+      "macros": {},
+      "notes": [
+        "The style selects its bibliography automatically; do not emit a second bibliographystyle. hyperref is forbidden by this kit."
+      ]
+    },
+    {
+      "id": "ijcai",
+      "asset": "ijcai",
+      "year": 2027,
+      "family": "ijcai",
+      "sample": "ijcai27.tex",
+      "document_class": {
+        "name": "article",
+        "options": []
+      },
+      "style_package": {
+        "name": "ijcai27",
+        "options": []
+      },
+      "engine": "pdflatex",
+      "bibliography": {
+        "style": "named",
+        "origin": "author_kit",
+        "selected_by_style": false
+      },
+      "mode": "review",
+      "macros": {},
+      "notes": []
+    },
+    {
+      "id": "aistats",
+      "asset": "aistats",
+      "year": 2026,
+      "family": "aistats",
+      "sample": "sample_paper.tex",
+      "document_class": {
+        "name": "article",
+        "options": [
+          "twoside"
+        ]
+      },
+      "style_package": {
+        "name": "aistats2026",
+        "options": []
+      },
+      "engine": "pdflatex",
+      "bibliography": {
+        "style": "apalike",
+        "origin": "pinned_texlive",
+        "selected_by_style": false
+      },
+      "mode": "review",
+      "macros": {},
+      "notes": [
+        "The official example explicitly suggests apalike for BibTeX and otherwise writes manual bibitems. This benchmark selects that suggested style."
+      ]
+    },
+    {
+      "id": "acl",
+      "asset": "acl",
+      "year": null,
+      "family": "acl",
+      "sample": "acl_latex.tex",
+      "document_class": {
+        "name": "article",
+        "options": [
+          "11pt"
+        ]
+      },
+      "style_package": {
+        "name": "acl",
+        "options": [
+          "review"
+        ]
+      },
+      "engine": "pdflatex",
+      "bibliography": {
+        "style": "acl_natbib",
+        "origin": "author_kit",
+        "selected_by_style": true
+      },
+      "mode": "review",
+      "macros": {},
+      "notes": [
+        "Shared official ACL style-family snapshot pinned by commit; no conference-year release is inferred."
+      ]
+    },
+    {
+      "id": "emnlp",
+      "asset": "acl",
+      "year": null,
+      "family": "acl",
+      "sample": "acl_latex.tex",
+      "document_class": {
+        "name": "article",
+        "options": [
+          "11pt"
+        ]
+      },
+      "style_package": {
+        "name": "acl",
+        "options": [
+          "review"
+        ]
+      },
+      "engine": "pdflatex",
+      "bibliography": {
+        "style": "acl_natbib",
+        "origin": "author_kit",
+        "selected_by_style": true
+      },
+      "mode": "review",
+      "macros": {},
+      "notes": [
+        "Shared official ACL style-family snapshot pinned by commit; no conference-year release is inferred."
+      ]
+    },
+    {
+      "id": "naacl",
+      "asset": "acl",
+      "year": null,
+      "family": "acl",
+      "sample": "acl_latex.tex",
+      "document_class": {
+        "name": "article",
+        "options": [
+          "11pt"
+        ]
+      },
+      "style_package": {
+        "name": "acl",
+        "options": [
+          "review"
+        ]
+      },
+      "engine": "pdflatex",
+      "bibliography": {
+        "style": "acl_natbib",
+        "origin": "author_kit",
+        "selected_by_style": true
+      },
+      "mode": "review",
+      "macros": {},
+      "notes": [
+        "Shared official ACL style-family snapshot pinned by commit; no conference-year release is inferred."
+      ]
+    },
+    {
+      "id": "cvpr",
+      "asset": "cvpr",
+      "year": 2027,
+      "family": "cvpr",
+      "sample": "main.tex",
+      "document_class": {
+        "name": "article",
+        "options": [
+          "10pt",
+          "twocolumn",
+          "letterpaper"
+        ]
+      },
+      "style_package": {
+        "name": "cvpr",
+        "options": [
+          "review"
+        ]
+      },
+      "engine": "pdflatex",
+      "bibliography": {
+        "style": "ieeenat_fullname",
+        "origin": "author_kit",
+        "selected_by_style": false
+      },
+      "mode": "review",
+      "macros": {
+        "confName": "CVPR",
+        "confYear": "2027"
+      },
+      "notes": [
+        "The official repository supports CVPR/ICCV. Use its documented confName/confYear macros; the style snapshot identifies itself as CVPR 2027."
+      ]
+    },
+    {
+      "id": "iccv",
+      "asset": "cvpr",
+      "year": 2027,
+      "family": "cvpr",
+      "sample": "main.tex",
+      "document_class": {
+        "name": "article",
+        "options": [
+          "10pt",
+          "twocolumn",
+          "letterpaper"
+        ]
+      },
+      "style_package": {
+        "name": "cvpr",
+        "options": [
+          "review"
+        ]
+      },
+      "engine": "pdflatex",
+      "bibliography": {
+        "style": "ieeenat_fullname",
+        "origin": "author_kit",
+        "selected_by_style": false
+      },
+      "mode": "review",
+      "macros": {
+        "confName": "ICCV",
+        "confYear": "2027"
+      },
+      "notes": [
+        "The official repository supports CVPR/ICCV. Use its documented confName/confYear macros; the style snapshot identifies itself as CVPR 2027."
+      ]
+    },
+    {
+      "id": "eccv",
+      "asset": "eccv",
+      "year": 2026,
+      "family": "eccv",
+      "sample": "main.tex",
+      "document_class": {
+        "name": "llncs",
+        "options": [
+          "runningheads"
+        ]
+      },
+      "style_package": {
+        "name": "eccv",
+        "options": [
+          "review",
+          "year=2026",
+          "ID=00001"
+        ]
+      },
+      "engine": "pdflatex",
+      "bibliography": {
+        "style": "splncs04",
+        "origin": "author_kit",
+        "selected_by_style": false
+      },
+      "mode": "review",
+      "macros": {},
+      "notes": []
+    }
+  ],
+  "deferred_venues": [
+    {
+      "id": "uai",
+      "reason": "Explicitly deferred by the user; official archive unavailable. Outside the required baseline."
+    }
+  ]
+}

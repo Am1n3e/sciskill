@@ -49,6 +49,8 @@ def reference_status(validations):
     if result.get("complete") is False:
         return "Pending"
     verdict = result.get("is_correct")
+    if validations.get("extraction", {}).get("state") == "needs_review" and verdict is not False:
+        return "Needs review"
     if verdict is not None:
         return "Correct" if verdict else "Invalid"
     sources = result.get("methods", [])

@@ -12,8 +12,12 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  checks:
+    uses: ./.github/workflows/bib-lint-checks.yml
+
   build:
     name: Build and validate distributions
+    needs: checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

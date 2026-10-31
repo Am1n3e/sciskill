@@ -25,10 +25,10 @@
     <form id="audit-form" autocomplete="off">
       <fieldset id="audit-fields">
         <div class="form-grid">
-          <label>Bibliography or report path<input id="bibliography" name="bibliography" spellcheck="false" placeholder="/path/to/references.bib"></label>
-          <label>Compiled AUX path (optional)<input id="aux" name="aux" spellcheck="false" placeholder="/path/to/paper.aux"></label>
+          <label>BibTeX, PDF, or report path<input id="bibliography" name="bibliography" spellcheck="false" placeholder="/path/to/paper.pdf or references.bib"></label>
+          <label>Compiled AUX path (BibTeX only)<input id="aux" name="aux" spellcheck="false" placeholder="/path/to/paper.aux"></label>
           <label>Output directory (optional)<input id="output" name="output" spellcheck="false" placeholder="Defaults to references.bib-lint beside the input"></label>
-          <label>Citation key (optional)<input id="citation-key" name="key" spellcheck="false" placeholder="Example citation key"></label>
+          <label>Citation key (optional)<input id="citation-key" name="key" spellcheck="false" placeholder="Example: pdf-ref-0007"></label>
         </div>
         <div class="actions">
           <button type="submit" class="primary">Verify</button><button type="button" data-action="parse">Parse only</button>
@@ -36,7 +36,8 @@
           <button type="button" data-action="verify_key" class="key-action">Verify selected key</button>
           <button type="button" data-action="refresh_key" class="key-action">Recheck selected key</button>
         </div>
-        <p class="muted small">Verify reuses current evidence. Recheck sources fetches it again. Source bibliographies and AUX files are never modified.</p>
+        <p class="muted small">Verify reuses current evidence. Recheck sources fetches it again. Source files are never modified. Parse only stays offline. PDFs use all extracted references; citation usage is unknown.</p>
+        <p id="pdf-input-help" class="muted small" hidden>PDF reference extraction runs locally. Scanned reference pages need OCR and are reported for review. AUX matching is unavailable for PDF input.</p>
       </fieldset>
     </form>
     <form id="open-form" autocomplete="off">
@@ -51,6 +52,7 @@
     </form>
   </details>
   <section id="job-status" class="job-status" aria-live="polite" hidden></section>
+  <section id="extraction-status" aria-live="polite" hidden></section>
   <div id="workspace-content" tabindex="-1">
     <section id="overview-panel" role="tabpanel" aria-labelledby="overview-tab"><p class="muted">Loading audit…</p></section>
     <section id="references-panel" role="tabpanel" aria-labelledby="references-tab" hidden>

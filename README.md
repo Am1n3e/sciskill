@@ -24,7 +24,7 @@ Initialize `.sciskill/` with your LaTeX and bibliography paths, optional venue, 
 /sciskill bib-lint
 ```
 
-Check bibliography metadata against scholarly records and inspect the findings and source evidence.
+Check bibliography metadata or extract a research-paper PDF reference list, then inspect the findings and source evidence.
 
 ```text
 /sciskill plan-rebuttal
@@ -38,10 +38,11 @@ SciSkill pairs agent instructions with tools that carry out the work and make th
 
 ### bib-lint
 
-Check bibliography metadata against scholarly sources and inspect findings alongside their evidence in a local viewer. See [bib-lint](tools/bib-lint/README.md).
+Audit BibTeX bibliographies or text-based research-paper PDF reference lists against scholarly sources, with local extraction and an evidence viewer. See [bib-lint](tools/bib-lint/README.md).
 
 ```sh
 uvx sciskill bib-lint --help
+uvx sciskill bib-lint verify paper.pdf --json
 ```
 
 ### Rebuttal Desk

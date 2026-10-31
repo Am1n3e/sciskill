@@ -3,6 +3,7 @@
 import copy
 import json
 from dataclasses import replace
+from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -73,6 +74,52 @@ def test_jmlr_official_pdf_locator_precedes_bad_volume(tmp_path, url):
     assert method["found_ref"]["identifiers"]["jmlr"] == "v22/20-1364"
     assert calls == [ABSTRACT]
     assert bibliography.read_bytes() == original
+
+
+@pytest.mark.parametrize("missing_status", [200, 404])
+def test_jmlr_unproductive_volume_falls_back_to_independent_year_catalog(tmp_path, missing_status):
+    source = source_entry()
+    for field in ("url", "jmlr", "jmlr_id"):
+        source["fields"].pop(field, None)
+    source["fields"]["volume"] = "999"
+    calls = []
+
+    def respond(request):
+        url = str(request.url)
+        calls.append(url)
+        if url == "https://jmlr.org/papers/v999/":
+            return httpx.Response(missing_status, text="<html>No matching papers</html>")
+        if url == "https://jmlr.org/papers/":
+            return httpx.Response(200, text='<a href="v22/">Volume 22 (2021)</a>')
+        if url == "https://jmlr.org/papers/v22/":
+            title = source["fields"]["title"]
+            return httpx.Response(200, text=f'<a href="20-1364.html">{title}</a>')
+        assert url == ABSTRACT
+        return httpx.Response(200, text=html_record("sb3"))
+
+    client = MetadataClient(tmp_path / "cache", transport=httpx.MockTransport(respond))
+    try:
+        result = verify_reference(source, client, methods=[METHODS["jmlr"]])
+    finally:
+        client.close()
+    method = result["methods"][0]
+    assert method["status"] == "found"
+    assert method["found_ref"]["identifiers"]["jmlr"] == "v22/20-1364"
+    assert calls == [
+        "https://jmlr.org/papers/v999/",
+        "https://jmlr.org/papers/",
+        "https://jmlr.org/papers/v22/",
+        ABSTRACT,
+    ]
+    assert source["fields"]["volume"] == "999"
+
+
+def test_jmlr_year_fallback_does_not_repeat_the_supplied_volume_catalog():
+    source = source_entry()
+    source["fields"]["volume"] = "22"
+    context = SimpleNamespace(get=lambda *args, **kwargs: '<a href="v22">Volume 22 (2021)</a>')
+    catalogs = list(METHODS["jmlr"].catalogs(LookupQuery.from_entry(source), context))
+    assert catalogs == ["https://jmlr.org/papers/v22/"]
 
 
 @pytest.mark.parametrize(

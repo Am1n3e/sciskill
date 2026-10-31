@@ -29,7 +29,7 @@ def load_report(path):
             or not isinstance(item.get("validations"), dict)
         ):
             raise ValueError("Report items must contain entry and validations objects.")
-    if report.get("schema_version") == 3:
+    if report.get("schema_version") in (3, 4):
         validate_report(report)
     return report
 

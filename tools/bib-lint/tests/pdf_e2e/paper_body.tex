@@ -1,0 +1,48 @@
+\begin{abstract}
+Language model agents combine learned representations with external actions.
+We study how memory and feedback affect planning across interactive environments.
+Our analysis separates the policy that proposes an action from the mechanism
+that records observations. This separation supports reproducible comparisons
+under a fixed interaction budget.
+\end{abstract}
+
+\section{Introduction}
+Interactive systems must choose useful actions while maintaining a compact
+representation of previous observations. A successful action can provide both
+immediate progress and information about the environment. Prior research on
+language models, reinforcement learning, and software tools motivates a common
+evaluation protocol. We consider tasks that require several dependent actions,
+where the outcome of one step changes the information available to the next.
+The literature provides complementary perspectives on this problem: CITATIONS
+
+\section{Method}
+We represent the environment as a sequence of observations and actions.
+At each step the agent receives an observation, retrieves relevant memory,
+and proposes an action using a fixed policy. The memory contains a summary
+of earlier interactions and a record of outcomes. The policy receives the
+same total context budget in every condition. We compare a chronological
+memory with a retrieval-based memory that selects observations according
+to their relevance to the current task.
+
+Feedback is recorded after each action. Successful actions contribute to
+progress, while unsuccessful actions provide evidence about invalid plans.
+We separate feedback available during interaction from the final evaluation.
+This prevents a policy from receiving information that would be unavailable
+in normal use. Each run starts from the same environment state and uses
+an independent interaction history.
+
+\section{Evaluation}
+We measure completion, interaction cost, and consistency across repeated
+runs. Completion measures whether the agent reaches the requested state.
+Interaction cost counts actions and observations under a common budget.
+Consistency captures variation across independent runs with equivalent
+initial conditions. We report all three quantities because a higher
+completion rate may require substantially more interaction.
+
+The protocol includes tasks with delayed feedback and tasks where several
+actions have similar immediate outcomes. These conditions help distinguish
+short-term response quality from sustained planning. We inspect action
+sequences to understand when memory helps recover from an unsuccessful step.
+The analysis considers both aggregate outcomes and the distribution of
+interaction lengths. Future experiments can extend the protocol to richer
+environments while preserving the separation between feedback and evaluation.

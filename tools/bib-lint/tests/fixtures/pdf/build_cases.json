@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "policy": "Original corpora remain unchanged. Compile failures are independently reviewed source/style limitations, never successful PDF detections. Named renderable subsets omit only listed non-renderable entries; isolated negative projects must fail for the recorded compiler diagnostic.",
+  "shared_negatives": {
+    "adversarial": {
+      "adv_match_family_boundary_collision": {
+        "field": "authors",
+        "reason": "Native BibTeX rejects the trailing comma in the first author.",
+        "diagnostic": "has a comma at the end"
+      }
+    }
+  },
+  "family_negatives": {
+    "acl": {
+      "rule-variants": {
+        "case_missing_routing_context": {
+          "field": "year",
+          "reason": "The pair of same-author yearless JMLR entries makes the official ACL bst generate invalid empty-year disambiguation. Each entry compiles alone.",
+          "diagnostic": "isn't a single character",
+          "with": [
+            "case_jmlr_volume_only"
+          ],
+          "renderable_alone": true
+        }
+      },
+      "adversarial": {
+        "adv_match_clean_unicode_decomposed": {
+          "field": "authors",
+          "reason": "This full-given-name style passes a decomposed acute accent to pdfLaTeX, which rejects that Unicode character. Initial-only styles omit it and remain renderable.",
+          "diagnostic": "Unicode character"
+        }
+      }
+    },
+    "aistats": {
+      "rule-variants": {
+        "case_year_missing": {
+          "field": "year",
+          "reason": "The official apalike author-year setup cannot give this entry a natbib-compatible year label.",
+          "diagnostic": "Bibliography not compatible with author-year citations"
+        },
+        "case_not_applicable": {
+          "field": "year",
+          "reason": "The official apalike author-year setup cannot give this entry a natbib-compatible year label.",
+          "diagnostic": "Bibliography not compatible with author-year citations"
+        }
+      }
+    },
+    "neurips": {
+      "adversarial": {
+        "adv_match_clean_unicode_decomposed": {
+          "field": "authors",
+          "reason": "This full-given-name style passes a decomposed acute accent to pdfLaTeX, which rejects that Unicode character. Initial-only styles omit it and remain renderable.",
+          "diagnostic": "Unicode character"
+        }
+      }
+    },
+    "iclr": {
+      "adversarial": {
+        "adv_match_clean_unicode_decomposed": {
+          "field": "authors",
+          "reason": "This full-given-name style passes a decomposed acute accent to pdfLaTeX, which rejects that Unicode character. Initial-only styles omit it and remain renderable.",
+          "diagnostic": "Unicode character"
+        }
+      }
+    },
+    "ijcai": {
+      "adversarial": {
+        "adv_match_clean_unicode_decomposed": {
+          "field": "authors",
+          "reason": "This full-given-name style passes a decomposed acute accent to pdfLaTeX, which rejects that Unicode character. Initial-only styles omit it and remain renderable.",
+          "diagnostic": "Unicode character"
+        }
+      }
+    },
+    "cvpr": {
+      "adversarial": {
+        "adv_match_clean_unicode_decomposed": {
+          "field": "authors",
+          "reason": "This full-given-name style passes a decomposed acute accent to pdfLaTeX, which rejects that Unicode character. Initial-only styles omit it and remain renderable.",
+          "diagnostic": "Unicode character"
+        }
+      }
+    },
+    "eccv": {
+      "adversarial": {
+        "adv_match_clean_doi_encoded": {
+          "field": "doi",
+          "reason": "The native Springer DOI macro cannot typeset this untouched raw-percent DOI: percent starts a TeX comment inside the DOI argument.",
+          "diagnostic": "Paragraph ended before \\doi was complete"
+        }
+      }
+    }
+  }
+}

@@ -76,6 +76,14 @@ def prepare_input(source, *, aux=None, encoding=None, include_source=False):
             "encoding": encoding or "utf-8",
             "include_source": include_source,
         }
+    elif source.suffix.lower() == ".pdf":
+        _check_pdf_options(aux, encoding, include_source)
+        from bib_lint.pdf_input import extract_pdf
+
+        report = extract_pdf(source)
+        report["audit_input"] = {"path": str(source), "aux": None}
+        if report["extraction"]["state"] != "complete":
+            warnings.append("PDF extraction coverage needs review; inspect extraction diagnostics.")
     elif source.suffix.lower() == ".json":
         if aux is not None or encoding is not None or include_source:
             raise ValueError(
@@ -94,10 +102,31 @@ def prepare_input(source, *, aux=None, encoding=None, include_source=False):
                 # Provider and orchestration versions still govern decision reuse.
         report["audit_input"] = {"path": str(source), "aux": None}
     else:
-        raise ValueError("Input must be a .bib bibliography or .json report")
+        raise ValueError("Input must be a .bib bibliography, .pdf paper or .json report")
     validate_report(report)
     report["audit_warnings"] = warnings
     return report, inputs, warnings
+
+
+def _check_pdf_options(aux, encoding, include_source):
+    if aux is not None or encoding is not None or include_source:
+        raise ValueError("--aux, --encoding and --include-source are not available for PDF input")
+
+
+def _prepare_for_workspace(source, workspace, *, aux, encoding, include_source):
+    source = Path(source).absolute()
+    if source.suffix.lower() == ".pdf" and workspace.active().exists():
+        _check_pdf_options(aux, encoding, include_source)
+        from bib_lint.pdf_evidence import saved_identity
+        from bib_lint.pdf_input import extraction_identity
+
+        saved = json.loads(workspace.active().read_text(encoding="utf-8"))
+        validate_report(saved)
+        if saved["schema_version"] != 4 or saved_identity(saved) != extraction_identity(source):
+            raise ValueError("Workspace belongs to different inputs; choose a new output directory")
+        saved["audit_input"] = {"path": str(source), "aux": None}
+        return saved, [source], saved.get("audit_warnings", [])
+    return prepare_input(source, aux=aux, encoding=encoding, include_source=include_source)
 
 
 def run_audit(
@@ -118,8 +147,8 @@ def run_audit(
     """Validate first; own one stable lock through initialization and promotion."""
     registry = validate_registry(METHODS if methods is None else methods)
     workspace = Workspace.for_input(source, output)
-    report, inputs, warnings = prepare_input(
-        source, aux=aux, encoding=encoding, include_source=include_source
+    report, inputs, warnings = _prepare_for_workspace(
+        source, workspace, aux=aux, encoding=encoding, include_source=include_source
     )
     selected_items(report, citation_key)  # Invalid keys must never replace saved work.
     for target in (
@@ -142,6 +171,8 @@ def run_audit(
                 raise ValueError(
                     "Workspace belongs to different inputs; choose a new output directory"
                 )
+            if report["schema_version"] == 4 and Path(source).suffix.lower() == ".pdf":
+                saved["audit_input"] = report["audit_input"]
             report = saved
         if preview:
             if not workspace.active().exists():

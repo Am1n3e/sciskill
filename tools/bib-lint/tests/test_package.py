@@ -7,13 +7,10 @@ import socket
 import subprocess
 import tarfile
 import time
-import urllib.error
-import urllib.request
 import zipfile
 from pathlib import Path
 
 import httpx
-import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -22,6 +19,35 @@ def run(command, cwd, env):
     result = subprocess.run(command, cwd=cwd, env=env, text=True, capture_output=True, timeout=90)
     assert result.returncode == 0, result.stdout + result.stderr
     return result
+
+
+def wait_for_viewer(server, base_url, log_path, *, timeout=30):
+    deadline = time.monotonic() + timeout
+    last = "No response received"
+    # urllib discovers macOS system proxies as well as environment proxies.
+    # Readiness must take the same explicit direct-loopback route as the browser.
+    with httpx.Client(base_url=base_url, trust_env=False, timeout=1) as browser:
+        while time.monotonic() < deadline:
+            code = server.poll()
+            if code is not None:
+                last = f"Viewer process exited {code}"
+                break
+            try:
+                response = browser.get("/api/state")
+                last = f"HTTP {response.status_code}: {response.text[:2000]}"
+                state = response.json()
+                if (
+                    response.status_code == 200
+                    and isinstance(state, dict)
+                    and "summary" in state
+                    and state["summary"] is None
+                ):
+                    return state
+            except (httpx.HTTPError, ValueError) as exc:
+                last = repr(exc)
+            time.sleep(0.1)
+    output = log_path.read_text()[-4000:] if log_path.exists() else "No server log"
+    raise AssertionError(f"Installed viewer did not become ready: {last}\nServer output:\n{output}")
 
 
 def test_installed_wheel_and_local_install_modes(tmp_path):
@@ -41,6 +67,11 @@ def test_installed_wheel_and_local_install_modes(tmp_path):
         "bib_lint/audit.py",
         "bib_lint/scope.py",
         "bib_lint/citation_keys.py",
+        "bib_lint/pdf_evidence.py",
+        "bib_lint/pdf_input/__init__.py",
+        "bib_lint/pdf_input/worker.py",
+        "bib_lint/pdf_input/layout.py",
+        "bib_lint/pdf_input/citations.py",
         "bib_lint/verification/input_checks.py",
         "bib_lint/viewer/app.py",
         "bib_lint/viewer/server.py",
@@ -66,6 +97,8 @@ def test_installed_wheel_and_local_install_modes(tmp_path):
         ).decode()
         assert "Requires-Python: >=3.12" in metadata
         assert "Requires-Dist: streamlit" not in metadata
+        assert "Requires-Dist: pdfplumber" in metadata
+        assert "Requires-Dist: cryptography" in metadata
         dependencies = [line for line in metadata.splitlines() if line.startswith("Requires-Dist:")]
         assert not any("pytest" in line or "coverage" in line for line in dependencies)
     with tarfile.open(next(artifacts.glob("*.tar.gz"))) as archive:
@@ -106,36 +139,23 @@ assert ViewerSession(Registry()).state()['summary'] is None
 assert 'Audit setup' in files('bib_lint.viewer').joinpath('static/index.html').read_text()
 """
     run([str(python), "-c", script], paper, env)
+    check_installed_pdf(python, executable, paper, env)
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
-    server = subprocess.Popen(
-        [str(executable), "view", "--port", str(port), "--no-browser"],
-        cwd=paper,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        start_new_session=True,
-    )
+    log_path = tmp_path / "installed-viewer.log"
+    with log_path.open("w") as server_log:
+        server = subprocess.Popen(
+            [str(executable), "view", "--port", str(port), "--no-browser"],
+            cwd=paper,
+            env=env,
+            stdout=server_log,
+            stderr=subprocess.STDOUT,
+            text=True,
+            start_new_session=True,
+        )
     try:
-        deadline = time.monotonic() + 30
-        ready = False
-        while time.monotonic() < deadline:
-            if server.poll() is not None:
-                pytest.fail("Viewer exited before becoming ready: " + "".join(server.communicate()))
-            try:
-                with urllib.request.urlopen(
-                    f"http://127.0.0.1:{port}/api/state", timeout=1
-                ) as response:
-                    ready = (
-                        response.status == 200 and json.loads(response.read())["summary"] is None
-                    )
-                if ready:
-                    break
-            except (OSError, urllib.error.URLError):
-                time.sleep(0.1)
-        assert ready, "Installed viewer did not become ready"
+        wait_for_viewer(server, f"http://127.0.0.1:{port}", log_path)
         with httpx.Client(base_url=f"http://127.0.0.1:{port}", trust_env=False) as browser:
             assert browser.get("/").status_code == 200
             assert "Science Skills" in browser.get("/").text
@@ -172,3 +192,56 @@ assert 'Audit setup' in files('bib_lint.viewer').joinpath('static/index.html').r
         assert (
             result["status"] == "completed" and Path(result["output_dir"]) == paper / "other-audit"
         )
+
+
+def check_installed_pdf(python, executable, paper, env):
+    from reportlab.pdfgen import canvas
+
+    source = paper / "references paper.PDF"
+    output = canvas.Canvas(str(source), invariant=1)
+    output.setFont("Times-Bold", 12)
+    output.drawString(50, 700, "References")
+    output.setFont("Times-Roman", 10)
+    output.drawString(50, 680, "[1] Jane Smith. An Example Paper. Example Journal, 2025.")
+    output.save()
+    before = source.read_bytes()
+    script = """import socket
+from pathlib import Path
+from bib_lint.viewer.app import ViewerSession
+from bib_lint.viewer.jobs import Registry
+from bib_lint.pdf_input import extract_pdf
+from bib_lint.scope import validate_report
+
+def forbidden(*args, **kwargs):
+    raise AssertionError('PDF preview attempted a network request')
+socket.socket.connect = forbidden
+source = Path('references paper.PDF')
+report = extract_pdf(source)
+validate_report(report)
+assert report['schema_version'] == 4 and len(report['items']) == 1
+assert report['items'][0]['entry']['fields']['title'] == 'An Example Paper'
+session = ViewerSession(Registry())
+state = session.action({'action':'parse','bibliography':str(source),'output':'pdf-audit'})
+assert state['error'] is None and state['metadata']['input_kind'] == 'pdf'
+assert state['summary']['extraction']['occurrence_count'] == 1
+assert state['summary']['completed'] == 0
+assert session.detail('pdf-ref-0001')['pdf']['fragments'][0]['page'] == 1
+assert not Path('pdf-audit/cache').exists()
+"""
+    run([str(python), "-c", script], paper, env)
+    assert source.read_bytes() == before
+    invalid = paper / "invalid.pdf"
+    invalid.write_bytes(b"not a PDF")
+    result = subprocess.run(
+        [str(executable), "verify", str(invalid), "--json"],
+        cwd=paper,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert result.returncode == 2
+    envelope = json.loads(result.stdout)
+    assert envelope["status"] == "failed" and envelope["extraction"]["state"] == "failed"
+    assert envelope["error"]["diagnostics"]
+    assert not (paper / "invalid.bib-lint").exists()

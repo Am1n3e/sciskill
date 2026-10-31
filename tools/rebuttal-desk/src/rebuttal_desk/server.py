@@ -3,6 +3,7 @@
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib.resources import files
+from socketserver import TCPServer
 from urllib.parse import urlsplit
 
 from .workspace import load_workspace
@@ -12,6 +13,14 @@ ASSETS = {
     "/app.js": ("app.js", "text/javascript"),
     "/styles.css": ("styles.css", "text/css"),
 }
+
+
+class LoopbackServer(ThreadingHTTPServer):
+    def server_bind(self):
+        # The bound numeric loopback address needs no reverse-DNS public name.
+        TCPServer.server_bind(self)
+        self.server_name = "localhost"
+        self.server_port = self.socket.getsockname()[1]
 
 
 def make_server(workspace, port=0):
@@ -60,4 +69,4 @@ def make_server(workspace, port=0):
         def log_message(self, *args):
             pass
 
-    return ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    return LoopbackServer(("127.0.0.1", port), Handler)

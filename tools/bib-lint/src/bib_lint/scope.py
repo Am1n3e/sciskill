@@ -27,8 +27,12 @@ def validate_outcome(method):
 
 
 def validate_report(report):
-    if not isinstance(report, dict) or report.get("schema_version") not in (2, 3):
-        raise ValueError("Expected a bib-lint schema version 2 or 3 report")
+    if (
+        not isinstance(report, dict)
+        or type(report.get("schema_version")) is not int
+        or report.get("schema_version") not in (2, 3, 4)
+    ):
+        raise ValueError("Expected a bib-lint schema version 2, 3 or 4 report")
     if not isinstance(report.get("items"), list):
         raise ValueError("Report must contain items")
     keys = _validate_items(report)
@@ -37,6 +41,10 @@ def validate_report(report):
         raise ValueError("summary must be an object")
     if len({key.lower() for key in keys}) != len(keys):
         raise ValueError("Duplicate citation keys in report; each key must match exactly one entry")
+    if report["schema_version"] == 4:
+        from bib_lint.pdf_evidence import validate_pdf_report
+
+        validate_pdf_report(report)
     return _validate_scope(report, keys)
 
 
@@ -68,6 +76,10 @@ def fingerprint(report):
             for i in report["items"]
         ],
     }
+    if report["schema_version"] == 4:
+        from bib_lint.pdf_evidence import fingerprint_evidence
+
+        data["pdf"] = fingerprint_evidence(report)
     return hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()
 
 
