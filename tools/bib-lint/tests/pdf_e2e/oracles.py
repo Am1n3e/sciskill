@@ -168,13 +168,66 @@ VENUE_MUTATIONS = {
 }
 
 
+LOCATOR_PRIMARY = {
+    "case_openreview_accepted_direct": ("openreview", "Correct"),
+    "adv_provider_openreview_alias_conflict": ("openreview", "Correct"),
+    "adv_consensus_pal_year_hybrid": ("openreview", "Correct"),
+    "adv_consensus_pal_common_year_error": ("openreview", "Invalid"),
+    "adv_consensus_kim_unlinked_primaries": ("neurips", "Correct"),
+    "adv_consensus_tulu_ambiguous_truncation": ("arxiv", "Partial match"),
+}
+
+
+def _locator_primary(case, visibility):
+    # Independently curated fixture URLs identify these specific primary records.
+    # Locator-first verification does not discover unlinked alternative versions.
+    selected = LOCATOR_PRIMARY.get(case["citation_key"])
+    if not selected:
+        return None
+    if required_issues(case, visibility):
+        return None
+    visible = {field for field, state in visibility.items() if state in {"text", "annotation_only"}}
+    if "url" not in visible:
+        if case["citation_key"] in {
+            "adv_consensus_pal_year_hybrid",
+            "adv_consensus_pal_common_year_error",
+        } and visible & {"doi", "eprint"}:
+            return "arxiv", "Needs review"
+        if selected[0] == "neurips" and "doi" in visible:
+            return selected
+        if selected[0] != "arxiv" or "eprint" not in visible:
+            return None
+    if case["citation_key"] == "adv_consensus_pal_year_hybrid" and any(
+        visibility.get(field) in {"text", "annotation_only"} for field in ("eprint", "doi")
+    ):
+        return selected[0], "Needs review"  # Supplied secondary locators remain unverified.
+    return selected
+
+
 def visible_checks(case, family, visibility):
+    if case["citation_key"] == "case_arxiv_wrong_identifier" and _locator_visible(
+        "arxiv", visibility
+    ):
+        # The supplied ID resolves to Tulu, while the citation names CodeNav. Direct
+        # verification proves a title conflict; it cannot infer the intended ID.
+        return [
+            {"field": "title", "source": "arxiv", "results": ["mismatch"]},
+            {"field": "arxiv", "source": "arxiv", "results": ["match"]},
+        ]
     changed_venue = VENUE_MUTATIONS.get(case["citation_key"])
     erased = changed_venue and visibility.get(changed_venue) not in {"text", "annotation_only"}
-    return [
+    checks = [
         check
         for check in _required_checks(case, family)
         if not (erased and check["field"] == "venue")
+    ]
+    selected = _locator_primary(case, visibility)
+    if not selected:
+        return checks
+    return [
+        {**check, "source": selected[0]}
+        for check in checks
+        if check.get("source") in {None, selected[0], "all_authoritative_found"}
     ]
 
 
@@ -233,7 +286,7 @@ def _locator_visible(field, visibility):
 
 
 def expected_statuses(case, family, visibility, *, arxiv_locator_erased=False):
-    if arxiv_locator_erased:
+    if arxiv_locator_erased and not _locator_primary(case, visibility):
         return ["Needs review"]
     source = case.get("source_expectation", {})
     status = source.get("reference_status")
@@ -257,6 +310,18 @@ def expected_statuses(case, family, visibility, *, arxiv_locator_erased=False):
 
 def _rendering_status(case, family, visibility):
     source = case.get("source_expectation", {})
+    if case["citation_key"] == "case_title_unrelated" and _locator_visible("doi", visibility):
+        # Its visible source locator identifies the unchanged canonical paper; the
+        # deliberately unrelated title is now disproved instead of left unresolved.
+        return ["Invalid"]
+    selected = _locator_primary(case, visibility)
+    if selected:
+        status = selected[1]
+        return (
+            ["Needs review"]
+            if family in INITIAL_FAMILIES and status in {"Correct", "Partial match"}
+            else [status]
+        )
     if case["citation_key"] == "case_openreview_accepted_direct":
         return ["Needs review"]  # Unlinked arXiv and accepted publication are both authoritative.
     if case["citation_key"] == "adv_match_literal_prefix_collision":

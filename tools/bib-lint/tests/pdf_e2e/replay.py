@@ -3,7 +3,7 @@
 import html
 import re
 from difflib import SequenceMatcher
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 from xml.sax.saxutils import escape
 
 import httpx
@@ -103,6 +103,17 @@ class ScholarlyReplay:
 
     def __call__(self, request):
         self.requests.append(str(request.url))
+        if request.url.host in {"doi.org", "dx.doi.org"} and request.method == "GET":
+            identifier = unquote(request.url.path.lstrip("/")).casefold()
+            matches = [
+                r
+                for r in self.records
+                if r.get("identifiers", {}).get("doi", "").casefold() == identifier
+            ]
+            if not matches:
+                return httpx.Response(404)
+            matches.sort(key=lambda r: (r.get("record_type") != "publication", r["url"]))
+            return httpx.Response(302, headers={"Location": matches[0]["url"]})
         provider = HOSTS.get(request.url.host)
         if provider is None or request.method != "GET":
             self.unexpected.append(str(request.url))

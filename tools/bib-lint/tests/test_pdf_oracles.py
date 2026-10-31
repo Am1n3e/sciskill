@@ -370,3 +370,26 @@ def test_only_others_needs_an_explicit_missing_authors_diagnostic():
         _assert_fields(item, expected)
     item["pdf"]["diagnostics"][0]["code"] = "missing_authors"
     _assert_fields(item, expected)
+
+
+def test_locator_first_oracle_attributes_a_wrong_link_to_direct_metadata():
+    from pdf_e2e.oracles import expected_statuses, visible_checks
+
+    wrong_id = {
+        "citation_key": "case_arxiv_wrong_identifier",
+        "canonical_records": ["codenav"],
+        "source_expectation": {"comparisons": {"arxiv": "mismatch"}},
+    }
+    checks = visible_checks(wrong_id, "icml", {"title": "text", "eprint": "text"})
+    assert {"field": "title", "source": "arxiv", "results": ["mismatch"]} in checks
+    assert {"field": "arxiv", "source": "arxiv", "results": ["match"]} in checks
+    unrelated = {
+        "citation_key": "case_title_unrelated",
+        "canonical_records": ["datawise"],
+        "source_expectation": {"reference_status": "Unresolved"},
+    }
+    assert expected_statuses(unrelated, "icml", {"url": "text"}) == ["Invalid"]
+    assert expected_statuses(unrelated, "icml", {"url": "omitted"}) == [
+        "Unresolved",
+        "Needs review",
+    ]
