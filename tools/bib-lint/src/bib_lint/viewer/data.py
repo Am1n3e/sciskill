@@ -161,6 +161,7 @@ def display(value):
 
 def comparison_rows(item, show_matches=False):
     original = input_record(item["entry"])
+    agent_url = next((e["url"] for e in item.get("agent_review", {}).get("evidence", [])), None)
     rows = []
     for comparison in item["validations"].get("correctness", {}).get("input_findings", []):
         rows.append(
@@ -183,6 +184,7 @@ def comparison_rows(item, show_matches=False):
             rows.append(
                 {
                     "Source": method["name"],
+                    "URL": source_url(method),
                     "Field": comparison["field"],
                     "Status": field_status(state),
                     "Your value": display(comparison.get("input")),
@@ -195,6 +197,7 @@ def comparison_rows(item, show_matches=False):
         rows.append(
             {
                 "Source": "agent",
+                "URL": agent_url,
                 "Field": comparison["field"],
                 "Status": field_status(comparison["result"]),
                 "Your value": display(comparison.get("input")),
@@ -206,12 +209,14 @@ def comparison_rows(item, show_matches=False):
 
 def suggestions(item):
     result = item["validations"].get("correctness", {})
+    agent_url = next((e["url"] for e in item.get("agent_review", {}).get("evidence", [])), None)
     agent_rows = [
         {
             "Field": c["field"],
             "Current": display(c.get("input")),
             "Suggested": display(c["found"]),
             "Source": "agent",
+            "URL": agent_url,
         }
         for c in item.get("agent_review", {}).get("comparisons", [])
         if c["result"] == "mismatch" and c.get("found") is not None
@@ -236,9 +241,18 @@ def suggestions(item):
                     "Current": display(difference.get("input")),
                     "Suggested": display(difference["found"]),
                     "Source": method["name"],
+                    "URL": source_url(method),
                 }
             )
     return rows
+
+
+def source_url(method):
+    return (
+        method.get("source_url")
+        or (method.get("found_ref") or {}).get("url")
+        or method.get("redirect_url")
+    )
 
 
 def source_rows(methods):
@@ -250,9 +264,7 @@ def source_rows(methods):
             "Source": m["name"],
             "Name": m.get("display_name") or m["name"],
             "Status": ["Resolved" if m.get("redirect_url") else source_status(m["status"])],
-            "URL": m.get("source_url")
-            or (m.get("found_ref") or {}).get("url")
-            or m.get("redirect_url"),
+            "URL": source_url(m),
             "Lookup": lookup_label(m),
             "Revision": m.get("adapter_version", ""),
             "Search scope": "; ".join(

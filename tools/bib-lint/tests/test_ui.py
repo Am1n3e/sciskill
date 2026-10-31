@@ -242,12 +242,9 @@ def test_audit_summary_is_a_table_without_the_read_only_label(browser):
     assert [th.get_text(strip=True) for th in summary.select("#run-summary th")] == [
         "References",
         "Processed references",
-        "Correct",
+        "Valid",
         "Invalid",
-        "Needs review",
-        "Partial match",
         "Unresolved",
-        "Pending",
     ]
     assert "Read-only" not in page.get_text()
     assert page.select_one("#access-mode") is None

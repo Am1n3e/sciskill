@@ -93,9 +93,12 @@ def test_agent_browser_data_and_automated_metrics(tmp_path):
     session = ViewerSession(Registry(), path)
     state = session.state()
     assert state["rows"][0]["Agent"] == "Invalid"
-    assert state["rows"][0]["Status"] == "Correct"
+    assert state["rows"][0]["Status"] == "Valid"
     assert state["rows"][0]["needs_attention"] is True
-    assert state["summary"]["statuses"] == {"Correct": 1}
+    assert state["summary"]["statuses"] == {"Valid": 1}
     detail = session.detail("sample")
     assert detail["agent_review"]["status"] == "Invalid"
     assert detail["suggestions"][0]["Source"] == "agent"
+    assert detail["suggestions"][0]["URL"] == "https://example.org/paper"
+    agent_comparison = next(row for row in detail["comparisons"] if row["Source"] == "agent")
+    assert agent_comparison["URL"] == "https://example.org/paper"

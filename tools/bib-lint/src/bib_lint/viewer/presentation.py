@@ -7,12 +7,28 @@ from pathlib import Path
 from bib_lint.verification.matching import input_record
 from bib_lint.viewer.data import comparison_rows, display, source_rows, suggestions, table_rows
 
-ATTENTION = {"Invalid", "Unresolved", "Partial match", "Needs review"}
+VERDICTS = {
+    "Correct": "Valid",
+    "Invalid": "Invalid",
+    "Needs review": "Unresolved",
+    "Partial match": "Unresolved",
+    "Unresolved": "Unresolved",
+}
+ATTENTION = {"Invalid", "Unresolved"}
 
 
 def reference_rows(report):
     rows = table_rows(report)
     for row, item in zip(rows, report["items"], strict=True):
+        status = row["Status"]
+        row["Status"] = VERDICTS.get(status)
+        row["progress"] = (
+            "skipped" if status == "Skipped" else "pending" if status == "Pending" else "processed"
+        )
+        if "Agent" in row:
+            row["Agent"] = VERDICTS.get(row["Agent"])
+        if status == "Pending" and not item["validations"].get("correctness"):
+            row["Note"] = "Not processed yet"
         methods = item["validations"].get("correctness", {}).get("methods", [])
         failed = any(method.get("status") == "error" for method in methods)
         extraction = item["validations"].get("extraction", {})
@@ -51,14 +67,14 @@ def summary(report, rows):
         else {row["Citation key"] for row in rows if row["Used in paper"] != "No"}
     )
     checked = [row for row in rows if row["Citation key"] in eligible]
-    counts = Counter(row["Status"] for row in checked)
+    counts = Counter(row["Status"] for row in checked if row["Status"] is not None)
     unknown = any(row["Used in paper"] == "Unknown" for row in rows)
     return {
         "total": len(rows),
         "eligible": len(checked),
-        "completed": sum(row["Status"] not in {"Pending", "Skipped"} for row in checked),
+        "completed": sum(row["progress"] == "processed" for row in checked),
         "used": None if unknown or (scope and scope["mode"] == "all") else len(checked),
-        "skipped": sum(row["Status"] == "Skipped" for row in rows),
+        "skipped": sum(row["progress"] == "skipped" for row in rows),
         "attention": sum(row["needs_attention"] for row in checked),
         "statuses": dict(counts),
         "agent_reviewed": sum(bool(item.get("agent_review")) for item in report["items"]),
@@ -101,7 +117,8 @@ def metadata(report, path):
 
 def reference_detail(item):
     result = item["validations"].get("correctness", {})
-    row = table_rows({"items": [item]})[0]
+    row = reference_rows({"items": [item]})[0]
+    review = item.get("agent_review")
     return {
         "entry": item["entry"],
         "row": row,
@@ -112,7 +129,7 @@ def reference_detail(item):
         "comparisons": comparison_rows(item, show_matches=True),
         "sources": source_rows(result.get("methods", [])),
         "methods": result.get("methods", []),
-        "agent_review": item.get("agent_review"),
+        "agent_review": {**review, "status": VERDICTS[review["status"]]} if review else None,
         **(
             {"pdf": item["pdf"], "extraction": item["validations"]["extraction"]}
             if "pdf" in item

@@ -52,12 +52,18 @@ def test_all_rows_counts_and_status():
 def test_comparisons_and_evidence_based_proposals():
     item = fixture_report()["items"][0]
     row = comparison_rows(item)[0]
-    assert list(row) == ["Source", "Field", "Status", "Your value", "Source's value"]
+    assert list(row) == ["Source", "URL", "Field", "Status", "Your value", "Source's value"]
     assert row["Source's value"] == "2025"
     assert suggestions(item)[0]["Suggested"] == "2025"
     uncertain = copy.deepcopy(item)
     uncertain["validations"]["correctness"]["is_correct"] = None
     assert suggestions(uncertain) == []
+
+
+def test_comparisons_and_corrections_link_directly_to_their_source():
+    item = fixture_report()["items"][0]
+    assert comparison_rows(item)[0]["URL"] == "https://doi.org/10.1234/example"
+    assert suggestions(item)[0]["URL"] == "https://doi.org/10.1234/example"
 
 
 def test_cache_read_checks_integrity_without_modifying_files(tmp_path):

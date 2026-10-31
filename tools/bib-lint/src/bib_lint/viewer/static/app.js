@@ -4,10 +4,12 @@ const $=id=>document.getElementById(id);
 const number=new Intl.NumberFormat();
 const detailRoot=document.getElementById('reference-detail');
 const node=(tag,text,cls)=>{const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(cls)el.className=cls;return el;};
-function badge(status,text=status){const cls=status==='Correct'||status==='Match'||status==='Found'?'good':status==='Invalid'||status==='Mismatch'||status==='Failed'?'bad':['Needs review','Partial match','Unresolved','Insufficient data'].includes(status)?'review':'info';return node('span',text,`chip ${cls}`);}
+function badge(status,text=status){const cls=status==='Valid'||status==='Match'||status==='Found'?'good':status==='Invalid'||status==='Mismatch'||status==='Failed'?'bad':['Needs review','Partial match','Unresolved','Insufficient data'].includes(status)?'review':'info';return node('span',text,`chip ${cls}`);}
 function message(text,error=false){const el=node('p',text,`notice${error?' error':''}`);$('messages').append(el);}
 function json(value){return node('pre',JSON.stringify(value,null,2),'code');}
 function safeLink(text,url){try{const u=new URL(url);if(!['http:','https:'].includes(u.protocol))return node('span',text);const a=node('a',text,'external');a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';return a;}catch{return node('span',text);}}
+function sourceLink(row){return row.URL?safeLink(`${row.Source} ↗`,row.URL):node('span',row.Source);}
+function searchable(value){return value.toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}]/gu,'');}
 function params(){return new URLSearchParams(location.search);}
 function route(changes){const p=params();for(const [key,value] of Object.entries(changes)){if(value===null||value==='')p.delete(key);else p.set(key,value);}history.pushState(null,'',`${location.pathname}${p.size?'?'+p:''}`);renderReferences();renderRoute();}
 async function api(path,options){const response=await fetch(path,{cache:'no-store',...options});const data=await response.json();if(!response.ok)throw new Error(data.error||'Could not read the audit. Reload and try again.');return data;}
@@ -65,7 +67,7 @@ function renderHeader(){
   $('summary-options-row').hidden=!options.length;
   $('summary-options').textContent=options.join(' · ');
   $('summary-total-label').textContent=m.input_kind==='pdf'?'Extracted references':'References';
-  for(const [id,value] of Object.entries({total:s.total,processed:s.completed,correct:s.statuses.Correct||0,invalid:s.statuses.Invalid||0,review:s.statuses['Needs review']||0,partial:s.statuses['Partial match']||0,unresolved:s.statuses.Unresolved||0,pending:s.statuses.Pending||0})){
+  for(const [id,value] of Object.entries({total:s.total,processed:s.completed,valid:s.statuses.Valid||0,invalid:s.statuses.Invalid||0,unresolved:s.statuses.Unresolved||0})){
     $(`summary-${id}`).textContent=number.format(value);
   }
 }
@@ -74,8 +76,8 @@ function renderReferences(){
   const focused=document.activeElement;
   detailFocus=detailRoot.contains(focused)||focused?.matches('.reference-toggle')?focused:null;
   const p=params();$('search').value=p.get('q')||'';$('hide-unused').checked=p.get('hide_unused')==='1';$('attention').checked=p.get('attention')==='1';
-  const query=(p.get('q')||'').toLowerCase();
-  const rows=state.rows.filter(r=>(!$('hide-unused').checked||(r['Used in paper']!=='No'&&r.Status!=='Skipped'))&&(!$('attention').checked||r.needs_attention)&&[r['Citation key'],r.title,r.Note,r['Agent note']].join(' ').toLowerCase().includes(query));
+  const query=searchable(p.get('q')||'');
+  const rows=state.rows.filter(r=>(!$('hide-unused').checked||(r.progress!=='skipped'))&&(!$('attention').checked||r.needs_attention)&&searchable([r['Citation key'],r.title,r.Note,r['Agent note']].join(' ')).includes(query));
   $('reference-filters').hidden=!state.summary;$('visible-count').hidden=!state.summary;
   $('visible-count').textContent=`${number.format(rows.length)} of ${number.format(state.rows.length)} references`;
   if(!state.summary){$('references-table').replaceChildren(node('p',state.loading?'Waiting for the first saved result…':'Choose an input or open a saved audit to see its references.','empty-state muted'));return;}
@@ -88,9 +90,9 @@ function renderReferences(){
       [...document.querySelectorAll('.reference-toggle')].find(b=>b.dataset.key===row['Citation key'])?.focus();
     });
     ref.append(button,node('span',row['Citation key'],'citation-key'));cell(tr,ref);
-    const statuses=node('div');statuses.append(badge(row.Status));
+    const statuses=node('div');statuses.append(row.Status?badge(row.Status):node('span','—','muted'));
     if(row.Agent)statuses.append(node('p','Agent','small muted'),badge(row.Agent));cell(tr,statuses);
-    const finding=node('div');finding.append(node('p',row.Status==='Correct'&&!row.source_failed?'—':row.Note,'finding-note'));
+    const finding=node('div');finding.append(node('p',row.Status==='Valid'&&!row.source_failed?'—':row.Note,'finding-note'));
     if(row['Agent note'])finding.append(node('p',row['Agent note'],'muted small'));cell(tr,finding);
     const checked=node('div',undefined,'source-count');
     checked.append(node('span',`${row.records_found} ${row.records_found===1?'record':'records'} found`),node('span',`${row.sources_checked} ${row.sources_checked===1?'source check':'source checks'}`,'muted small'));cell(tr,checked);
@@ -153,9 +155,9 @@ function evidenceSection(name,render){
   if(params().get('detail')===name){section.open=true;populate();}
 }
 function comparison(panel){
-  if(detail.agent_review&&detail.agent_review.status!==detail.row.Status)panel.append(node('p',`Agent assessment: ${detail.agent_review.status}; automated assessment: ${detail.row.Status}. Review both sets of evidence before accepting a correction.`,'notice'));
+  if(detail.agent_review&&detail.agent_review.status!==detail.row.Status)panel.append(node('p',`Agent assessment: ${detail.agent_review.status}; automated assessment: ${detail.row.Status||'not processed yet'}. Review both sets of evidence before accepting a correction.`,'notice'));
   if(detail.suggestions.length){
-    panel.append(node('h3','Suggested corrections'),table(['Field','Current','Suggested','Source'],detail.suggestions,(tr,row)=>['Field','Current','Suggested','Source'].forEach(k=>cell(tr,row[k])),'comparison-table'),node('p','Proposals only. Check the source link before accepting a correction; the bibliography has not been modified.','muted small'));
+    panel.append(node('h3','Suggested corrections'),table(['Field','Current','Suggested','Source'],detail.suggestions,(tr,row)=>{['Field','Current','Suggested'].forEach(k=>cell(tr,row[k]));cell(tr,sourceLink(row));},'comparison-table'),node('p','Check the source before changing your reference. Your input is unchanged.','muted small'));
   }
   panel.append(node('h3','Field comparison'));
   const label=node('label',undefined,'inline-switch'),toggle=node('input');toggle.type='checkbox';
@@ -165,7 +167,7 @@ function comparison(panel){
   const area=node('div');
   function show(){
     const rows=detail.comparisons.filter(r=>toggle.checked||!['Match','Not checked'].includes(r.Status));
-    area.replaceChildren(table(['Field','Your value','Source’s value','Status','Source'],rows,(tr,row)=>{cell(tr,row.Field);cell(tr,row['Your value']);cell(tr,row["Source's value"]);cell(tr,badge(row.Status));cell(tr,row.Source);},'comparison-table'));
+    area.replaceChildren(table(['Field','Your value','Source’s value','Status','Source'],rows,(tr,row)=>{cell(tr,row.Field);cell(tr,row['Your value']);cell(tr,row["Source's value"]);cell(tr,badge(row.Status));cell(tr,sourceLink(row));},'comparison-table field-comparison'));
   }
   toggle.addEventListener('change',()=>{const p=params();p.set('matches',toggle.checked?'1':'0');history.replaceState(null,'',`/?${p}`);show();});show();panel.append(area);
   panel.append(node('h3','Sources checked'),node('p',detail.lookup_summary,'muted small'));

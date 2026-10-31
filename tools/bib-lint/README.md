@@ -131,6 +131,10 @@ are optional disclosures in that same page. DOI resolution is identified separat
 from paper metadata. Extraction warnings remain visible; routine completion notices
 do not obscure results. Unknown citation scope never hides known findings.
 
+The viewer uses three final verdicts: Valid, Invalid, and Unresolved. Uncertain or
+partial matches remain Unresolved, with the reason shown in the finding. Entries
+that are unfinished or skipped have no verdict; progress is counted separately.
+
 Agent assessments are read separately from `report.agent.json` inside an audit
 directory (or `<report-stem>.agent.json` for a report file). They are bound to exact
 entry hashes and never replace automated consensus. Evidence paths can be selected
