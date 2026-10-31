@@ -60,6 +60,8 @@ Generated projects, PDFs, build logs, temporary probes, and run output go under 
 **Dependencies:** T01, T02. **Estimated scope:** M, four files.
 **Files likely touched:** `tests/pdf_e2e/{__init__.py,build.py,paper_body.tex}`, `tests/test_pdf_build.py`.
 
+**Progress (T03a):** Added the input/template integrity command and five focused tests. They reject byte drift, missing case inventory, and unresolved required pins; the frozen 86-case / 36-build inventory passes. Project generation and compiler execution are the next slice.
+
 ## C1: Reproducible build checkpoint
 
 - [ ] All 36 planned builds are accounted for, with each supported project compiling and any intrinsic build-negative case explicitly reviewed.

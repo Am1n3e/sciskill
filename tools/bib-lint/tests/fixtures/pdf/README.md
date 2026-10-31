@@ -52,4 +52,4 @@ The local Docker engine is available. The pinned image supports the standard Lin
 - Treat template or bibliography changes as fixture changes requiring new rendering review. Preserve case intent instead of changing expected answers to fit product output.
 - Classify source-case evidence as printed text, URI annotation only, partial, omitted, or unable to compile before assessing the extractor. Do not count omitted information or build failures as successful PDF detections.
 
-See repository-root `tasks/plan.md` and `tasks/todo.md` for the staged implementation and verification commands. The future `pdf_e2e.build` commands do not exist yet.
+See repository-root `tasks/plan.md` and `tasks/todo.md` for the staged implementation and verification commands. `PYTHONPATH=src:tests python -m pdf_e2e.build --check-inputs` validates the frozen inputs and required pins from `tools/bib-lint`. Asset preparation and compilation commands are the next increment.
