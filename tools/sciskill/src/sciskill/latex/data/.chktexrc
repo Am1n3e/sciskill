@@ -1,0 +1,11 @@
+CmdLine
+{
+    -q
+    -H0
+    -v0
+}
+QuoteStyle = Traditional
+WipeArg
+{
+    \texttt:{}
+}

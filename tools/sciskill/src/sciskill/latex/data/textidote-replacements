@@ -1,0 +1,7 @@
+# Each rule is a regex, a tab, then literal replacement text.
+# Ignore list layout options while retaining every item.
+\\begin\{(?:enumerate|itemize)\}\[[^\]]*\]	~
+# TeX dash syntax represents punctuation, not a compound word.
+-{2,3}	—
+# Separate adjacent prose from inline math placeholders.
+(?<!\\)\$	~$~
