@@ -24,6 +24,8 @@ def command_for(
     encoding=None,
     include_source=False,
     citation_key=None,
+    base=None,
+    head=None,
     refresh=False,
     verbose=False,
 ):
@@ -37,7 +39,13 @@ def command_for(
         str(workspace.root),
         "--json",
     ]
-    for option, value in [("--aux", aux), ("--encoding", encoding), ("--key", citation_key)]:
+    for option, value in [
+        ("--aux", aux),
+        ("--encoding", encoding),
+        ("--key", citation_key),
+        ("--base", base),
+        ("--head", head),
+    ]:
         if value is not None:
             command.extend(
                 [option, str(Path(value).absolute()) if option == "--aux" else str(value)]

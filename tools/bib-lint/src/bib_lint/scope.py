@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import re
 
 from bib_lint.citation_keys import resolve_citation_key
 
@@ -37,6 +38,7 @@ def validate_report(report):
         raise ValueError("Report must contain items")
     keys = _validate_items(report)
     _validate_run(report)
+    _validate_selection(report, keys)
     if "summary" in report and not isinstance(report["summary"], dict):
         raise ValueError("summary must be an object")
     if len({key.lower() for key in keys}) != len(keys):
@@ -76,6 +78,8 @@ def fingerprint(report):
             for i in report["items"]
         ],
     }
+    if "selection" in report:
+        data["selection"] = report["selection"]
     if report["schema_version"] == 4:
         from bib_lint.pdf_evidence import fingerprint_evidence
 
@@ -249,3 +253,24 @@ def _validate_scope(report, keys):
     if scope.get("eligible_keys") != expected:
         raise ValueError("Verification scope does not match report eligibility")
     return scope
+
+
+def _validate_selection(report, keys):
+    if "selection" not in report:
+        return
+    selection = report["selection"]
+    if (
+        not isinstance(selection, dict)
+        or selection.get("kind") != "added"
+        or selection.get("keys") != keys
+        or report["schema_version"] != 3
+        or report.get("verification_scope", {}).get("mode") != "all"
+        or not isinstance(selection.get("path"), str)
+        or not selection["path"].lower().endswith(".bib")
+        or any(
+            not isinstance(selection.get(ref), str)
+            or not re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", selection[ref])
+            for ref in ("base", "merge_base", "head")
+        )
+    ):
+        raise ValueError("Invalid Git bibliography selection")

@@ -77,3 +77,5 @@ Defaults to `main.tex`; use `--main paper.tex` for another manuscript. See [LaTe
   url = {https://github.com/Am1n3e/sciskill}
 }
 ```
+
+Audit only references added by a PR: [bibliography CI guide](docs/bib-lint-ci.md).
