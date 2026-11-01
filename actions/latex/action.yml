@@ -1,0 +1,49 @@
+name: SciSkill LaTeX
+description: Build, lint, spell-check, or compare a LaTeX manuscript with SciSkill.
+inputs:
+  command:
+    description: build, clean, lint, spell, or diff
+    default: build
+  version:
+    description: SciSkill package version
+    default: '0.2.0'
+  root:
+    description: Paper project directory
+    default: '.'
+  main:
+    description: Main LaTeX file (defaults to manifest latex path or main.tex)
+    default: ''
+  base:
+    description: Target Git revision for diff
+    default: origin/main
+  head:
+    description: Proposed Git revision for diff
+    default: HEAD
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      with:
+        version: '0.13.6'
+        python-version: '3.12'
+        enable-cache: false
+    - name: Run SciSkill
+      shell: bash
+      env:
+        SCISKILL_COMMAND: ${{ inputs.command }}
+        SCISKILL_VERSION: ${{ inputs.version }}
+        SCISKILL_ROOT: ${{ inputs.root }}
+        SCISKILL_MAIN: ${{ inputs.main }}
+        SCISKILL_BASE: ${{ inputs.base }}
+        SCISKILL_HEAD: ${{ inputs.head }}
+      run: |
+        case "$SCISKILL_COMMAND" in
+          build|clean|lint|spell|diff) ;;
+          *) echo 'Unknown LaTeX command' >&2; exit 2 ;;
+        esac
+        args=("latex-$SCISKILL_COMMAND" --root "$SCISKILL_ROOT")
+        if [[ -n "$SCISKILL_MAIN" ]]; then args+=(--main "$SCISKILL_MAIN"); fi
+        if [[ "$SCISKILL_COMMAND" == diff ]]; then
+          args+=(--base "$SCISKILL_BASE" --head "$SCISKILL_HEAD")
+        fi
+        uvx --python 3.12 --from "sciskill==$SCISKILL_VERSION" sciskill "${args[@]}"

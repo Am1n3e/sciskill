@@ -50,20 +50,42 @@ class PackageTests(unittest.TestCase):
             "version"
         ]
         self.assertEqual(self.run_cli("--version").strip(), f"sciskill {version}")
+        import yaml
+
+        action = yaml.safe_load((ROOT / "actions/latex/action.yml").read_text())
+        self.assertEqual(action["inputs"]["version"]["default"], version)
         self.assertIn("sciskill bib-lint", self.run_cli("bib-lint", "--help"))
         self.assertIn("sciskill rebuttal", self.run_cli("rebuttal", "--help"))
+        for task in ("build", "clean", "lint", "spell", "diff"):
+            self.assertIn(
+                f"sciskill latex-{task}", self.run_cli(f"latex-{task}", "--help")
+            )
         with zipfile.ZipFile(self.wheel) as wheel:
             names = wheel.namelist()
+            for asset in (".latexmkrc", ".chktexrc", "textidote-replacements"):
+                self.assertIn(f"sciskill/latex/data/{asset}", names)
             for package in ("bib_lint/viewer", "rebuttal_desk"):
                 self.assertIn(f"{package}/static/index.html", names)
             self.assertIn("bib_lint/pdf_input/worker.py", names)
             self.assertIn("bib_lint/pdf_evidence.py", names)
             self.assertIn("bib_lint/verification/queues.py", names)
-            metadata = wheel.read(next(name for name in names if name.endswith('/METADATA'))).decode()
+            metadata = wheel.read(
+                next(name for name in names if name.endswith("/METADATA"))
+            ).decode()
             self.assertIn("Requires-Dist: huey", metadata)
             self.assertFalse(
                 any(".local/" in name or "references.json" in name for name in names)
             )
+
+    def test_installed_latex_clean(self):
+        root = self.directory / "latex-clean"
+        root.mkdir()
+        (root / "main.tex").write_text("source")
+        (root / ".out").mkdir()
+        (root / ".out/main.pdf").write_bytes(b"generated")
+        self.run_cli("latex-clean", "--root", root)
+        self.assertFalse((root / ".out").exists())
+        self.assertEqual((root / "main.tex").read_text(), "source")
 
     def test_installed_init_command(self):
         import yaml
@@ -182,7 +204,10 @@ class PackageTests(unittest.TestCase):
                     with urllib.request.urlopen(
                         f"http://127.0.0.1:{port}/", timeout=1
                     ) as page:
-                        self.assertIn("SciSkill" if tool == "bib-lint" else "Science Skills", page.read().decode())
+                        self.assertIn(
+                            "SciSkill" if tool == "bib-lint" else "Science Skills",
+                            page.read().decode(),
+                        )
                     if after_ready:
                         after_ready(f"http://127.0.0.1:{port}")
                     return
