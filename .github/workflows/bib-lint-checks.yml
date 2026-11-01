@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'tools/bib-lint/**'
+      - 'actions/bib-lint/**'
       - 'tools/sciskill/**'
       - 'tools/rebuttal-desk/**'
       - 'pyproject.toml'

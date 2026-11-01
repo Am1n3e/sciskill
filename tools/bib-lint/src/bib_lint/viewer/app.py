@@ -213,7 +213,9 @@ class ViewerSession:
                     "Enter the original input path and use Verify to resume this audit"
                 )
             options = {
-                key: saved[key] for key in ("aux", "encoding", "include_source") if key in saved
+                key: saved[key]
+                for key in ("aux", "encoding", "include_source", "base", "head")
+                if key in saved
             }
             job = self.registry.start(
                 saved["path"], output=self.report_path, owner=self.owner, **options
