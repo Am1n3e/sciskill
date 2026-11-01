@@ -51,7 +51,7 @@ def extraction_identity(path):
     return _identity(_read(path, DEFAULT_LIMITS), DEFAULT_LIMITS)
 
 
-def extract_pdf(path, *, limits=None):
+def extract_pdf(path, *, limits=None, include_body=False):
     """Parse a byte snapshot in a bounded local worker; no service or network involved."""
     if limits is not None and not isinstance(limits, dict):
         raise PDFExtractionError("PDF resource limits must be a settings object")
@@ -77,6 +77,8 @@ def extract_pdf(path, *, limits=None):
         str(Path(__file__).resolve().parents[2]),
         json.dumps(limits),
     ]
+    if include_body:
+        command.append("--claim-body")
     try:
         result = subprocess.run(
             command, input=raw, capture_output=True, timeout=limits["max_seconds"]

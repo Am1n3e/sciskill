@@ -10,7 +10,14 @@ import pdfplumber
 
 from bib_lint.pdf_input import PDFExtractionError
 from bib_lint.pdf_input.citations import parse_reference
-from bib_lint.pdf_input.layout import HEADING, _end, bibliography_lines, occurrences, page_lines
+from bib_lint.pdf_input.layout import (
+    HEADING,
+    _end,
+    _without_headers,
+    bibliography_lines,
+    occurrences,
+    page_lines,
+)
 from bib_lint.pdf_input.streams import bounded_streams, decoded_stream_size
 
 
@@ -55,12 +62,12 @@ def _page(page, limits, start, number_styles):
     return lines, uris, decoded
 
 
-def extract(raw, limits):
+def extract(raw, limits, *, include_body=False):
     with bounded_streams(limits["max_decoded_bytes"]):
-        return _extract(raw, limits)
+        return _extract(raw, limits, include_body=include_body)
 
 
-def _extract(raw, limits):
+def _extract(raw, limits, *, include_body=False):
     start = time.monotonic()
     with pdfplumber.open(io.BytesIO(raw)) as document:
         if document.doc.encryption is not None:
@@ -110,7 +117,7 @@ def _extract(raw, limits):
         unreadable = _reference_images(pages, lines, image_pages)
         diagnostics.extend(_unreadable(unreadable))
         reference_pages = sorted(set(reference_pages + unreadable))
-        return {
+        payload = {
             "schema_version": 4,
             "source": {"name": "", "sha256": ""},
             "items": items,
@@ -128,6 +135,23 @@ def _extract(raw, limits):
                 "diagnostics": diagnostics,
             },
         }
+        payload.update(_claim_context(include_body, pages, lines, image_pages))
+        return payload
+
+
+def _claim_context(enabled, pages, references, images):
+    if not enabled:
+        return {}
+    reference_ids = {(line["page"], line["top"], line["x0"]) for line in references}
+    return {
+        "claim_body": [
+            {k: v for k, v in line.items() if not k.startswith("_")}
+            for line in _without_headers(pages)
+            if (line["page"], line["top"], line["x0"]) not in reference_ids
+            and not HEADING.fullmatch(line["text"].strip())
+        ],
+        "claim_image_pages": sorted({image["page"] for image in images}),
+    }
 
 
 def main():
@@ -139,7 +163,11 @@ def main():
         resource.setrlimit(resource.RLIMIT_CPU, (int(limits["max_seconds"]) + 1,) * 2)
         if sys.platform.startswith("linux"):
             resource.setrlimit(resource.RLIMIT_AS, (1536 * 1024 * 1024,) * 2)
-        payload = extract(sys.stdin.buffer.read(limits["max_bytes"] + 1), limits)
+        payload = extract(
+            sys.stdin.buffer.read(limits["max_bytes"] + 1),
+            limits,
+            include_body="--claim-body" in sys.argv[2:],
+        )
     except Exception as error:
         message = _error_message(error)
         payload = {

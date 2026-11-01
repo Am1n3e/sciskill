@@ -36,14 +36,16 @@ class PackageTests(unittest.TestCase):
         cls.temp.cleanup()
 
     def run_cli(self, *arguments):
-        return subprocess.run(
+        result = subprocess.run(
             [*self.command, *map(str, arguments)],
             cwd=self.directory,
-            check=True,
+            check=False,
             capture_output=True,
             text=True,
             timeout=90,
-        ).stdout
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        return result.stdout
 
     def test_version_help_and_assets(self):
         version = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"][
@@ -59,6 +61,9 @@ class PackageTests(unittest.TestCase):
             self.assertIn("bib_lint/pdf_input/worker.py", names)
             self.assertIn("bib_lint/pdf_evidence.py", names)
             self.assertIn("bib_lint/verification/queues.py", names)
+            self.assertIn("bib_lint/claims/protocols.py", names)
+            self.assertIn("bib_lint/claims/validators/stub.py", names)
+            self.assertIn("bib_lint/claims/extractors/model.py", names)
             metadata = wheel.read(next(name for name in names if name.endswith('/METADATA'))).decode()
             self.assertIn("Requires-Dist: huey", metadata)
             self.assertFalse(
@@ -87,7 +92,7 @@ class PackageTests(unittest.TestCase):
     def test_workflows_and_both_viewers(self):
         bib = self.directory / "empty.bib"
         bib.write_text("% empty bibliography\n")
-        result = json.loads(self.run_cli("bib-lint", "verify", bib, "--json"))
+        result = json.loads(self.run_cli("bib-lint", "check-references", bib, "--json"))
         self.assertTrue(result["complete"])
         workspace = self.directory / "rebuttal"
         self.run_cli("rebuttal", "init", workspace)
@@ -97,6 +102,45 @@ class PackageTests(unittest.TestCase):
         for tool, path in (("bib-lint", result["output_dir"]), ("rebuttal", workspace)):
             with self.subTest(tool=tool):
                 self.check_viewer(tool, path)
+
+    def test_model_claim_workflow_and_stub_from_installed_package(self):
+        import yaml
+        from unittest.mock import patch
+
+        root = self.directory / "claims-project"
+        root.mkdir()
+        source = root / "main.tex"
+        source.write_text("Method X is faster\\cite{A}.")
+        bib = root / "refs.bib"
+        bib.write_text("@article{A,title={Speed study}}")
+        fake = root / "fake-codex"
+        fake.write_text(
+            "#!/usr/bin/env python3\nimport json, pathlib, sys\n"
+            "sys.stdin.read()\n"
+            "answer = pathlib.Path(sys.argv[sys.argv.index('--output-last-message') + 1])\n"
+            "answer.write_text(json.dumps({'items': [{'citation_id': 'citation-0001', "
+            "'disposition': 'claims_extracted', 'claims': [{'file': 'main.tex', "
+            "'claim': 'Method X is faster'}], 'details': ''}], 'diagnostics': []}))\n"
+        )
+        fake.chmod(0o700)
+        with patch.dict(os.environ, {"SCISKILL_CODEX": str(fake)}):
+            result = json.loads(self.run_cli(
+                "bib-lint", "check-claims", source, "--bib", bib, "--mode", "stub", "--json"
+            ))
+        self.assertEqual(result["setup"], {"validation_mode": "stub"})
+        self.assertEqual(result["summary"]["unique_claims"], 1)
+        data = yaml.safe_load(Path(result["report_path"]).read_text())
+        self.assertEqual(set(data), {
+            "schema_version", "scikill_version", "document", "setup", "citations"
+        })
+        self.assertTrue(data["scikill_version"])
+        self.assertEqual(set(data["citations"][0]["claims"][0]["location"]), {
+            "file", "start", "end"
+        })
+        self.assertEqual(data["citations"][0]["claims"][0]["claim"], "Method X is faster")
+        self.assertEqual(data["citations"][0]["claims"][0]["validation"], {
+            "result": "valid", "details": "Stub mode."
+        })
 
     def test_pdf_preview_runs_from_installed_shared_entrypoint(self):
         source = self.directory / "research paper.PDF"
@@ -142,7 +186,7 @@ class PackageTests(unittest.TestCase):
         invalid = self.directory / "invalid.pdf"
         invalid.write_bytes(b"not a PDF")
         result = subprocess.run(
-            [*self.command, "bib-lint", "verify", str(invalid), "--json"],
+            [*self.command, "bib-lint", "check-references", str(invalid), "--json"],
             cwd=self.directory,
             capture_output=True,
             text=True,

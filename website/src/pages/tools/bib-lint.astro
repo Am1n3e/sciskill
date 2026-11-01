@@ -42,7 +42,7 @@ const cases = [
       <p class="input-note"><strong>Recommended:</strong> Use the <code>.bib</code> file when available to avoid PDF extraction issues.</p>
       <UsageCommands
         agent={'/sciskill bib-lint references.bib\nSave the audit in paper-audit.'}
-        cli={'uvx sciskill bib-lint verify references.bib \\\n  --output paper-audit --json'}
+        cli={'uvx sciskill bib-lint check-references references.bib \\\n  --output paper-audit --json'}
       />
     </section>
 

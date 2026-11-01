@@ -43,11 +43,18 @@ def test_help_version(option, capsys):
     output = capsys.readouterr().out
     assert "bib-lint" in output
     if option == "--help":
-        assert "{verify,view}" in output and "{parse," not in output
+        assert "{check-references,check-claims,view}" in output and "{parse," not in output
 
 
 @pytest.mark.parametrize(
-    "args", [[], ["parse", "x.bib"], ["verify"], ["verify", "x.bib", "--bogus"], ["unknown"]]
+    "args",
+    [
+        [],
+        ["parse", "x.bib"],
+        ["check-references"],
+        ["check-references", "x.bib", "--bogus"],
+        ["unknown"],
+    ],
 )
 def test_json_argument_errors(args, capsys):
     assert main([*args, "--json"]) == 2
@@ -56,11 +63,11 @@ def test_json_argument_errors(args, capsys):
     assert envelope["summary"] is None and envelope["scope"] is None
     assert err.startswith("Error:")
     if args and args[0] == "parse":
-        assert "verify" in err and "parse_bib" in err
+        assert "check-references" in err and "parse_bib" in err
 
 
 def test_json_complete_and_partial_streams(source, capsys):
-    assert main(["verify", str(source), "--key", "a", "--json", "--verbose"]) == 0
+    assert main(["check-references", str(source), "--key", "a", "--json", "--verbose"]) == 0
     envelope, err = result(capsys)
     assert set(envelope) == {
         "schema_version",
@@ -80,7 +87,7 @@ def test_json_complete_and_partial_streams(source, capsys):
     assert envelope["report_path"] is None
     assert Path(envelope["checkpoint_path"]).is_absolute()
     assert "Fetching" in err
-    assert main(["verify", str(source), "--json"]) == 0
+    assert main(["check-references", str(source), "--json"]) == 0
     envelope, err = result(capsys)
     assert envelope["status"] == "completed" and envelope["complete"]
     assert envelope["checkpoint_path"] is None and Path(envelope["report_path"]).exists()
@@ -90,7 +97,7 @@ def test_json_complete_and_partial_streams(source, capsys):
 def test_aux_warning_and_human_summary(source, tmp_path, capsys):
     aux = tmp_path / "paper.aux"
     aux.write_text(r"\citation{A,missing}")
-    assert main(["verify", str(source), "--aux", str(aux)]) == 0
+    assert main(["check-references", str(source), "--aux", str(aux)]) == 0
     streams = capsys.readouterr()
     assert "scope: used" in streams.out and "source failures:" in streams.out
     assert "Missing citation keys: missing" in streams.err
@@ -101,7 +108,7 @@ def test_aux_warning_and_human_summary(source, tmp_path, capsys):
 def test_json_parse_options_rejected(source, tmp_path, capsys, flag):
     run_audit(source, preview=True)
     path = source.with_name("refs.bib-lint") / "report.tmp.json"
-    args = ["verify", str(path), "--json", "-o", str(tmp_path / "import"), flag]
+    args = ["check-references", str(path), "--json", "-o", str(tmp_path / "import"), flag]
     if flag != "--include-source":
         args.append("utf-8")
     assert main(args) == 2
@@ -120,12 +127,12 @@ def test_provider_failure_exit_zero_and_invalid_key_unchanged(source, monkeypatc
         )
 
     monkeypatch.setattr("bib_lint.cli.run_audit", run)
-    assert main(["verify", str(source), "--json"]) == 0
+    assert main(["check-references", str(source), "--json"]) == 0
     envelope, _ = result(capsys)
     assert envelope["summary"]["source_failures"] == 2
     final = Path(envelope["report_path"])
     before = final.read_bytes()
-    assert main(["verify", str(source), "--key", "missing", "--json"]) == 2
+    assert main(["check-references", str(source), "--key", "missing", "--json"]) == 2
     assert result(capsys)[0]["status"] == "failed"
     assert final.read_bytes() == before
 
@@ -140,7 +147,7 @@ def test_interrupt_and_write_failure_outputs(source, monkeypatch, capsys):
         )
 
     monkeypatch.setattr("bib_lint.cli.run_audit", run)
-    assert main(["verify", str(source), "--json"]) == 130
+    assert main(["check-references", str(source), "--json"]) == 130
     envelope, _ = result(capsys)
     assert envelope["status"] == "interrupted" and Path(envelope["checkpoint_path"]).exists()
 
@@ -148,14 +155,14 @@ def test_interrupt_and_write_failure_outputs(source, monkeypatch, capsys):
         raise OSError("disk full")
 
     monkeypatch.setattr("bib_lint.verification._write_json", fail)
-    assert main(["verify", str(source), "--json"]) == 2
+    assert main(["check-references", str(source), "--json"]) == 2
     envelope, _ = result(capsys)
     assert not envelope["complete"] and envelope["status"] == "failed"
 
 
 def test_invalid_input_no_artifacts(tmp_path, capsys):
     source = tmp_path / "missing.bib"
-    assert main(["verify", str(source), "--json"]) == 2
+    assert main(["check-references", str(source), "--json"]) == 2
     envelope, _ = result(capsys)
     assert envelope["report_path"] is envelope["checkpoint_path"] is None
     assert not Path(envelope["output_dir"]).exists()
@@ -185,11 +192,16 @@ def test_view_launch_port_failure_and_empty(monkeypatch):
 
 def test_encoding_source_include_and_output_alias(source, tmp_path, capsys):
     source.write_bytes("@book{A,title={Café}}".encode("latin-1"))
-    assert main(["verify", str(source), "--encoding", "latin-1", "--include-source", "--json"]) == 0
+    assert (
+        main(
+            ["check-references", str(source), "--encoding", "latin-1", "--include-source", "--json"]
+        )
+        == 0
+    )
     envelope, _ = result(capsys)
     report = json.loads(Path(envelope["report_path"]).read_text())
     assert report["source_text"] == "@book{A,title={Café}}"
-    assert main(["verify", str(source), "--output", str(source), "--json"]) == 2
+    assert main(["check-references", str(source), "--output", str(source), "--json"]) == 2
     assert result(capsys)[0]["status"] == "failed"
 
 
@@ -200,7 +212,7 @@ def test_lock_error_and_secret_redaction(source, monkeypatch, capsys):
     workspace = Workspace.for_input(source)
     workspace.root.mkdir()
     with report_lock(workspace.final):
-        assert main(["verify", str(source), "--json"]) == 2
+        assert main(["check-references", str(source), "--json"]) == 2
     envelope, _ = result(capsys)
     assert "already in use" in envelope["error"]["message"]
     monkeypatch.setenv("OPENALEX_API_KEY", "VERYSECRET")
@@ -209,7 +221,7 @@ def test_lock_error_and_secret_redaction(source, monkeypatch, capsys):
         raise ValueError("Failed with VERYSECRET")
 
     monkeypatch.setattr("bib_lint.cli.run_audit", fail)
-    assert main(["verify", str(source), "--json"]) == 2
+    assert main(["check-references", str(source), "--json"]) == 2
     envelope, err = result(capsys)
     assert "VERYSECRET" not in json.dumps(envelope) + err
 
@@ -237,14 +249,14 @@ def test_cache_lock_failure_json_is_failed_and_resumable(tmp_path, monkeypatch, 
     monkeypatch.setattr("bib_lint.cli.run_audit", run)
     try:
         with report_lock(cache / "checksum.json"):
-            assert main(["verify", str(bib), "--output", str(output), "--json"]) == 2
+            assert main(["check-references", str(bib), "--output", str(output), "--json"]) == 2
         envelope, err = result(capsys)
         assert envelope["status"] == "failed" and not envelope["complete"]
         assert envelope["error"]["code"] == "audit_failed" and "already in use" in err
         assert envelope["summary"]["source_failures"] == 0
         assert envelope["report_path"] is None and Path(envelope["checkpoint_path"]).exists()
         assert not calls
-        assert main(["verify", str(bib), "--output", str(output), "--json"]) == 0
+        assert main(["check-references", str(bib), "--output", str(output), "--json"]) == 0
         envelope, _ = result(capsys)
         assert envelope["complete"] and envelope["summary"]["correct"] == 1
         assert len(calls) == 1 and bib.read_text() == original
@@ -267,12 +279,12 @@ def test_source_failure_warning_survives_resume_and_partial_output(tmp_path, cap
         )
 
     monkeypatch.setattr("bib_lint.cli.run_audit", run)
-    assert main(["verify", str(path), "--key", "A", "--json"]) == 0
+    assert main(["check-references", str(path), "--key", "A", "--json"]) == 0
     envelope, err = result(capsys)
     assert not envelope["complete"]
     assert "1 source lookups failed" in envelope["warnings"][0]
     assert "--refresh" in err
-    assert main(["verify", str(path), "--json"]) == 0
+    assert main(["check-references", str(path), "--json"]) == 0
     envelope, _ = result(capsys)
     assert envelope["complete"] and envelope["summary"]["source_failures"] == 2
     assert calls == ["One", "Two"]

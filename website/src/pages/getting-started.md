@@ -31,7 +31,7 @@ Use `paper.pdf` instead to audit a PDF's reference list. Your input stays unchan
 Without an agent:
 
 ```sh
-uvx sciskill bib-lint verify paper.pdf --output paper-audit --json
+uvx sciskill bib-lint check-references paper.pdf --output paper-audit --json
 uvx sciskill bib-lint view paper-audit
 ```
 

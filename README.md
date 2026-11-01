@@ -27,6 +27,13 @@ Initialize `.sciskill/` with your LaTeX and bibliography paths, optional venue, 
 Check bibliography metadata or extract a research-paper PDF reference list, then inspect the findings and source evidence.
 
 ```text
+/sciskill bib-lint check-claims
+```
+
+Extract citation-associated claims using a model with exact source locations, then
+run the official `stub` testing validator. Requires an authenticated Codex CLI.
+
+```text
 /sciskill plan-rebuttal
 ```
 
@@ -42,7 +49,7 @@ Audit BibTeX bibliographies or text-based research-paper PDF reference lists aga
 
 ```sh
 uvx sciskill bib-lint --help
-uvx sciskill bib-lint verify paper.pdf --json
+uvx sciskill bib-lint check-references paper.pdf --json
 ```
 
 ### Rebuttal Desk

@@ -31,7 +31,7 @@ def command_for(
         sys.executable,
         "-m",
         "bib_lint",
-        "verify",
+        "check-references",
         str(Path(source).absolute()),
         "--output",
         str(workspace.root),
@@ -163,7 +163,7 @@ class Registry:
                 or not isinstance(result, dict)
                 or not required <= result.keys()
                 or result["schema_version"] != 1
-                or result["command"] != "verify"
+                or result["command"] != "check-references"
                 or status not in expected
                 or code != expected[status]
                 or type(result["complete"]) is not bool

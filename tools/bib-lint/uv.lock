@@ -48,6 +48,7 @@ dependencies = [
     { name = "huey" },
     { name = "pdfplumber" },
     { name = "pybtex" },
+    { name = "pyyaml" },
 ]
 
 [package.dev-dependencies]
@@ -73,6 +74,7 @@ requires-dist = [
     { name = "huey", specifier = "==3.5.3" },
     { name = "pdfplumber", specifier = "==0.11.10" },
     { name = "pybtex", specifier = ">=0.26,<0.27" },
+    { name = "pyyaml", specifier = ">=6,<7" },
 ]
 
 [package.metadata.requires-dev]
