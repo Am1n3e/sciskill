@@ -118,7 +118,6 @@ class PackageTests(unittest.TestCase):
             "bib-lint", "check-claims", source, "--bib", bib, "--mode", "stub", "--json"
         ))
         self.assertEqual(seeded["status"], "awaiting_agent")
-        self.assertFalse(seeded["complete"])
         path = Path(seeded["report_path"])
         data = yaml.safe_load(path.read_text())
         self.assertEqual(data["citations"][0]["claims"], [])
@@ -131,7 +130,7 @@ class PackageTests(unittest.TestCase):
         path.write_text(yaml.safe_dump(data))
         before = path.read_bytes()
         result = json.loads(self.run_cli("bib-lint", "check-claims", path, "--json"))
-        self.assertTrue(result["complete"])
+        self.assertEqual(result["status"], "quotes_checked")
         self.assertEqual(result["setup"], {"validation_mode": "stub"})
         self.assertEqual(result["summary"]["unique_claims"], 1)
         self.assertEqual(path.read_bytes(), before)

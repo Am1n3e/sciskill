@@ -86,9 +86,12 @@ def test_seed_reuses_bib_parser_and_does_not_invent_claims(workspace):
 
 def test_agent_fills_then_program_checks_exact_spans_without_rewriting(workspace):
     fill_claim(workspace, result="invalid", details="The cited PDF reports a lower value (p. 2).")
+    notes = workspace.parent / "review-notes.md"
+    notes.write_text("Coverage reviewed; see evidence in each assessment.")
     before = workspace.read_bytes()
     result = run_claims(workspace)
-    assert result["stage"] == "claims_checked" and result["complete"]
+    assert result["status"] == "quotes_checked"
+    assert "complete" not in result and "stage" not in result
     assert result["summary"]["unique_claims"] == 1
     assert result["summary"]["claim_citation_pairs"] == 2
     assert result["summary"]["invalid"] == 2
@@ -99,6 +102,9 @@ def test_agent_fills_then_program_checks_exact_spans_without_rewriting(workspace
     assert checkpoint["report_sha256"] == sha256(before).hexdigest()
     summary = (workspace.parent / "summary.md").read_text()
     assert "section.tex:1:1" in summary
+    assert "Manuscript quote check: passed" in summary
+    assert "[Agent review notes](review-notes.md)" in summary
+    assert notes.read_text() == "Coverage reviewed; see evidence in each assessment."
     assert "claim-0001: invalid" in summary
     assert "Method X improves accuracy" in summary
     assert "The cited PDF reports a lower value (p. 2)." in summary
@@ -157,7 +163,7 @@ def test_no_model_process_is_started_for_latex_seed_or_check(tmp_path, monkeypat
     bib = tmp_path / "refs.bib"
     bib.write_text("@article{A,title={One}}")
     seeded = run_claims(source, bib=[bib], output=tmp_path / "claims")
-    assert seeded["status"] == "awaiting_agent" and not seeded["complete"]
+    assert seeded["status"] == "awaiting_agent"
     path = Path(seeded["report_path"])
     data = yaml.safe_load(path.read_text())
     data["citations"][0]["claims"] = [
@@ -173,7 +179,7 @@ def test_no_model_process_is_started_for_latex_seed_or_check(tmp_path, monkeypat
         }
     ]
     path.write_text(yaml.safe_dump(data))
-    assert run_claims(path)["complete"]
+    assert run_claims(path)["status"] == "quotes_checked"
 
 
 def test_protocols_and_direct_validator_names():
@@ -226,9 +232,14 @@ def test_cli_seed_then_check_and_removed_model_option(tmp_path, capsys):
     ]
     assert main(args) == 0
     seeded = json.loads(capsys.readouterr().out)
-    assert seeded["status"] == "awaiting_agent" and not seeded["complete"]
+    assert seeded["status"] == "awaiting_agent"
+    assert "complete" not in seeded and "stage" not in seeded
+    assert "Manuscript quote check: pending" in Path(seeded["summary_path"]).read_text()
     assert main(["check-claims", seeded["report_path"], "--json"]) == 0
-    assert json.loads(capsys.readouterr().out)["stage"] == "claims_checked"
+    checked = json.loads(capsys.readouterr().out)
+    assert checked["status"] == "quotes_checked"
+    assert checked["summary"]["unique_claims"] == 0
+    assert "complete" not in checked
     assert main([*args, "--model", "anything"]) == 2
     assert json.loads(capsys.readouterr().out)["status"] == "failed"
 

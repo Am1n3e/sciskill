@@ -174,7 +174,7 @@ assert all(p.descriptor.adapter_version for p in METHODS.values())
             env,
         ).stdout
     )
-    assert seeded["status"] == "awaiting_agent" and not seeded["complete"]
+    assert seeded["status"] == "awaiting_agent"
     report_path = seeded["report_path"]
     script = (
         "import yaml; from pathlib import Path; "

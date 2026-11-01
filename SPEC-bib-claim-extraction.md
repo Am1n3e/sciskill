@@ -37,9 +37,8 @@ uvx sciskill bib-lint check-claims paper-claims/claims.yaml --json
   An explicit mode on a check must match the report. `stub` remains an official
   testing validator. Both validators are imported directly by name; no registry.
 - `--json` emits one result on stdout; diagnostics go to stderr. Seeding returns
-  `status: awaiting_agent`, `complete: false`, `stage: references_extracted`.
-  Successful YAML checks return `stage: claims_checked`; this does not certify
-  semantic completeness or scientific support.
+  `status: awaiting_agent`. Successful YAML checks return `status: quotes_checked`.
+  Neither result certifies scientific completion; no `complete` or `stage` fields.
 
 | Module contract | Interface |
 | --- | --- |
@@ -112,6 +111,9 @@ Each claim contains exactly `claim_id`, `claim`, `location`, and `validation`.
 (`valid`, `invalid`, or `unresolved`) and nonempty explanation `details`.
 Group membership supplies the citation key; shared claim IDs identify the same
 manuscript occurrence. A resolved cited reference with no claims has `claims: []`.
+Use minimal complete contiguous spans. A verdict concerns assertions attributed
+to that reference; necessary context about other sources or the manuscript's own
+work does not become an assertion this source must independently establish.
 
 PDF example in explicit testing mode:
 
@@ -155,6 +157,9 @@ validation:
 | PDF | Exactly `page`: the one-based physical page where the quoted text starts, including cross-page quotes. No file, line, column, or bounding boxes. |
 | LaTeX | Exactly `file`, `start`, and `end`. Each endpoint contains only one-based `line` and `column`; the end is exclusive. Columns count Unicode code points. No page number. |
 
+PDF quotations follow captured reading order; cross-page spans may retain
+intervening footers/footnotes, identified in the agent's review notes.
+
 No `extract_command`, `sources`, `extraction`, parser settings, page dimensions,
 snapshot paths, or geometry in `claims.yaml`. Keep internal evidence and snapshots
 under `.provenance/`; its contents are not part of the public report contract.
@@ -164,6 +169,8 @@ Retain real source-fidelity, hash, and geometry checks internally.
 findings, with locations using the same PDF/LaTeX conventions. Technical extraction
 metadata stays private. A rejected or unresolved citation remains a review finding;
 do not invent a citation key or claim to hide it.
+When present, link `review-notes.md` from the regenerated summary for agent-reviewed
+coverage, source-format limitations and manual inspection findings.
 
 IDs are assigned in document order. Shared claim IDs have the same text/location;
 validation remains specific to each reference. Repeated document occurrences have
@@ -182,8 +189,8 @@ summary and private evidence together; failure preserves previous complete outpu
 
 ## Completion and acceptance
 
-- The action result includes status (`awaiting_agent`, `completed`, `failed`, or `interrupted`),
-  completion, artifact paths, extraction state, validation mode, counts, and errors.
+- The action result includes status (`awaiting_agent`, `quotes_checked`, `failed`, or `interrupted`),
+  artifact paths, source-capture state, validation mode, counts, and errors.
   A successful local check does not imply the skill has finished cited-paper review.
 - Shell exit codes are `0` for success, `2` for input/artifact errors, and `130`
   for interruption.

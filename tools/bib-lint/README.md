@@ -65,6 +65,7 @@ original inputs, accepts only exact quotes at the specified PDF page or LaTeX
 span, and rejects duplicate keys, malformed records, missing references and source
 changes. A successful check leaves the agent-authored YAML unchanged and writes a
 private hash checkpoint plus a refreshed summary.
+Its result is `status: quotes_checked`, without a scientific-completion flag.
 
 LaTeX follows literal includes and discovers bibliography declarations when `--bib`
 is omitted. `--project-root` bounds source includes. Default output is

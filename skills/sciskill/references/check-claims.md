@@ -7,7 +7,12 @@ Do not launch Codex, another model CLI, or an SDK to perform the semantic work.
 ## 1. Extract references and seed YAML
 
 Identify the manuscript and optional LaTeX bibliography from the user or project
-configuration. Resolve configured paths relative to the project root. Run:
+configuration. Resolve configured paths relative to the project root. If the chosen
+output already contains a report, compare its private input paths with the requested
+manuscript/bibliographies and run the YAML check below. Resume matching, unchanged
+workspaces without reseeding or discarding claims, cached PDFs or assessments.
+For changed inputs or a different manuscript, seed a new workspace and preserve
+the old one. Otherwise run:
 
 ```sh
 uvx sciskill bib-lint check-claims main.tex --bib references.bib --output paper-claims --json
@@ -19,10 +24,12 @@ This reuses bib-lint's bibliography parsers and produces `claims.yaml`, with one
 `citation_key` and an empty `claims` list per reference. `awaiting_agent` is the
 expected result; it does not mean claims have been extracted or checked.
 
-Read `.provenance/provenance.yaml` for reference titles, authors, identifiers,
-URLs, PDF printed labels, and source snapshot locations. Use these existing
-reference identities; do not infer original BibTeX keys from a PDF. Do not edit
-the captured input metadata or snapshots.
+Read the `references` mapping in `.provenance/provenance.yaml` for titles, authors,
+identifiers, URLs and PDF printed labels. From `sources`, select only `file`,
+`kind` and `text_snapshot` to locate manuscript text. Use a structured YAML reader
+to select these fields; do not dump the large geometry records into context.
+Use these existing reference identities; do not infer original BibTeX keys from
+a PDF. Do not edit captured input metadata or snapshots.
 
 ## 2. Fill the claims
 
@@ -31,6 +38,8 @@ each reference, add all claims attributed to it. Uncited references keep `claims
 Use the smallest complete contiguous span that retains the subject, qualifiers,
 negation, comparisons and numerical conditions. Preserve the snapshot text exactly,
 including line breaks and TeX commands inside the span. Do not paraphrase.
+Split independently checkable assertions where contiguous spans permit it; do not
+expand a quotation to an entire paragraph just because the citation ends it.
 
 Preserve the five-field header: `schema_version`, `scikill_version`, `document`,
 `setup`, and `citations`. Each citation has only `citation_key` and `claims`.
@@ -46,8 +55,17 @@ Each claim has only `claim_id`, `claim`, `location`, and `validation`:
 
 Keep attribution uncertainty explicit. A citation group can support a claim
 collectively; it does not establish that every member independently supports it.
-Record missing citation identities or coverage gaps in a review note, without
+Record missing citation identities or coverage gaps in `review-notes.md`, without
 inventing new public YAML fields or removing extracted references.
+Inspect automated extraction diagnostics, including image-only pages. Preserve
+those diagnostics; record what you inspected and any remaining gaps in the review
+note. Automated warnings do not track the agent's subsequent visual review.
+Derive numerical coverage counts from source-aware inspection. For automated
+LaTeX tallies, reuse bib-lint's TeX lexer rather than a generic comment regex:
+escaped `\%` is manuscript text, not the start of a comment.
+For a PDF sentence crossing a page boundary, the contiguous captured span may
+include a footer or footnote. Prefer a smaller complete claim when possible;
+otherwise preserve the exact span and flag the layout text in `review-notes.md`.
 
 ## 3. Check manuscript quotations programmatically
 
@@ -61,6 +79,8 @@ LaTeX, the file/line/column slice must reproduce it exactly. Extra fields, missi
 references, duplicate keys, malformed results, changed inputs and invented text
 are errors. Correct the claims or locations; never rewrite input evidence to make
 a quote pass. The checker preserves the agent's YAML and scientific assessments.
+Successful JSON reports `status: quotes_checked`; this establishes manuscript
+quotation fidelity only. It never reports scientific completion.
 
 If the user requested extraction only, stop after this check and report that
 scientific support remains unreviewed. Otherwise continue with cited PDFs.
@@ -72,6 +92,8 @@ the corresponding full-text PDF. Reuse an already available local PDF; otherwise
 use the environment's authorized retrieval tools. Existing `check-references`
 results can supply verified provider records and links. Confirm title, authors,
 identifiers and version before treating a PDF as the cited work.
+For an unversioned arXiv URL, check its revision history against the citation's
+dates; a later revision must not silently replace the cited version.
 
 Cache each PDF once under `.provenance/reference-pdfs/`, using filesystem-safe
 names. Record citation keys, local paths and retrieval URLs in the private
@@ -88,6 +110,13 @@ claims. Numerical claims require the actual metric, value, dataset, method and
 experimental conditions to match. Examine tables/figures and limitations when
 needed. Judge whether this source supports the manuscript's wording, not whether
 the claim is universally true.
+Assess the assertion attributed to this reference. A quoted sentence may also
+describe another cited work or the manuscript's own contribution; this source need
+not establish those parts. State the attributed scope in `details` when a complete
+verbatim span contains several such assertions. If that scope is ambiguous, use
+`unresolved`. Exact numerical matching applies to quantities attributed to the
+cited work; general methodological guidance need not prescribe the current
+manuscript's particular implementation choices.
 
 Update only each claim's `validation`:
 
@@ -102,6 +131,9 @@ verbatim in the cited paper. The earlier verbatim check concerns the manuscript.
 
 Run the YAML check again after edits. Report the actual completion state,
 unresolved cases and coverage limits, and show `claims.yaml` and `summary.md`.
+Include any review note with the report; regenerating the summary does not preserve
+manual additions to it. Write `review-notes.md` before the final check so the
+generated summary links it.
 A passing programmatic check establishes quote/schema fidelity, not scientific
 support or that every claim was found.
 

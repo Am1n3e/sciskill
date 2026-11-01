@@ -170,12 +170,15 @@ def build_report(
     return report, provenance, counts
 
 
-def _summary(report, counts, extraction):
+def _summary(report, counts, extraction, *, checked=False, review_notes=False):
     lines = [
         f"Validation mode: {report['setup']['validation_mode']}",
-        f"Extraction: {extraction['state']}",
+        f"Automated source capture: {extraction['state']}",
+        f"Manuscript quote check: {'passed' if checked else 'pending'}",
         "",
     ]
+    if review_notes:
+        lines.extend(["[Agent review notes](review-notes.md)", ""])
     lines.extend(f"- {key.replace('_', ' ')}: {value}" for key, value in counts.items())
     for citation in report["citations"]:
         lines.extend(["", f"## {citation['citation_key']}", ""])
@@ -292,7 +295,16 @@ def run_claims(
         if path.read_bytes() != before:
             raise ValueError("Report changed while its claims were being checked")
         destination = path.parent.resolve()
-        _write_text(destination / "summary.md", _summary(report, counts, extraction_summary))
+        _write_text(
+            destination / "summary.md",
+            _summary(
+                report,
+                counts,
+                extraction_summary,
+                checked=True,
+                review_notes=(destination / "review-notes.md").is_file(),
+            ),
+        )
         write_json(
             destination / ".provenance/check.json",
             {
@@ -321,9 +333,7 @@ def run_claims(
     return {
         "schema_version": 1,
         "command": "check-claims",
-        "status": "completed" if checking else "awaiting_agent",
-        "complete": checking,
-        "stage": "claims_checked" if checking else "references_extracted",
+        "status": "quotes_checked" if checking else "awaiting_agent",
         "output_dir": str(destination),
         "report_path": str(report_path),
         "summary_path": str(destination / "summary.md"),

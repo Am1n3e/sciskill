@@ -236,7 +236,6 @@ def claim_error(exc, interrupted, machine, args):
             "schema_version": 1,
             "command": "check-claims",
             "status": "interrupted" if interrupted else "failed",
-            "complete": False,
             "output_dir": None,
             "report_path": None,
             "summary_path": None,

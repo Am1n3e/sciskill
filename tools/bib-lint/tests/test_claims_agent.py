@@ -60,7 +60,7 @@ def test_pdf_verbatim_quote_can_cross_pages_but_public_location_is_start_page(tm
     before = original.read_bytes()
     data = fill_pdf(report)
     result = run_claims(report)
-    assert result["complete"] and result["summary"]["unique_claims"] == 1
+    assert result["status"] == "quotes_checked" and result["summary"]["unique_claims"] == 1
     assert yaml.safe_load(report.read_text()) == data
     assert_public_contract(data, "pdf")
     check = json.loads((report.parent / ".provenance/check.json").read_text())
