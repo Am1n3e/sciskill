@@ -1,5 +1,39 @@
 # Check bibliography references
 
+Select `check-references` for bibliography correctness or `check-claims` for claim
+extraction and claim validation. If no action is specified, use `check-references`.
+
+## Claim checks (`check-claims`)
+
+Use the manuscript supplied by the user, or the configured `latex` path. For
+LaTeX, use the configured `bib` path if present; otherwise the tool discovers
+literal bibliography declarations. Resolve configuration paths from the project
+root. Run one command:
+
+```sh
+uvx sciskill bib-lint check-claims main.tex --bib references.bib --mode stub --json
+```
+
+PDF input uses the same action without `--bib`. Add `--output DIRECTORY` when
+requested. Read the final JSON and inspect `claims.yaml` and `summary.md`.
+The YAML header is exactly `schema_version`, `scikill_version`, `document`, `setup`,
+and `citations`. PDF claim locations contain only `page`; LaTeX locations contain
+`file` and `start`/`end` line and column. Technical evidence stays in `.provenance/`.
+Report the selected `setup.validation_mode`, unique claims, claim/reference pairs, and
+extraction diagnostics. Model-based extraction requires an authenticated Codex CLI
+and sends manuscript text to its model; follow the user's data-sharing constraints.
+`--model MODEL` selects the extractor model independently of validation mode.
+Model-selected claims are checked against exact source snapshots. `stub` is the official
+testing validator, returning `valid` with details `Stub mode.` and performing no
+evidence lookups. Its outcomes do not establish scientific support.
+
+Preserve the tool's exact claim text and locations. Repeating an unchanged run
+may rerun model extraction; matching outputs are reused. Use a new output directory
+if results or manuscript inputs change. Finish
+this workflow here; the instructions below apply to reference checking.
+
+## Reference checks (`check-references`)
+
 Audit bibliography metadata against scholarly sources and show findings with their evidence. Inputs can be a BibTeX bibliography or a research-paper PDF whose reference list should be extracted. The tool never edits input PDFs, bibliographies, or compiled AUX files.
 
 ## 1. Identify the inputs
@@ -15,7 +49,7 @@ For PDF input, use a local text-based PDF. OCR is deferred; unreadable bibliogra
 From the project root, run:
 
 ```sh
-uvx sciskill bib-lint verify references.bib --output .sciskill/cache/bib-lint --json
+uvx sciskill bib-lint check-references references.bib --output .sciskill/cache/bib-lint --json
 ```
 
 Substitute the actual input path, including `paper.pdf` or a quoted path containing spaces. `.PDF` is accepted. Add `--aux paper.aux` only for BibTeX input when the corresponding AUX is available. Use an existing audit directory if the user is continuing a run. Repeating the same command resumes unfinished lookups and preserves saved outcomes, including failures. To retry a failed lookup, use `--refresh`; add `--key CITATION-KEY` to recheck only that reference. If an archive needs a venue, volume, or direct paper URL, report that missing context rather than repeatedly running the same broad search.

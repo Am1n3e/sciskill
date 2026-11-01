@@ -1,4 +1,4 @@
-"""Two public commands with a separate, versioned final-result stream."""
+"""Reference and claim checks with a separate, versioned final-result stream."""
 
 import argparse
 import json
@@ -22,7 +22,7 @@ class Parser(argparse.ArgumentParser):
 
 
 def arguments(prog="bib-lint"):
-    parser = Parser(prog=prog, description="Audit local bibliography metadata.")
+    parser = Parser(prog=prog, description="Check references and citation-associated claims.")
     try:
         package_version = version("bib-lint")
     except PackageNotFoundError:
@@ -30,7 +30,7 @@ def arguments(prog="bib-lint"):
     parser.add_argument("--version", action="version", version=f"bib-lint {package_version}")
     commands = parser.add_subparsers(dest="command", required=True)
     verify = commands.add_parser(
-        "verify", help="Extract PDF references, verify BibTeX or import JSON"
+        "check-references", help="Extract PDF references, verify BibTeX or import JSON"
     )
     verify.add_argument("path", help="Input .bib, .pdf or .json file (never modified)")
     verify.add_argument("--aux", type=Path, help="Compiled AUX: verify only cited entries")
@@ -43,6 +43,14 @@ def arguments(prog="bib-lint"):
     verify.add_argument("--encoding", help="BibTeX/AUX encoding (default: utf-8)")
     verify.add_argument("--include-source", action="store_true", help="Include decoded BibTeX text")
     verify.add_argument("--verbose", action="store_true", help="Redacted HTTP details on stderr")
+    claims = commands.add_parser("check-claims", help="Extract claims and run a claim validator")
+    claims.add_argument("path", help="LaTeX entry file/project directory or text-based PDF")
+    claims.add_argument("--bib", action="append", type=Path, default=[], help="LaTeX bibliography")
+    claims.add_argument("--project-root", type=Path, help="LaTeX source root")
+    claims.add_argument("--mode", default="stub", help="Validator module name (default: stub)")
+    claims.add_argument("--model", help="Extraction model (default: configured Codex model)")
+    claims.add_argument("-o", "--output", type=Path, help="Claim output directory")
+    claims.add_argument("--json", action="store_true", help="Emit one final JSON object on stdout")
     view = commands.add_parser("view", help="Open local workflow controls and audit evidence")
     view.add_argument("path", nargs="?", help="Audit directory or legacy report file")
     view.add_argument("--port", type=int, default=8501)
@@ -60,7 +68,7 @@ def final_result(status, workspace=None, report=None, warnings=None, error=None)
         )
     result = {
         "schema_version": 1,
-        "command": "verify",
+        "command": "check-references",
         "status": status,
         "complete": status == "completed",
         "output_dir": str(workspace.root) if workspace else None,
@@ -109,13 +117,19 @@ def safe_message(exc):
 
 def main(argv=None, *, prog="bib-lint"):
     argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] == "check-claims":
+        return claim_main(argv, prog=prog)
+    return reference_main(argv, prog=prog)
+
+
+def reference_main(argv, *, prog):
     machine = "--json" in argv
     workspace = report = None
     warnings = []
     try:
         if argv and argv[0] == "parse":
             raise ArgumentError(
-                "parse was retired; use bib-lint verify INPUT --output DIRECTORY "
+                "parse was retired; use bib-lint check-references INPUT --output DIRECTORY "
                 "or the Python parse_bib API for a parsing-only preview"
             )
         args = arguments(prog).parse_args(argv)
@@ -188,3 +202,50 @@ def main(argv=None, *, prog="bib-lint"):
                 }
             emit(result, machine)
         return 130 if interrupted else 2
+
+
+def claim_main(argv, *, prog):
+    from bib_lint.claims.workflow import emit_result, run_claims
+
+    args = None
+    try:
+        args = arguments(prog).parse_args(argv)
+        result = run_claims(
+            args.path,
+            bib=args.bib,
+            project_root=args.project_root,
+            output=args.output,
+            mode=args.mode,
+            model=args.model,
+        )
+        emit_result(result, "--json" in argv)
+        return 0
+    except (KeyboardInterrupt, OSError, ValueError, LookupError) as exc:
+        return claim_error(exc, isinstance(exc, KeyboardInterrupt), "--json" in argv, args)
+
+
+def claim_error(exc, interrupted, machine, args):
+    from bib_lint.claims.workflow import emit_result
+
+    message = "Interrupted; repeat check-claims to retry." if interrupted else safe_message(exc)
+    print(f"Error: {message}", file=sys.stderr)
+    emit_result(
+        {
+            "schema_version": 1,
+            "command": "check-claims",
+            "status": "interrupted" if interrupted else "failed",
+            "complete": False,
+            "output_dir": None,
+            "report_path": None,
+            "summary_path": None,
+            "setup": {"validation_mode": getattr(args, "mode", None)},
+            "extraction": None,
+            "summary": None,
+            "error": {
+                "code": "interrupted" if interrupted else "claims_failed",
+                "message": message,
+            },
+        },
+        machine,
+    )
+    return 130 if interrupted else 2

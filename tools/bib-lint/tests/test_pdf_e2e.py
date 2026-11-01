@@ -321,7 +321,7 @@ def test_compiled_pdf_only_audits_every_rendered_reference(
     with monkeypatch.context() as transport_patch:
         transport_patch.setattr(MetadataClient, "__init__", with_transport)
         with pdf_only(monkeypatch, PROTECTED_INPUTS) as guarded:
-            code = main(["verify", str(source), "--output", str(output), "--json"])
+            code = main(["check-references", str(source), "--output", str(output), "--json"])
     envelope = json.loads(capsys.readouterr().out)
     assert code == 0, envelope
     assert len(guarded) == 1, (

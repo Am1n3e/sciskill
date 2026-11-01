@@ -67,6 +67,14 @@ def test_installed_wheel_and_local_install_modes(tmp_path):
         "bib_lint/audit.py",
         "bib_lint/scope.py",
         "bib_lint/citation_keys.py",
+        "bib_lint/claims/protocols.py",
+        "bib_lint/claims/report.py",
+        "bib_lint/claims/workflow.py",
+        "bib_lint/claims/validators/stub.py",
+        "bib_lint/claims/extractors/model.py",
+        "bib_lint/claims/extractors/codex.py",
+        "bib_lint/claims/extractors/latex.py",
+        "bib_lint/claims/extractors/pdf.py",
         "bib_lint/pdf_evidence.py",
         "bib_lint/pdf_input/__init__.py",
         "bib_lint/pdf_input/worker.py",
@@ -105,6 +113,7 @@ def test_installed_wheel_and_local_install_modes(tmp_path):
         assert "Requires-Dist: pdfplumber" in metadata
         assert "Requires-Dist: cryptography" in metadata
         assert "Requires-Dist: huey" in metadata
+        assert "requires-dist: pyyaml" in metadata.lower()
         dependencies = [line for line in metadata.splitlines() if line.startswith("Requires-Dist:")]
         assert not any("pytest" in line or "coverage" in line for line in dependencies)
     with tarfile.open(next(artifacts.glob("*.tar.gz"))) as archive:
@@ -130,13 +139,66 @@ assert all(p.descriptor.adapter_version for p in METHODS.values())
 """
     run([str(python), "-c", script], paper, env)
     assert "bib-lint 0.1.0" in run([str(executable), "--version"], paper, env).stdout
-    assert "{verify,view}" in run([str(executable), "--help"], paper, env).stdout
-    result = json.loads(run([str(executable), "verify", "empty.bib", "--json"], paper, env).stdout)
+    assert (
+        "{check-references,check-claims,view}"
+        in run([str(executable), "--help"], paper, env).stdout
+    )
+    result = json.loads(
+        run([str(executable), "check-references", "empty.bib", "--json"], paper, env).stdout
+    )
     assert result["complete"] and result["summary"]["eligible"] == 0
     assert Path(result["output_dir"]) == paper / "empty.bib-lint"
     assert Path(result["report_path"]).is_file() and result["checkpoint_path"] is None
     assert not (paper / "empty.bib-lint/cache/checksum.json").exists()
     assert bib.read_text() == "% no eligible references"
+    claims_source = paper / "main.tex"
+    claims_source.write_text("Method X is faster\\cite{A}.")
+    claims_bib = paper / "refs.bib"
+    claims_bib.write_text("@article{A,title={Speed study}}")
+    fake = paper / "fake-codex"
+    fake.write_text(
+        "#!/usr/bin/env python3\nimport json, pathlib, sys\n"
+        "sys.stdin.read()\n"
+        "answer = pathlib.Path(sys.argv[sys.argv.index('--output-last-message') + 1])\n"
+        "answer.write_text(json.dumps({'items': [{'citation_id': 'citation-0001', "
+        "'disposition': 'claims_extracted', 'claims': [{'file': 'main.tex', "
+        "'claim': 'Method X is faster'}], 'details': ''}], 'diagnostics': []}))\n"
+    )
+    fake.chmod(0o700)
+    claims_result = json.loads(
+        run(
+            [
+                str(executable),
+                "check-claims",
+                str(claims_source),
+                "--bib",
+                str(claims_bib),
+                "--mode",
+                "stub",
+                "--json",
+            ],
+            paper,
+            {**env, "SCISKILL_CODEX": str(fake)},
+        ).stdout
+    )
+    assert claims_result["setup"] == {"validation_mode": "stub"}
+    assert claims_result["summary"]["unique_claims"] == 1
+    run(
+        [
+            str(python),
+            "-c",
+            "import yaml; from pathlib import Path; "
+            f"data = yaml.safe_load(Path({claims_result['report_path']!r}).read_text()); "
+            "assert set(data) == "
+            "{'schema_version','scikill_version','document','setup','citations'}; "
+            "assert data['citations'][0]['claims'][0]['validation']['result'] == 'valid'; "
+            "assert set(data['citations'][0]['claims'][0]['location']) == {'file','start','end'}; "
+            "assert set(data['citations'][0]['claims'][0]['location']['start']) "
+            "== {'line','column'}",
+        ],
+        paper,
+        env,
+    )
     # Exercise installed backend resources without importing from the checkout.
     script = """from importlib.resources import files
 from bib_lint.viewer.app import ViewerSession
@@ -193,7 +255,9 @@ assert 'Input &amp; options' in files('bib_lint.viewer').joinpath('static/index.
         assert "bib-lint 0.1.0" in run([str(executable), "--version"], paper, env).stdout
         result = json.loads(
             run(
-                [str(executable), "verify", "empty.bib", "--json", "-o", "other-audit"], paper, env
+                [str(executable), "check-references", "empty.bib", "--json", "-o", "other-audit"],
+                paper,
+                env,
             ).stdout
         )
         assert (
@@ -275,7 +339,7 @@ assert not Path('pdf-audit/cache').exists()
     invalid = paper / "invalid.pdf"
     invalid.write_bytes(b"not a PDF")
     result = subprocess.run(
-        [str(executable), "verify", str(invalid), "--json"],
+        [str(executable), "check-references", str(invalid), "--json"],
         cwd=paper,
         env=env,
         capture_output=True,

@@ -111,7 +111,7 @@ def test_pdf_rejects_bibtex_options_before_extraction(pdf_input, options):
 def test_pdf_final_json_separates_coverage_from_verification(pdf_input, monkeypatch, capsys):
     source, _, _ = pdf_input
     monkeypatch.setattr("bib_lint.cli.run_audit", audit)
-    assert main(["verify", str(source), "--json"]) == 0
+    assert main(["check-references", str(source), "--json"]) == 0
     result = json.loads(capsys.readouterr().out)
     assert result["complete"]
     assert result["extraction"] == {
@@ -147,7 +147,7 @@ def test_pdf_extraction_failure_is_structured_and_preserves_workspace(
         raise ExtractionFailure("PDF references require OCR")
 
     monkeypatch.setattr(sys.modules["bib_lint.pdf_input"], "extract_pdf", fail)
-    assert main(["verify", str(source), "--json"]) == 2
+    assert main(["check-references", str(source), "--json"]) == 2
     result = json.loads(capsys.readouterr().out)
     assert result["extraction"]["state"] == "failed"
     assert result["error"]["diagnostics"][0]["code"] == "unreadable_reference_page"

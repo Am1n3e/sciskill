@@ -16,7 +16,7 @@ or edition.
 Run with UVX, which keeps tool dependencies outside your paper's environment:
 
 ```sh
-uvx sciskill bib-lint verify /path/to/references.bib --aux /path/to/paper.aux
+uvx sciskill bib-lint check-references /path/to/references.bib --aux /path/to/paper.aux
 uvx sciskill bib-lint view /path/to/references.bib-lint
 ```
 
@@ -29,6 +29,57 @@ Repeating the verification command resumes unfinished work and preserves saved o
 including source failures. Use `--refresh` to retry failures (`--key KEY` limits the
 recheck to one reference). `--refresh` fetches
 selected evidence again.
+
+## Claim checks
+
+```sh
+uvx sciskill bib-lint check-claims main.tex --bib references.bib --mode stub --json
+uvx sciskill bib-lint check-claims paper.pdf --mode stub --output paper-claims --json
+```
+
+`check-references` replaces the former `verify` command. `check-claims` is a separate
+workflow: extract claims using a model, check their exact source
+locations, validate each claim/reference pair, and save `claims.yaml` and `summary.md`.
+Internal evidence and snapshots stay under `.provenance/`. Inputs are never edited. LaTeX follows literal
+includes and discovers `\bibliography`/`\addbibresource` files when `--bib` is
+omitted; a project directory containing `main.tex` is also accepted. `--project-root`
+bounds LaTeX includes. PDF claims show only a one-based physical `page`; LaTeX
+claims show `file`, `start` and `end` line/column positions. PDF keys are generated
+reference-occurrence keys.
+
+`claims.yaml` contains exactly `schema_version: 1`, `scikill_version` (the installed
+producer version), `document` (`kind`, `path`, `sha256`), `setup` (`validation_mode`),
+and `citations`. Each citation contains `citation_key` and `claims`; each claim
+contains `claim_id`, verbatim `claim`, `location`, and `validation` (`result`, `details`).
+There is no `extract_command` or public extraction/provenance dump.
+
+The default validator is `stub`, an official testing mode. The artifact records
+`setup.validation_mode: stub`; each claim has `result: valid` and `details: Stub mode.`.
+There are no cited-paper or evidence requests. Semantic extraction uses an
+authenticated Codex CLI (`codex login`) and sends captured manuscript text to its
+model. `--model MODEL` selects the extraction model; omission uses the configured
+Codex model, falling back to the CLI default when none is configured.
+The extraction session is ephemeral and read-only, with shell, web, plugins, and
+other action tools disabled. See the [Codex non-interactive interface](https://learn.chatgpt.com/docs/non-interactive-mode).
+`SCISKILL_CODEX` can select the executable; inside the Codex app, its bundled CLI
+is preferred over an unrelated CLI on `PATH`. Missing authentication/backend or a bad
+model response fails explicitly, with no sentence-based fallback. Unsupported
+citation syntax, missing keys, ambiguous associations, and unreadable PDF regions
+remain extraction diagnostics.
+
+Extractors implement `Extractor.extract(Request) -> Extraction`; validators implement
+`Validator.validate(Claim, citation_key) -> Validation`. Both protocols are in
+`bib_lint.claims.protocols`. Validator modules are imported directly as
+`bib_lint.claims.validators.<mode>`; the testing implementation is exactly `stub`.
+There is no registry. The model extractor composes separate LaTeX and PDF readers
+for local source/citation capture, then checks model-selected quotes against those
+snapshots. `run_claims(..., extractor=...)` also accepts any extractor implementing
+the protocol. Stub mode applies only to validation; it does not replace extraction.
+
+The default output is `<input-stem>.bib-claims` beside the manuscript, or
+`.sciskill/cache/bib-claims` in a configured project. An identical rerun reuses
+output. Changed inputs or different existing output require a new `--output`
+directory; failed runs preserve previous outputs.
 
 ## Source lookup and parallelism
 
@@ -64,9 +115,9 @@ while unavailable scholarly sources remain source findings.
 ## Research-paper PDFs
 
 ```sh
-uvx sciskill bib-lint verify "/path/to/research paper.PDF" --json
+uvx sciskill bib-lint check-references "/path/to/research paper.PDF" --json
 uvx sciskill bib-lint view "/path/to/research paper.bib-lint"
-uvx sciskill bib-lint verify "/path/to/research paper.PDF" \
+uvx sciskill bib-lint check-references "/path/to/research paper.PDF" \
   --output /path/to/audit --key pdf-ref-0007 --refresh --json
 ```
 
