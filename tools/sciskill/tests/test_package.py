@@ -50,6 +50,10 @@ class PackageTests(unittest.TestCase):
             "version"
         ]
         self.assertEqual(self.run_cli("--version").strip(), f"sciskill {version}")
+        import yaml
+
+        action = yaml.safe_load((ROOT / "actions/latex/action.yml").read_text())
+        self.assertEqual(action["inputs"]["version"]["default"], version)
         self.assertIn("sciskill bib-lint", self.run_cli("bib-lint", "--help"))
         self.assertIn("sciskill rebuttal", self.run_cli("rebuttal", "--help"))
         for task in ("build", "clean", "lint", "spell", "diff"):

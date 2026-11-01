@@ -1,0 +1,28 @@
+name: SciSkill paper preview
+description: Publish verified PDF artifact links on a PR from a trusted workflow_run job.
+inputs:
+  github-token:
+    description: Token with Actions read and pull requests write permissions; use an installation token for a custom App identity.
+    default: ${{ github.token }}
+  bot-login:
+    description: Login belonging to the supplied token (for example sciskill[bot]).
+    default: github-actions[bot]
+  workflow:
+    description: Trusted path of the workflow that generated the paper artifacts.
+    default: .github/workflows/paper-diff.yml
+runs:
+  using: composite
+  steps:
+    - name: Publish preview links
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        SCISKILL_ACTION_PATH: ${{ github.action_path }}
+        SCISKILL_PREVIEW_WORKFLOW: ${{ inputs.workflow }}
+        SCISKILL_BOT_LOGIN: ${{ inputs.bot-login }}
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const publish = require(process.env.SCISKILL_ACTION_PATH + '/publish.cjs');
+          await publish({github, context, core,
+            workflow: process.env.SCISKILL_PREVIEW_WORKFLOW,
+            botLogin: process.env.SCISKILL_BOT_LOGIN});

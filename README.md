@@ -53,6 +53,20 @@ Import OpenReview discussions and view reviews, linked themes, tasks, and respon
 uvx sciskill rebuttal --help
 ```
 
+### LaTeX
+
+Build and check a paper with [uv](https://docs.astral.sh/uv/) and Docker:
+
+```sh
+uvx sciskill latex-build       # .out/main.pdf
+uvx sciskill latex-clean       # Remove generated files
+uvx sciskill latex-lint        # ChkTeX
+uvx sciskill latex-spell       # TeXtidote spelling checks
+uvx sciskill latex-diff --base origin/main
+```
+
+Defaults to `main.tex`; use `--main paper.tex` for another manuscript. See [LaTeX commands and GitHub Actions](docs/latex.md).
+
 ## Citation
 
 ```bibtex

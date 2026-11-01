@@ -1,0 +1,37 @@
+name: LaTeX tools and Actions
+
+on:
+  pull_request:
+    paths:
+      - 'actions/**'
+      - 'tools/sciskill/**'
+      - 'pyproject.toml'
+      - '.github/workflows/latex-checks.yml'
+      - '.github/workflows/publish.yml'
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  latex:
+    name: Installed LaTeX commands and preview publisher
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: '0.13.6'
+          python-version: '3.12'
+      - name: Test preview publication
+        run: node --test actions/paper-preview/publish.test.cjs
+      - name: Build distribution
+        run: uv build --out-dir dist
+      - name: Exercise installed commands with the real TeX toolchain
+        shell: bash
+        run: |
+          export SCISKILL_TEST_WHEEL="$(realpath dist/*.whl)"
+          uv run --no-project --with "$SCISKILL_TEST_WHEEL" python tools/sciskill/tests/latex_integration.py -v
