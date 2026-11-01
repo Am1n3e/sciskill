@@ -52,19 +52,67 @@ on:
     workflows: [Paper diff]
     types: [completed]
 permissions:
-  actions: read
+  actions: write
   pull-requests: write
 concurrency:
-  group: paper-preview-${{ github.event.workflow_run.head_repository.id }}-${{ github.event.workflow_run.head_branch }}
+  group: paper-preview-${{ github.event.workflow_run.head_repository.id || github.repository_id }}-${{ github.event.workflow_run.head_branch }}
   cancel-in-progress: false
 jobs:
   comment:
     if: github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-24.04
     steps:
-      - uses: Am1n3e/sciskill/actions/paper-preview@paper-preview-v0.2.1
+      - uses: Am1n3e/sciskill/actions/paper-preview@paper-preview-v0.3.0
 ```
 
-The default expected build workflow path is `.github/workflows/paper-diff.yml`; set the publisher's `workflow` input if yours differs. The publisher reads GitHub metadata, verifies the run and current PR head, and creates or updates its own preview comment. It never executes PR code or downloads artifacts. Keep the publishing workflow on the default branch and never pass its write token to the PR build.
+The default expected build workflow path is `.github/workflows/paper-diff.yml`; set the publisher's `workflow` input if yours differs. The publisher reads GitHub metadata, verifies the run and current PR head, and creates or updates its own preview comment. It never executes PR code or downloads artifacts. Keep the publishing workflow on the default branch and never pass its write token to the PR build. Version 0.3.0 requires `actions: write` so a build finishing after merge can remove its late uploads.
 
 Comments use `github-actions[bot]` with the default token. A custom SciSkill identity requires a GitHub App installation token supplied as `github-token`, plus its login (such as `sciskill[bot]`) as `bot-login`. An Action's display name does not change the comment author. Existing comments retain their original author.
+
+## Retention and merge cleanup
+
+Set the `PAPER_PREVIEW_RETENTION_DAYS` repository Actions variable to choose PDF retention. A paper-diff workflow can use one shared value for both upload steps:
+
+```yaml
+env:
+  PAPER_PREVIEW_RETENTION_DAYS: ${{ vars.PAPER_PREVIEW_RETENTION_DAYS || '30' }}
+# In each PDF upload step:
+# with:
+#   retention-days: ${{ env.PAPER_PREVIEW_RETENTION_DAYS }}
+```
+
+The value must fit the repository's artifact retention limits. The comment displays the earlier PDF expiry reported by GitHub, in UTC. Repository variables affect subsequent uploads.
+
+Add a trusted cleanup workflow on the default branch:
+
+```yaml
+name: Remove merged paper previews
+on:
+  pull_request_target:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      pull-request:
+        description: Merged PR number to clean up
+        required: true
+        type: number
+permissions:
+  actions: write
+  pull-requests: write
+concurrency:
+  group: paper-preview-${{ github.event.pull_request.head.repo.id || github.repository_id }}-${{ github.event.pull_request.head.ref || format('pr-{0}', inputs.pull-request) }}
+  cancel-in-progress: false
+jobs:
+  cleanup:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: Am1n3e/sciskill/actions/paper-preview@paper-preview-v0.3.0
+        with:
+          mode: cleanup
+          pull-request: ${{ inputs.pull-request }}
+```
+
+Cleanup verifies the merged PR through GitHub, then deletes its `paper-pr-<number>-<sha>` and `paper-diff-pr-<number>-<sha>` artifacts across revisions. Each artifact's workflow, repository, PR association and commit must match. Logs, workflow runs and unrelated artifacts remain available. The bot updates its existing preview comment to **“PR merged — preview PDFs removed”** and links to the PR checks.
+
+The shared concurrency group serializes automatic publication and merge cleanup. Publication also cleans artifacts uploaded after merge. Manual cleanup can remove older merged PR previews; open PRs and PRs closed without merging are left alone. This workflow requires no checkout of PR code.

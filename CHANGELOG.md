@@ -1,5 +1,17 @@
 # Changelog
 
+## Paper preview Action 0.3.0
+
+### Added
+
+- Merge cleanup removes verified preview PDFs across PR revisions and updates the existing bot comment while preserving workflow logs and checks.
+- Late builds also clean their uploads after merge; manual cleanup supports older merged PRs.
+
+### Changed
+
+- Comments display the actual PDF expiry reported by GitHub instead of a fixed duration.
+- The trusted publisher now requires `actions: write` for late-upload cleanup. Use `Am1n3e/sciskill/actions/paper-preview@paper-preview-v0.3.0` with the cleanup workflow in the LaTeX guide. The Python package and LaTeX Action remain at 0.2.0.
+
 ## Paper preview Action 0.2.1
 
 ### Changed
