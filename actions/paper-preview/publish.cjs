@@ -24,8 +24,9 @@ module.exports = async function publish({github, context, core, workflow = '.git
       && pr.head.sha === run.head_sha && pr.head.repo?.id === run.head_repository?.id;
     if (!eligible(await current())) continue;
     const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${run.id}`;
-    const lines = [MARKER, '### Paper preview', '',
-      `Commit: [\`${run.head_sha.slice(0, 12)}\`](${context.serverUrl}/${owner}/${repo}/commit/${run.head_sha})`, ''];
+    const commit = `[\`${run.head_sha.slice(0, 12)}\`](${context.serverUrl}/${owner}/${repo}/commit/${run.head_sha})`;
+    const lines = [MARKER];
+    let footer = `Commit: ${commit} · [Build details](${runUrl})`;
     if (run.conclusion === 'success') {
       const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts,
         {owner, repo, run_id: run.id, per_page: 100});
@@ -33,8 +34,13 @@ module.exports = async function publish({github, context, core, workflow = '.git
       const diff = find('paper-diff');
       const clean = find('paper');
       if (diff && clean) {
-        lines.push(`[Download PDF with changes](${runUrl}/artifacts/${diff.id}) · [Download clean PDF](${runUrl}/artifacts/${clean.id})`, '',
-          'Compared with the PR merge base. Artifacts are retained for 30 days.');
+        lines.push('### Paper PDFs ready for review', '',
+          'These PDFs were built automatically from this pull request.', '',
+          '| PDF | What it shows |',
+          '|---|---|',
+          `| [**Review highlighted changes**](${runUrl}/artifacts/${diff.id}) | Changes introduced by this PR: additions in blue, deletions in red. |`,
+          `| [**Read the updated paper**](${runUrl}/artifacts/${clean.id}) | The complete paper with all changes applied. |`);
+        footer = `Built from ${commit} · Downloads available for 30 days · [Build details](${runUrl})`;
         const files = await github.paginate(github.rest.pulls.listFiles,
           {owner, repo, pull_number, per_page: 100});
         const figures = files.filter(f => /\.(pdf|png|jpe?g|svg|webp|gif|eps)$/i.test(f.filename));
@@ -43,12 +49,14 @@ module.exports = async function publish({github, context, core, workflow = '.git
           for (const file of figures) lines.push(`- <code>${html(file.filename)}</code> (${file.status})`);
         }
       } else {
-        lines.push('The PDF artifacts are unavailable. Check the workflow run below.');
+        lines.push('### Paper PDFs unavailable', '',
+          'The PDF downloads are unavailable. Check the build details below.');
       }
     } else {
-      lines.push(`Paper diff generation failed (${run.conclusion}). Check the workflow run below.`);
+      lines.push('### Paper PDFs could not be built', '',
+        `Paper diff generation failed (${run.conclusion}). Check the build details below.`);
     }
-    lines.push('', `[View workflow run and logs](${runUrl})`);
+    lines.push('', footer);
     const comments = await github.paginate(github.rest.issues.listComments,
       {owner, repo, issue_number: pull_number, per_page: 100});
     const previous = comments.find(c => c.user?.login === botLogin && c.body?.startsWith(MARKER));

@@ -1,5 +1,14 @@
 # Changelog
 
+## Paper preview Action 0.2.1
+
+### Changed
+
+- Explain the highlighted and clean PDFs in a review table, with build metadata in a compact footer.
+- Distinguish ready, unavailable, and failed PDF previews.
+
+Use `Am1n3e/sciskill/actions/paper-preview@paper-preview-v0.2.1`. The Python package and LaTeX Action remain at 0.2.0.
+
 ## 0.2.0
 
 ### Added
