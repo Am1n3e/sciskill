@@ -1,8 +1,14 @@
 name: SciSkill paper preview
-description: Publish verified PDF artifact links on a PR from a trusted workflow_run job.
+description: Publish PR paper previews and remove their PDFs after merge from trusted workflows.
 inputs:
+  mode:
+    description: publish for workflow_run events, or cleanup for merged PRs.
+    default: publish
+  pull-request:
+    description: Merged PR number for manual cleanup; closed events use their own PR number.
+    default: ''
   github-token:
-    description: Token with Actions read and pull requests write permissions; use an installation token for a custom App identity.
+    description: Token with Actions write and pull requests write permissions; use an installation token for a custom App identity.
     default: ${{ github.token }}
   bot-login:
     description: Login belonging to the supplied token (for example sciskill[bot]).
@@ -19,10 +25,24 @@ runs:
         SCISKILL_ACTION_PATH: ${{ github.action_path }}
         SCISKILL_PREVIEW_WORKFLOW: ${{ inputs.workflow }}
         SCISKILL_BOT_LOGIN: ${{ inputs.bot-login }}
+        SCISKILL_PREVIEW_MODE: ${{ inputs.mode }}
+        SCISKILL_PULL_NUMBER: ${{ inputs.pull-request }}
       with:
         github-token: ${{ inputs.github-token }}
         script: |
-          const publish = require(process.env.SCISKILL_ACTION_PATH + '/publish.cjs');
-          await publish({github, context, core,
+          const options = {github, context, core,
             workflow: process.env.SCISKILL_PREVIEW_WORKFLOW,
-            botLogin: process.env.SCISKILL_BOT_LOGIN});
+            botLogin: process.env.SCISKILL_BOT_LOGIN};
+          if (process.env.SCISKILL_PREVIEW_MODE === 'publish') {
+            await require(process.env.SCISKILL_ACTION_PATH + '/publish.cjs')(options);
+          } else if (process.env.SCISKILL_PREVIEW_MODE === 'cleanup') {
+            if (context.eventName !== 'workflow_dispatch'
+                && !(context.eventName === 'pull_request_target' && context.payload.action === 'closed')) {
+              throw new Error('Cleanup requires a closed pull_request_target event or workflow_dispatch.');
+            }
+            const pullNumber = context.eventName === 'workflow_dispatch'
+              ? Number(process.env.SCISKILL_PULL_NUMBER) : context.payload.pull_request.number;
+            await require(process.env.SCISKILL_ACTION_PATH + '/cleanup.cjs')({...options, pullNumber});
+          } else {
+            throw new Error('Unknown preview mode. Use publish or cleanup.');
+          }
