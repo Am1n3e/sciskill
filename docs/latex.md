@@ -62,7 +62,7 @@ jobs:
     if: github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-24.04
     steps:
-      - uses: Am1n3e/sciskill/actions/paper-preview@v0.2.0
+      - uses: Am1n3e/sciskill/actions/paper-preview@paper-preview-v0.2.1
 ```
 
 The default expected build workflow path is `.github/workflows/paper-diff.yml`; set the publisher's `workflow` input if yours differs. The publisher reads GitHub metadata, verifies the run and current PR head, and creates or updates its own preview comment. It never executes PR code or downloads artifacts. Keep the publishing workflow on the default branch and never pass its write token to the PR build.
