@@ -1,118 +1,99 @@
 # Spec: Citation claim checks
 
-Status: Implemented; model-based extraction exercised on the supplied manuscript.
+Status: Skill-owned extraction and comparison, with local reference and quote checks.
 
 ## Scope
 
-Extract every citation-associated claim from a LaTeX or text-based PDF manuscript.
-Save verbatim claims grouped by citation key, with source locations. Run claim
-validation in the official `stub` testing mode, which returns `valid` for every
-extracted claim–citation pair.
-
-Cited-paper retrieval and actual support assessment are outside this version.
+The skill agent identifies citation-associated claims and compares them with cited
+PDFs. Python reuses bib-lint's reference extraction to seed YAML, then validates
+agent-written claim text against the original manuscript. Python never launches
+a model CLI/SDK or performs semantic support assessment.
 
 ## Commands
 
 ```sh
-# Reference identity and bibliographic correctness; replaces verify.
+# Existing reference correctness workflow.
 uvx sciskill bib-lint check-references references.bib
-uvx sciskill bib-lint check-references paper.pdf
 
-# Extract claims and validate in testing mode.
-uvx sciskill bib-lint check-claims main.tex --bib references.bib --mode stub
-uvx sciskill bib-lint check-claims paper.pdf --mode stub
+# Seed references and empty claims for the skill agent.
+uvx sciskill bib-lint check-claims main.tex --bib references.bib --output paper-claims --json
+uvx sciskill bib-lint check-claims paper.pdf --output paper-claims --json
 
-# Optional output directory and machine-readable result.
-uvx sciskill bib-lint check-claims paper.pdf --mode stub --output ./claims --json
+# Check the agent-filled YAML against the original manuscript.
+uvx sciskill bib-lint check-claims paper-claims/claims.yaml --json
 ```
 
-- Standalone `bib-lint` uses the same action names. No `verify` compatibility alias
-  is required. Existing reference-checking behavior and `view` remain unchanged.
-- The agent skill exposes `/sciskill bib-lint check-references INPUT` and
-  `/sciskill bib-lint check-claims INPUT`, with the same applicable options.
-- `check-claims` is one action. No public preparation/finalization commands or
-  user-supplied intermediate drafts.
-- `INPUT` is a `.tex` entry file or a text-based `.pdf`; uppercase `.PDF` and paths
-  containing spaces are supported.
-- `--bib PATH` is repeatable and LaTeX-only. At least one bibliography is required
-  for LaTeX; the agent may resolve it from `.sciskill/config.yaml`.
-- `--project-root PATH` is LaTeX-only and defaults to the entry file's parent.
-  Included source files must stay within that root.
-- `--output DIRECTORY` defaults to `.sciskill/cache/bib-claims` in a configured
-  project, otherwise `<input-stem>.bib-claims` beside the input.
-- `--mode stub` selects the official testing validator. `stub` is the default and
-  only supported mode in this version. Unknown modes fail explicitly.
-- `--model MODEL` selects the extraction model independently of validation mode;
-  omission uses the configured Codex model, or the CLI default when unconfigured.
-  Requires an authenticated Codex CLI.
-- `--json` emits one final result on stdout; progress and diagnostics go to stderr.
-
-Extraction is model-based. Local readers capture source text, citation candidates,
-and locations; the model selects exact claim spans and citation associations.
-The Codex backend receives manuscript text in a tool-disabled, read-only,
-ephemeral session. Backend/model failure is an explicit error, never a local
-sentence-extraction fallback. Agent and shell calls use the same contract.
+- One user-facing skill action, `bib-lint check-claims`, runs the full workflow.
+  The same local command accepts a manuscript to seed or a YAML report to check.
+  There are no preparation/finalization subcommands or `--model` option.
+- Seed inputs: `.tex`, text-based `.pdf` (including `.PDF`), or a project directory
+  containing `main.tex`. YAML checks accept `.yaml`/`.yml` within a seeded workspace.
+- `--bib PATH` is repeatable, LaTeX-only; literal bibliography declarations are
+  discovered when omitted. The agent may pass configured project paths explicitly.
+- `--project-root PATH` bounds LaTeX includes and defaults to the entry file's parent.
+- `--output DIRECTORY` applies only when seeding. Default: configured project cache
+  `.sciskill/cache/bib-claims`, otherwise `<input-stem>.bib-claims` beside the input.
+- `--mode agent` is the default for seeding; YAML checks preserve its declared mode.
+  An explicit mode on a check must match the report. `stub` remains an official
+  testing validator. Both validators are imported directly by name; no registry.
+- `--json` emits one result on stdout; diagnostics go to stderr. Seeding returns
+  `status: awaiting_agent`, `complete: false`, `stage: references_extracted`.
+  Successful YAML checks return `stage: claims_checked`; this does not certify
+  semantic completeness or scientific support.
 
 | Module contract | Interface |
 | --- | --- |
-| `Extractor` protocol | `extract(Request) -> Extraction`; the model extractor composes separate LaTeX and PDF source readers. |
-| `Validator` protocol | `validate(Claim, citation_key) -> Validation`. |
-| Validator selection | Direct import of `bib_lint.claims.validators.<mode>`; `stub` is the exact testing validator name. No registry. |
+| `Extractor` | `extract(Request) -> Extraction`: local source/reference readers and a loader/checker for agent-authored YAML. No semantic claim generation. |
+| `Validator` | `validate(Claim, citation_key) -> Validation`. `agent` preserves the agent's assessment; absent assessments are unresolved. `stub` always returns valid. |
+| Skill | Owns claim attribution, cited-PDF retrieval, scientific comparison and YAML assessment updates. |
 
 ## Process
 
 ```mermaid
 flowchart TD
-    Start["check-claims INPUT --mode stub"] --> Args{"Valid arguments and mode?"}
-    Args -->|No| Fail["Fail; preserve inputs and previous outputs"]
-    Args -->|Yes| Kind{"Input type"}
-    Kind -->|LaTeX| Tex["Read entry, literal includes, and bibliographies<br/>Keep original bibliography keys; never execute TeX"]
-    Kind -->|PDF| Pdf["Read text, page geometry, and reference list<br/>Use pdf-ref-NNNN keys"]
-    Tex -->|Valid input| Snap["Capture source snapshots, hashes, and locations"]
-    Pdf -->|Valid input| Snap
-    Tex -->|Missing or invalid required input| Fail
-    Pdf -->|Unreadable or no identifiable bibliography| Fail
-    Snap --> Extract[["Model extracts exact claims and citation links"]]
-    Extract --> Check{"Text, locations, schema, and links valid?"}
-    Check -->|No| Fail
-    Check -->|Yes| Stub["Official stub validator<br/>Return valid for each claim-citation pair"]
-    Stub --> Save["Publish claims.yaml and summary.md<br/>Include mode, counts, and diagnostics"]
-    Save --> Done["Completed<br/>Extraction state: complete or needs_review"]
+    Input["LaTeX or PDF manuscript"] --> Refs["Python: reuse bib-lint reference extraction"]
+    Refs --> Seed["Seed claims.yaml<br/>Every reference has an empty claims list"]
+    Seed --> Fill["Skill agent: read manuscript and fill verbatim claims"]
+    Fill --> Check{"Python: schema and manuscript quotes match?"}
+    Check -->|No| Correct["Agent corrects claims or locations<br/>Original evidence stays unchanged"]
+    Correct --> Check
+    Check -->|Yes| PDFs["Skill agent: obtain and identify each cited PDF"]
+    PDFs --> Compare["Skill agent: compare claims with PDF evidence"]
+    Compare --> Update["Agent updates validation result and explanation"]
+    Update --> Final["Python: recheck updated YAML<br/>Preserve agent's scientific assessments"]
+    Final --> Report["Report findings and unresolved cases"]
 ```
 
-## Extraction
+## Agent extraction and comparison
 
 ```mermaid
 flowchart TD
-    Scan["Inspect body, appendices, captions, and footnotes<br/>Exclude bibliography text, comments, literal code, and nocite"]
-    Scan --> Candidate["Inventory citation candidates with exact text and locations"]
-    Candidate --> Actual{"Actual citation?"}
-    Actual -->|No| NoCitation["Record rejected candidate and reason<br/>Exclude from citation counts"]
-    Actual -->|Uncertain| Review["needs_review<br/>Retain source, candidate keys, and reason"]
-    Actual -->|Yes| Keys{"Reference keys resolve unambiguously?"}
-    Keys -->|No| Review
-    Keys -->|Yes| Claims{"Associated claim identifiable?"}
-    Claims -->|No claim| NoClaim["Retain citation with an empty claims list<br/>Record no_claim and reason"]
-    Claims -->|Uncertain boundary or association| Review
-    Claims -->|Yes| Span["Model selects smallest complete verbatim claim spans<br/>Preserve qualifiers, negation, numbers, and conditions"]
-    Span --> Split{"Independent claims have exact source spans?"}
-    Split -->|Yes| Separate["Create separate claim records"]
-    Split -->|No| Intact["Keep original span intact"]
-    Separate --> Link["Assign claim IDs and link claims to citations"]
-    Intact --> Link
-    Link --> Group["Group by each resolved citation key<br/>Reuse claim_id across keys; keep repeated occurrences distinct"]
-    Group --> Inventory["Publish citation objects with nested claims<br/>Retain extraction diagnostics"]
-    NoCitation --> Inventory
-    NoClaim --> Inventory
-    Review --> Inventory
+    Read["Agent reads full manuscript and reference identities"] --> Claims["For each reference: identify all attributed claims"]
+    Claims --> Quote["Copy smallest complete contiguous source spans<br/>Keep qualifiers, numbers, conditions and negation"]
+    Quote --> Locations["PDF: physical starting page<br/>LaTeX: file, line and column"]
+    Locations --> Verify["Python verifies verbatim text in original input"]
+    Verify --> Fetch["Agent obtains the cited work's full-text PDF<br/>Cache once per reference"]
+    Fetch --> Access{"Matching readable PDF available?"}
+    Access -->|No| Unresolved["unresolved; explain missing access or evidence"]
+    Access -->|Yes| Evidence["Agent reads results, tables, figures and limitations"]
+    Evidence --> Verdict["Agent writes valid, invalid or unresolved<br/>Details include source PDF, page and evidence"]
 ```
 
-| Extraction invariant | Contract |
-| --- | --- |
-| Coverage | Every candidate is accounted for by extracted claims or a diagnostic with its location and reason. Unsupported forms and unreadable regions retain diagnostics. A supported document without citations may produce an explicit empty result. |
-| Identity | LaTeX uses existing exact-first key resolution. PDF resolves numeric groups/ranges and author-year mentions against reference occurrences; original BibTeX keys are not invented. |
-| Relationships | One claim may link to multiple citations; one reference may have many claims. Links record attribution, not independent or collective support. |
-| Fidelity | Never paraphrase `claim`. Retain the smallest complete verbatim span needed to understand the claim. |
+- References come from the existing BibTeX parser or PDF bibliography extractor.
+  Seed every extracted reference, including those without manuscript claims.
+  Keep reference metadata privately for the agent's identity/PDF lookup.
+- Only the agent chooses claims. Citation groups may share a claim ID; repeated
+  manuscript occurrences have separate IDs. Preserve exact text and source scope.
+- The quote check concerns the input manuscript, not a demand that its paraphrase
+  appear verbatim in the cited paper. It reads original inputs again, rejects
+  changed sources and invented/normalized quotes, and checks the stated location.
+- The agent retrieves each cited PDF using available authorized tools, confirms
+  work/version identity, caches it privately, and records local paths/URLs.
+  Unavailable full texts remain unresolved. No automatic downloader or model
+  backend is added to the Python tool.
+- Agent comparison accounts for numerical values, metric/dataset/conditions,
+  source qualifications and attribution. Details identify evidence and its page.
+  A programmatic quote check does not perform that semantic comparison.
 
 ## Output contract
 
@@ -123,7 +104,7 @@ flowchart TD
 | `schema_version` | Integer `1`. |
 | `scikill_version` | Installed SciSkill package version, or standalone bib-lint version when SciSkill is not installed. |
 | `document` | Exactly `kind` (`latex` or `pdf`), `path`, and original input `sha256`. The document is identified once. |
-| `setup` | Exactly `validation_mode`, currently `stub`. |
+| `setup` | Exactly `validation_mode`: `agent` for skill assessments or `stub` for tests. |
 | `citations` | List of objects containing exactly `citation_key` and `claims`. |
 
 Each claim contains exactly `claim_id`, `claim`, `location`, and `validation`.
@@ -132,7 +113,7 @@ Each claim contains exactly `claim_id`, `claim`, `location`, and `validation`.
 Group membership supplies the citation key; shared claim IDs identify the same
 manuscript occurrence. A resolved cited reference with no claims has `claims: []`.
 
-PDF example:
+PDF example in explicit testing mode:
 
 ```yaml
 schema_version: 1
@@ -163,7 +144,7 @@ claim: "Method X improves accuracy."
 location:
   file: sections/results.tex
   start: {line: 12, column: 1}
-  end: {line: 12, column: 27}
+  end: {line: 12, column: 28}
 validation:
   result: valid
   details: "Stub mode."
@@ -189,49 +170,36 @@ validation remains specific to each reference. Repeated document occurrences hav
 separate IDs. Source changes invalidate captured evidence. Publish the report,
 summary and private evidence together; failure preserves previous complete output.
 
-## Official stub mode
+## Validation modes
 
-`stub` is a supported testing mode, retained when real validators are introduced.
-It applies to claim-support validation only; extraction and structural artifact
-checks still run normally.
-
-- Every structurally accepted claim–citation pair receives `result: valid` and
-  `details: 'Stub mode.'`.
-- The validator performs no cited-paper or evidence lookups.
-- Persist `setup.validation_mode: stub`; per-pair results use that mode.
-- The local artifact writer produces validation fields rather than trusting
-  agent-supplied results. Invalid artifacts still fail; uncertainty remains visible.
-- Do not fabricate pairs for unresolved citations to obtain a `valid` result.
-- Summaries and machine results expose the mode. No fixed notice text is required.
-  Stub results are testing outcomes, not scientific support verdicts.
+- `agent`: retain the agent-written `valid`, `invalid` or `unresolved` result and
+  its nonempty explanation. Python checks text/schema fidelity and does not
+  rewrite the scientific assessment.
+- `stub`: official testing mode, retained for future validators. Every pair must
+  have `result: valid`, `details: Stub mode.`. It never bypasses quote/schema checks.
+- Initial skill-authored claims are unresolved until cited-PDF comparison occurs.
+  Unknown modes fail explicitly; mode overrides cannot silently relabel a report.
 
 ## Completion and acceptance
 
-- The action result includes status (`completed`, `failed`, or `interrupted`),
+- The action result includes status (`awaiting_agent`, `completed`, `failed`, or `interrupted`),
   completion, artifact paths, extraction state, validation mode, counts, and errors.
-  Successful execution may retain `extraction.state: needs_review`.
+  A successful local check does not imply the skill has finished cited-paper review.
 - Shell exit codes are `0` for success, `2` for input/artifact errors, and `130`
   for interruption.
-- Count unique claims separately from claim–citation pairs. Also report resolved
-  reference keys, actual citation occurrences, no-claim citations, uncertain or
-  rejected candidates, unresolved associations, and coverage diagnostics.
+- Count unique claims separately from claim–citation pairs. Also report reference
+  keys, references without claims, assessment totals per pair, and available
+  extraction diagnostics. Citation-attribution coverage is reviewed by the agent;
+  empty claim lists do not establish that every manuscript citation was examined.
 - Publish only structurally valid artifacts. Failure or interruption preserves
-  previous complete outputs. Inputs are never edited. Repeating the same action
-  handles recovery without a separate user-facing command.
-- Safe artifact loading rejects duplicate keys, invalid types, broken links,
-  unsupported schemas, stale hashes, and unsafe paths. PDF page regions must
-  match their text spans and remain within page bounds.
-- Acceptance fixtures cover both inputs, grouped/repeated citations, multiple
-  claims per reference, multiline/Unicode locations, numerical and compound
-  claims, ambiguous mappings, unsupported regions, and empty supported inputs.
-- Test exact text/location fidelity, citation groups and nested claims, counts,
-  the three allowed result values, nonempty explanations, selectable/default stub
-  mode, invalid-mode rejection, and absence of evidence lookups. Stub mode must not
-  bypass extraction errors or structural checks.
-- Semantic extraction is assessed against independent annotated manuscripts;
-  canned drafts alone do not establish extraction quality. Existing reference
-  checks and PDF regressions continue to pass after the command rename.
+  inputs and the agent-authored YAML. A successful YAML check writes a private
+  report-hash checkpoint and refreshes the summary; it does not rewrite the YAML.
+- Reject duplicate keys, malformed schemas/locations/results, missing references,
+  stale source hashes, and unsafe paths. Stub mode never bypasses these checks.
+- Acceptance covers LaTeX/PDF seeding, agent edits, exact quotation rejection,
+  preserved assessments, selectable stub mode, installed commands, and an independent
+  skill workflow exercise. Local checks do not measure semantic extraction recall.
 
-Deferred: actual support assessment, cited-paper evidence quotations, OCR,
-arbitrary TeX expansion, PDF-to-BibTeX reconciliation, a new viewer, and editing
-manuscripts. A richer review interface remains future work.
+Deferred Python features: automatic scientific support reasoning, automatic PDF
+downloads, OCR, arbitrary TeX expansion, PDF-to-BibTeX reconciliation, and a new
+viewer. The skill agent owns cited-PDF acquisition and evidence assessment now.

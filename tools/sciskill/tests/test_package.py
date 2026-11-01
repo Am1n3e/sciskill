@@ -63,7 +63,9 @@ class PackageTests(unittest.TestCase):
             self.assertIn("bib_lint/verification/queues.py", names)
             self.assertIn("bib_lint/claims/protocols.py", names)
             self.assertIn("bib_lint/claims/validators/stub.py", names)
-            self.assertIn("bib_lint/claims/extractors/model.py", names)
+            self.assertIn("bib_lint/claims/extractors/agent.py", names)
+            self.assertNotIn("bib_lint/claims/extractors/codex.py", names)
+            self.assertNotIn("bib_lint/claims/extractors/model.py", names)
             metadata = wheel.read(next(name for name in names if name.endswith('/METADATA'))).decode()
             self.assertIn("Requires-Dist: huey", metadata)
             self.assertFalse(
@@ -103,9 +105,8 @@ class PackageTests(unittest.TestCase):
             with self.subTest(tool=tool):
                 self.check_viewer(tool, path)
 
-    def test_model_claim_workflow_and_stub_from_installed_package(self):
+    def test_skill_claim_workflow_and_stub_from_installed_package(self):
         import yaml
-        from unittest.mock import patch
 
         root = self.directory / "claims-project"
         root.mkdir()
@@ -113,33 +114,29 @@ class PackageTests(unittest.TestCase):
         source.write_text("Method X is faster\\cite{A}.")
         bib = root / "refs.bib"
         bib.write_text("@article{A,title={Speed study}}")
-        fake = root / "fake-codex"
-        fake.write_text(
-            "#!/usr/bin/env python3\nimport json, pathlib, sys\n"
-            "sys.stdin.read()\n"
-            "answer = pathlib.Path(sys.argv[sys.argv.index('--output-last-message') + 1])\n"
-            "answer.write_text(json.dumps({'items': [{'citation_id': 'citation-0001', "
-            "'disposition': 'claims_extracted', 'claims': [{'file': 'main.tex', "
-            "'claim': 'Method X is faster'}], 'details': ''}], 'diagnostics': []}))\n"
-        )
-        fake.chmod(0o700)
-        with patch.dict(os.environ, {"SCISKILL_CODEX": str(fake)}):
-            result = json.loads(self.run_cli(
-                "bib-lint", "check-claims", source, "--bib", bib, "--mode", "stub", "--json"
-            ))
+        seeded = json.loads(self.run_cli(
+            "bib-lint", "check-claims", source, "--bib", bib, "--mode", "stub", "--json"
+        ))
+        self.assertEqual(seeded["status"], "awaiting_agent")
+        self.assertFalse(seeded["complete"])
+        path = Path(seeded["report_path"])
+        data = yaml.safe_load(path.read_text())
+        self.assertEqual(data["citations"][0]["claims"], [])
+        data["citations"][0]["claims"] = [{
+            "claim_id": "claim-0001", "claim": "Method X is faster",
+            "location": {"file": "main.tex", "start": {"line": 1, "column": 1},
+                         "end": {"line": 1, "column": 19}},
+            "validation": {"result": "valid", "details": "Stub mode."},
+        }]
+        path.write_text(yaml.safe_dump(data))
+        before = path.read_bytes()
+        result = json.loads(self.run_cli("bib-lint", "check-claims", path, "--json"))
+        self.assertTrue(result["complete"])
         self.assertEqual(result["setup"], {"validation_mode": "stub"})
         self.assertEqual(result["summary"]["unique_claims"], 1)
-        data = yaml.safe_load(Path(result["report_path"]).read_text())
+        self.assertEqual(path.read_bytes(), before)
         self.assertEqual(set(data), {
             "schema_version", "scikill_version", "document", "setup", "citations"
-        })
-        self.assertTrue(data["scikill_version"])
-        self.assertEqual(set(data["citations"][0]["claims"][0]["location"]), {
-            "file", "start", "end"
-        })
-        self.assertEqual(data["citations"][0]["claims"][0]["claim"], "Method X is faster")
-        self.assertEqual(data["citations"][0]["claims"][0]["validation"], {
-            "result": "valid", "details": "Stub mode."
         })
 
     def test_pdf_preview_runs_from_installed_shared_entrypoint(self):

@@ -30,6 +30,7 @@ class Claim:
     claim_id: str
     claim: str
     location: Location
+    assessment: "Validation | None" = None
 
 
 @dataclass(frozen=True)
@@ -39,7 +40,8 @@ class Validation:
 
     def to_dict(self) -> dict:
         if (
-            self.result not in {"valid", "invalid", "unresolved"}
+            not isinstance(self.result, str)
+            or self.result not in {"valid", "invalid", "unresolved"}
             or not isinstance(self.details, str)
             or not self.details.strip()
         ):
@@ -52,16 +54,6 @@ class Request:
     path: Path
     bibliographies: tuple[Path, ...] = ()
     project_root: Path | None = None
-    model: str | None = None
-
-
-@dataclass(frozen=True)
-class CitationOccurrence:
-    citation_id: str
-    text: str
-    location: Location
-    keys: tuple[str, ...]
-    document_occurrence: int = 0
 
 
 @dataclass(frozen=True)
@@ -82,7 +74,9 @@ class Extraction:
     diagnostics: list[dict] = field(default_factory=list)
     counts: dict[str, int] = field(default_factory=dict)
     extractor: dict = field(default_factory=lambda: {"id": "unknown", "version": "unknown"})
-    occurrences: list[CitationOccurrence] = field(default_factory=list)
+    references: dict[str, dict] = field(default_factory=dict)
+    validation_mode: str | None = None
+    input: dict = field(default_factory=dict)
 
 
 @runtime_checkable

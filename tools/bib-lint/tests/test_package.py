@@ -71,8 +71,9 @@ def test_installed_wheel_and_local_install_modes(tmp_path):
         "bib_lint/claims/report.py",
         "bib_lint/claims/workflow.py",
         "bib_lint/claims/validators/stub.py",
-        "bib_lint/claims/extractors/model.py",
-        "bib_lint/claims/extractors/codex.py",
+        "bib_lint/claims/extractors/agent.py",
+        "bib_lint/claims/validators/agent.py",
+        "bib_lint/claims/yaml_io.py",
         "bib_lint/claims/extractors/latex.py",
         "bib_lint/claims/extractors/pdf.py",
         "bib_lint/pdf_evidence.py",
@@ -105,6 +106,8 @@ def test_installed_wheel_and_local_install_modes(tmp_path):
     }
     with zipfile.ZipFile(wheel) as archive:
         assert required <= set(archive.namelist())
+        assert "bib_lint/claims/extractors/codex.py" not in archive.namelist()
+        assert "bib_lint/claims/extractors/model.py" not in archive.namelist()
         metadata = archive.read(
             next(n for n in archive.namelist() if n.endswith("/METADATA"))
         ).decode()
@@ -155,17 +158,7 @@ assert all(p.descriptor.adapter_version for p in METHODS.values())
     claims_source.write_text("Method X is faster\\cite{A}.")
     claims_bib = paper / "refs.bib"
     claims_bib.write_text("@article{A,title={Speed study}}")
-    fake = paper / "fake-codex"
-    fake.write_text(
-        "#!/usr/bin/env python3\nimport json, pathlib, sys\n"
-        "sys.stdin.read()\n"
-        "answer = pathlib.Path(sys.argv[sys.argv.index('--output-last-message') + 1])\n"
-        "answer.write_text(json.dumps({'items': [{'citation_id': 'citation-0001', "
-        "'disposition': 'claims_extracted', 'claims': [{'file': 'main.tex', "
-        "'claim': 'Method X is faster'}], 'details': ''}], 'diagnostics': []}))\n"
-    )
-    fake.chmod(0o700)
-    claims_result = json.loads(
+    seeded = json.loads(
         run(
             [
                 str(executable),
@@ -178,8 +171,23 @@ assert all(p.descriptor.adapter_version for p in METHODS.values())
                 "--json",
             ],
             paper,
-            {**env, "SCISKILL_CODEX": str(fake)},
+            env,
         ).stdout
+    )
+    assert seeded["status"] == "awaiting_agent" and not seeded["complete"]
+    report_path = seeded["report_path"]
+    script = (
+        "import yaml; from pathlib import Path; "
+        f"p=Path({report_path!r}); data=yaml.safe_load(p.read_text()); "
+        "data['citations'][0]['claims']=[{'claim_id':'claim-0001', "
+        "'claim':'Method X is faster', 'location':{'file':'main.tex', "
+        "'start':{'line':1,'column':1},'end':{'line':1,'column':19}}, "
+        "'validation':{'result':'valid','details':'Stub mode.'}}]; "
+        "p.write_text(yaml.safe_dump(data))"
+    )
+    run([str(python), "-c", script], paper, env)
+    claims_result = json.loads(
+        run([str(executable), "check-claims", report_path, "--json"], paper, env).stdout
     )
     assert claims_result["setup"] == {"validation_mode": "stub"}
     assert claims_result["summary"]["unique_claims"] == 1

@@ -34,31 +34,6 @@ def offset(text: str, point: Position) -> int:
     return sum(map(len, lines[: point.line - 1])) + point.column - 1
 
 
-def sentence_span(text: str, start: int, end: int) -> tuple[int, int]:
-    """Do not split decimals or periods inside citation arguments."""
-    paragraph_start = text.rfind("\n\n", 0, start) + 2
-    if paragraph_start == 1:
-        paragraph_start = 0
-    paragraph_end = text.find("\n\n", end)
-    if paragraph_end < 0:
-        paragraph_end = len(text)
-    boundaries = list(re.finditer(r"[.!?](?=\s|$)", text[paragraph_start:paragraph_end]))
-    left = paragraph_start
-    right = paragraph_end
-    for match in boundaries:
-        stop = paragraph_start + match.end()
-        if stop <= start:
-            left = stop
-        elif stop >= end:
-            right = stop
-            break
-    while left < right and text[left].isspace():
-        left += 1
-    while right > left and text[right - 1].isspace():
-        right -= 1
-    return left, right
-
-
 def diagnostic(code: str, message: str, where: Location | None = None) -> dict:
     result = {"code": code, "message": message}
     if where is not None:

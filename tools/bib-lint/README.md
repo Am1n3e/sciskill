@@ -33,53 +33,45 @@ selected evidence again.
 ## Claim checks
 
 ```sh
-uvx sciskill bib-lint check-claims main.tex --bib references.bib --mode stub --json
-uvx sciskill bib-lint check-claims paper.pdf --mode stub --output paper-claims --json
+# Seed reference entries; claims remain empty for the agent to fill.
+uvx sciskill bib-lint check-claims main.tex --bib references.bib --output paper-claims --json
+uvx sciskill bib-lint check-claims paper.pdf --output paper-claims --json
+
+# Check the skill-agent's YAML edits against the original manuscript.
+uvx sciskill bib-lint check-claims paper-claims/claims.yaml --json
 ```
 
-`check-references` replaces the former `verify` command. `check-claims` is a separate
-workflow: extract claims using a model, check their exact source
-locations, validate each claim/reference pair, and save `claims.yaml` and `summary.md`.
-Internal evidence and snapshots stay under `.provenance/`. Inputs are never edited. LaTeX follows literal
-includes and discovers `\bibliography`/`\addbibresource` files when `--bib` is
-omitted; a project directory containing `main.tex` is also accepted. `--project-root`
-bounds LaTeX includes. PDF claims show only a one-based physical `page`; LaTeX
-claims show `file`, `start` and `end` line/column positions. PDF keys are generated
-reference-occurrence keys.
+The full workflow is skill-based. The agent fills claims, obtains and identifies
+cited PDFs, compares source evidence and updates validation results. Python never
+starts a model CLI/SDK. It reuses the existing BibTeX/PDF reference parsers and checks
+schema, exact manuscript text, source locations and unchanged input hashes.
+Seeding reports `awaiting_agent`; it is not completed claim extraction.
 
-`claims.yaml` contains exactly `schema_version: 1`, `scikill_version` (the installed
-producer version), `document` (`kind`, `path`, `sha256`), `setup` (`validation_mode`),
-and `citations`. Each citation contains `citation_key` and `claims`; each claim
-contains `claim_id`, verbatim `claim`, `location`, and `validation` (`result`, `details`).
-There is no `extract_command` or public extraction/provenance dump.
+`claims.yaml` has exactly `schema_version`, `scikill_version`, `document`, `setup`,
+and `citations`. PDF locations contain only a physical `page`. LaTeX locations
+contain `file`, `start` and `end` line/column positions. Reference metadata, source
+snapshots and technical evidence stay under `.provenance/`. The agent caches cited
+PDFs there and records their paths/URLs privately.
 
-The default validator is `stub`, an official testing mode. The artifact records
-`setup.validation_mode: stub`; each claim has `result: valid` and `details: Stub mode.`.
-There are no cited-paper or evidence requests. Semantic extraction uses an
-authenticated Codex CLI (`codex login`) and sends captured manuscript text to its
-model. `--model MODEL` selects the extraction model; omission uses the configured
-Codex model, falling back to the CLI default when none is configured.
-The extraction session is ephemeral and read-only, with shell, web, plugins, and
-other action tools disabled. See the [Codex non-interactive interface](https://learn.chatgpt.com/docs/non-interactive-mode).
-`SCISKILL_CODEX` can select the executable; inside the Codex app, its bundled CLI
-is preferred over an unrelated CLI on `PATH`. Missing authentication/backend or a bad
-model response fails explicitly, with no sentence-based fallback. Unsupported
-citation syntax, missing keys, ambiguous associations, and unreadable PDF regions
-remain extraction diagnostics.
+Normal `setup.validation_mode: agent` preserves the agent's valid/invalid/unresolved
+assessment and explanation. Before cited-PDF review, claims remain unresolved.
+`--mode stub` is an explicit testing option: valid with details `Stub mode.`. Both
+modes enforce manuscript quote fidelity; neither is Python scientific reasoning.
 
-Extractors implement `Extractor.extract(Request) -> Extraction`; validators implement
-`Validator.validate(Claim, citation_key) -> Validation`. Both protocols are in
-`bib_lint.claims.protocols`. Validator modules are imported directly as
-`bib_lint.claims.validators.<mode>`; the testing implementation is exactly `stub`.
-There is no registry. The model extractor composes separate LaTeX and PDF readers
-for local source/citation capture, then checks model-selected quotes against those
-snapshots. `run_claims(..., extractor=...)` also accepts any extractor implementing
-the protocol. Stub mode applies only to validation; it does not replace extraction.
+Extractors implement `extract(Request) -> Extraction`; validators implement
+`validate(Claim, citation_key) -> Validation`. Validator modules are imported directly
+as `bib_lint.claims.validators.<name>` without a registry. The quote check rereads the
+original inputs, accepts only exact quotes at the specified PDF page or LaTeX
+span, and rejects duplicate keys, malformed records, missing references and source
+changes. A successful check leaves the agent-authored YAML unchanged and writes a
+private hash checkpoint plus a refreshed summary.
 
-The default output is `<input-stem>.bib-claims` beside the manuscript, or
-`.sciskill/cache/bib-claims` in a configured project. An identical rerun reuses
-output. Changed inputs or different existing output require a new `--output`
-directory; failed runs preserve previous outputs.
+LaTeX follows literal includes and discovers bibliography declarations when `--bib`
+is omitted. `--project-root` bounds source includes. Default output is
+`<input-stem>.bib-claims`, or `.sciskill/cache/bib-claims` in a configured project.
+Use a new workspace after source changes; YAML checks operate in the seeded
+workspace and do not accept `--output`. There is no `--model` option or Codex CLI
+requirement. `check-references` is the renamed bibliography-metadata command.
 
 ## Source lookup and parallelism
 

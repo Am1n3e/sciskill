@@ -10,7 +10,8 @@ SciSkill provides tools and workflows that help scientists with the work around 
 | Command | Instructions |
 | --- | --- |
 | `init` | [references/init.md](references/init.md) |
-| `bib-lint` | [references/bib-lint.md](references/bib-lint.md) |
+| `bib-lint` / `bib-lint check-references` | [references/bib-lint.md](references/bib-lint.md) |
+| `bib-lint check-claims` | [references/check-claims.md](references/check-claims.md) |
 | `plan-rebuttal` | [references/plan-rebuttal.md](references/plan-rebuttal.md) |
 
 Paths are relative to this skill folder. Read and follow only the file for the requested command.

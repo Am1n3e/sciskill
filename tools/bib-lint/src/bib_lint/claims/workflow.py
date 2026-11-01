@@ -2,6 +2,7 @@
 
 import json
 import math
+import os
 import shutil
 import tempfile
 from pathlib import Path
@@ -18,14 +19,19 @@ from bib_lint.claims.report import (
     public_location,
 )
 from bib_lint.claims.text import digest, offset
+from bib_lint.storage import write_json
 
 
 def _extractor(path: Path) -> Extractor:
-    if path.suffix.lower() not in {".tex", ".pdf"}:
-        raise ValueError("Claim input must be a LaTeX .tex entry file or text-based .pdf")
-    from bib_lint.claims.extractors import model
+    from bib_lint.claims.extractors import agent, latex, pdf
 
-    return model
+    if path.suffix.lower() == ".tex":
+        return latex
+    if path.suffix.lower() == ".pdf":
+        return pdf
+    if path.suffix.lower() in {".yaml", ".yml"}:
+        return agent
+    raise ValueError("Use a LaTeX/PDF manuscript to seed references or claims.yaml to check quotes")
 
 
 def _regions(claim, source, start, end):
@@ -97,6 +103,8 @@ def build_report(
     report = header(extraction.document, mode)
     provenance = {
         "schema_version": 1,
+        "input": extraction.input,
+        "references": extraction.references,
         "sources": [_source_record(source) for source in extraction.sources],
         "extraction": {
             "state": "needs_review" if extraction.diagnostics else "complete",
@@ -137,6 +145,15 @@ def build_report(
         "unique_claims": len(identities),
         "claim_citation_pairs": sum(len(c["claims"]) for c in report["citations"]),
         "reference_keys": len(report["citations"]),
+        "references_without_claims": sum(not c["claims"] for c in report["citations"]),
+        **{
+            result: sum(
+                claim["validation"]["result"] == result
+                for citation in report["citations"]
+                for claim in citation["claims"]
+            )
+            for result in ("valid", "invalid", "unresolved")
+        },
         "unresolved_citations": sum(
             d["code"] in {"unresolved_citation", "unsupported_citation"}
             for d in extraction.diagnostics
@@ -163,7 +180,15 @@ def _summary(report, counts, extraction):
     for citation in report["citations"]:
         lines.extend(["", f"## {citation['citation_key']}", ""])
         for claim in citation["claims"]:
-            lines.append(f"- {claim['claim_id']}: {location_label(claim['location'])}")
+            validation = claim["validation"]
+            lines.extend(
+                [
+                    f"- {claim['claim_id']}: {validation['result']} "
+                    f"({location_label(claim['location'])})",
+                    f"  Claim: {claim['claim']}",
+                    f"  Details: {validation['details']}",
+                ]
+            )
     if extraction["diagnostics"]:
         lines.extend(["", "## Extraction diagnostics", ""])
         lines.extend(f"- {finding_label(d)}" for d in extraction["diagnostics"])
@@ -207,40 +232,101 @@ def publish(output: Path, report: dict, summary: str, sources: list[Source], pro
             shutil.rmtree(temporary)
 
 
+def _write_text(path, text):
+    if path.is_symlink():
+        raise ValueError(f"Refusing to replace a symlink: {path.name}")
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=path.parent, delete=False
+        ) as stream:
+            temporary = Path(stream.name)
+            stream.write(text)
+            stream.flush()
+            os.fsync(stream.fileno())
+        temporary.replace(path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
+def _check_assessments(extraction, report):
+    for item in report["citations"]:
+        for claim, record in zip(
+            extraction.citations[item["citation_key"]], item["claims"], strict=True
+        ):
+            if claim.assessment is None or claim.assessment.to_dict() != record["validation"]:
+                raise ValueError("Claim validation fields do not match the selected validator mode")
+
+
 def run_claims(
-    path,
-    *,
-    bib=(),
-    project_root=None,
-    output=None,
-    mode="stub",
-    model=None,
-    extractor: Extractor | None = None,
+    path, *, bib=(), project_root=None, output=None, mode=None, extractor: Extractor | None = None
 ) -> dict:
-    validator = load_validator(mode)
+    if mode is not None:
+        load_validator(mode)
     path = Path(path).expanduser().absolute()
     if path.is_dir():
         path = path / "main.tex"
+    checking = path.suffix.lower() in {".yaml", ".yml"}
+    before = path.read_bytes() if checking else None
+    if checking and output is not None:
+        raise ValueError("Check claims.yaml in its existing workspace; omit --output")
     root = Path(project_root).expanduser().resolve() if project_root else None
-    request = Request(path, tuple(Path(p).expanduser().resolve() for p in bib), root, model)
+    request = Request(path, tuple(Path(p).expanduser().resolve() for p in bib), root)
     extraction = (extractor or _extractor(path)).extract(request)
-    report, provenance, counts = build_report(extraction, validator, mode)
-    extraction_summary = public_extraction(extraction)
-    selected_output = Path(output).expanduser().absolute() if output else default_output(path, root)
-    if selected_output.is_symlink():
-        raise ValueError("Output directory must not be a symlink")
-    output = selected_output.parent.resolve() / selected_output.name
-    publish(
-        output, report, _summary(report, counts, extraction_summary), extraction.sources, provenance
+    selected_mode = mode or extraction.validation_mode or "agent"
+    if checking and mode is not None and mode != extraction.validation_mode:
+        raise ValueError("--mode must match setup.validation_mode when checking a report")
+    if not checking:
+        extraction.input = {
+            "path": str(path.resolve()),
+            "project_root": str(root) if root else None,
+            "bibliographies": [str(p) for p in request.bibliographies],
+        }
+    report, provenance, counts = build_report(
+        extraction, load_validator(selected_mode), selected_mode
     )
+    extraction_summary = public_extraction(extraction)
+    if checking:
+        _check_assessments(extraction, report)
+        if path.read_bytes() != before:
+            raise ValueError("Report changed while its claims were being checked")
+        destination = path.parent.resolve()
+        _write_text(destination / "summary.md", _summary(report, counts, extraction_summary))
+        write_json(
+            destination / ".provenance/check.json",
+            {
+                "report_sha256": digest(before),
+                "document_sha256": report["document"]["sha256"],
+                "claims": provenance["claims"],
+                "summary": counts,
+            },
+        )
+        report_path = path.resolve()
+    else:
+        selected_output = (
+            Path(output).expanduser().absolute() if output else default_output(path, root)
+        )
+        if selected_output.is_symlink():
+            raise ValueError("Output directory must not be a symlink")
+        destination = selected_output.parent.resolve() / selected_output.name
+        publish(
+            destination,
+            report,
+            _summary(report, counts, extraction_summary),
+            extraction.sources,
+            provenance,
+        )
+        report_path = destination / "claims.yaml"
     return {
         "schema_version": 1,
         "command": "check-claims",
-        "status": "completed",
-        "complete": True,
-        "output_dir": str(output),
-        "report_path": str(output / "claims.yaml"),
-        "summary_path": str(output / "summary.md"),
+        "status": "completed" if checking else "awaiting_agent",
+        "complete": checking,
+        "stage": "claims_checked" if checking else "references_extracted",
+        "output_dir": str(destination),
+        "report_path": str(report_path),
+        "summary_path": str(destination / "summary.md"),
         "setup": report["setup"],
         "extraction": extraction_summary,
         "summary": counts,

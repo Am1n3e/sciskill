@@ -43,12 +43,15 @@ def arguments(prog="bib-lint"):
     verify.add_argument("--encoding", help="BibTeX/AUX encoding (default: utf-8)")
     verify.add_argument("--include-source", action="store_true", help="Include decoded BibTeX text")
     verify.add_argument("--verbose", action="store_true", help="Redacted HTTP details on stderr")
-    claims = commands.add_parser("check-claims", help="Extract claims and run a claim validator")
-    claims.add_argument("path", help="LaTeX entry file/project directory or text-based PDF")
+    claims = commands.add_parser(
+        "check-claims", help="Seed references or check skill-authored quotes"
+    )
+    claims.add_argument(
+        "path", help="Manuscript to seed references, or claims.yaml to check quotes"
+    )
     claims.add_argument("--bib", action="append", type=Path, default=[], help="LaTeX bibliography")
     claims.add_argument("--project-root", type=Path, help="LaTeX source root")
-    claims.add_argument("--mode", default="stub", help="Validator module name (default: stub)")
-    claims.add_argument("--model", help="Extraction model (default: configured Codex model)")
+    claims.add_argument("--mode", help="Validator name (default: agent; preserve on YAML checks)")
     claims.add_argument("-o", "--output", type=Path, help="Claim output directory")
     claims.add_argument("--json", action="store_true", help="Emit one final JSON object on stdout")
     view = commands.add_parser("view", help="Open local workflow controls and audit evidence")
@@ -216,7 +219,6 @@ def claim_main(argv, *, prog):
             project_root=args.project_root,
             output=args.output,
             mode=args.mode,
-            model=args.model,
         )
         emit_result(result, "--json" in argv)
         return 0

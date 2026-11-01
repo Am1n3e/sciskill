@@ -30,8 +30,9 @@ Check bibliography metadata or extract a research-paper PDF reference list, then
 /sciskill bib-lint check-claims
 ```
 
-Extract citation-associated claims using a model with exact source locations, then
-run the official `stub` testing validator. Requires an authenticated Codex CLI.
+Let the skill agent extract citation claims, obtain cited PDFs and assess support.
+Local tools seed references and check verbatim manuscript quotes; `stub` remains
+an explicit testing validator.
 
 ```text
 /sciskill plan-rebuttal
