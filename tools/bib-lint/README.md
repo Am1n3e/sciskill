@@ -30,6 +30,21 @@ including source failures. Use `--refresh` to retry failures (`--key KEY` limits
 recheck to one reference). `--refresh` fetches
 selected evidence again.
 
+## Check new references in a PR
+
+```sh
+uvx sciskill bib-lint verify references.bib --base origin/main \
+  --output .out/bib-lint --fail-on-invalid --json
+```
+
+Checks only new citation keys in the committed head compared with its merge base
+with `origin/main`. Existing-key edits and moved entries are skipped. With no new
+keys, no sources are queried. `--head` selects a different committed head; `--aux`
+cannot be combined with Git selection. The JSON includes the compared revisions.
+`--fail-on-invalid` returns 1 only for confirmed invalid references; unresolved
+references still require review. See [the PR check guide](../../docs/bib-lint-ci.md)
+for the Action and report artifacts.
+
 ## Source lookup and parallelism
 
 For both BibTeX and PDF references, verification first tries supplied URLs at

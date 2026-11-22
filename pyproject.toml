@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 authors = [{ name = "Amine El Hattami", email = "amine.elhattami@gmail.com" }]
 name = "sciskill"
-version = "0.2.0"
+version = "0.3.0"
 description = "LaTeX workflows, bibliography audits, and rebuttal workspaces for scientists"
 readme = "README.md"
 requires-python = ">=3.12"

@@ -38,6 +38,13 @@ def arguments(prog="bib-lint"):
         "-o", "--output", type=Path, help="Audit directory (default: <stem>.bib-lint)"
     )
     verify.add_argument("--key", help="Verify one eligible citation key (case-insensitive)")
+    verify.add_argument(
+        "--base", help="Verify only keys added since the Git merge base with this ref"
+    )
+    verify.add_argument("--head", help="Committed Git head for --base (default: HEAD)")
+    verify.add_argument(
+        "--fail-on-invalid", action="store_true", help="Exit 1 for confirmed invalid references"
+    )
     verify.add_argument("--refresh", action="store_true", help="Fetch selected sources again")
     verify.add_argument("--json", action="store_true", help="Emit one final JSON object on stdout")
     verify.add_argument("--encoding", help="BibTeX/AUX encoding (default: utf-8)")
@@ -73,6 +80,8 @@ def final_result(status, workspace=None, report=None, warnings=None, error=None)
         "warnings": warnings,
         "error": error,
     }
+    if report is not None and "selection" in report:
+        result["selection"] = report["selection"]
     if report is not None and report.get("schema_version") == 4:
         result["extraction"] = extraction_summary(report)
     return result
@@ -134,6 +143,8 @@ def main(argv=None, *, prog="bib-lint"):
             encoding=args.encoding,
             include_source=args.include_source,
             citation_key=args.key,
+            base=args.base,
+            head=args.head,
             refresh=args.refresh,
             verbose=args.verbose,
             progress=lambda message: print(message, file=sys.stderr, flush=True),
@@ -145,7 +156,7 @@ def main(argv=None, *, prog="bib-lint"):
             warnings,
         )
         emit(result, machine)
-        return 0
+        return 1 if args.fail_on_invalid and result["summary"]["invalid"] else 0
     except (KeyboardInterrupt, OSError, ValueError, LookupError) as exc:
         interrupted = isinstance(exc, KeyboardInterrupt)
         # Load only an actual owned artifact; a malformed checkpoint remains an error.

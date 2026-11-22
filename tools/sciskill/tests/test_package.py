@@ -52,8 +52,9 @@ class PackageTests(unittest.TestCase):
         self.assertEqual(self.run_cli("--version").strip(), f"sciskill {version}")
         import yaml
 
-        action = yaml.safe_load((ROOT / "actions/latex/action.yml").read_text())
-        self.assertEqual(action["inputs"]["version"]["default"], version)
+        for name in ("latex", "bib-lint"):
+            action = yaml.safe_load((ROOT / f"actions/{name}/action.yml").read_text())
+            self.assertEqual(action["inputs"]["version"]["default"], version)
         self.assertIn("sciskill bib-lint", self.run_cli("bib-lint", "--help"))
         self.assertIn("sciskill rebuttal", self.run_cli("rebuttal", "--help"))
         for task in ("build", "clean", "lint", "spell", "diff"):
@@ -76,6 +77,47 @@ class PackageTests(unittest.TestCase):
             self.assertFalse(
                 any(".local/" in name or "references.json" in name for name in names)
             )
+
+    def test_installed_added_reference_check_without_lookups(self):
+        root = self.directory / "added-reference-repo"
+        root.mkdir()
+        subprocess.run(["git", "init", "-qb", "main", str(root)], check=True)
+        bib = root / "references.bib"
+        bib.write_text("@book{old,title={Existing reference}}")
+        subprocess.run(["git", "-C", str(root), "add", "."], check=True)
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                str(root),
+                "-c",
+                "user.name=Test",
+                "-c",
+                "user.email=test@example.invalid",
+                "commit",
+                "-qm",
+                "base",
+            ],
+            check=True,
+        )
+        value = json.loads(
+            self.run_cli(
+                "bib-lint",
+                "verify",
+                bib,
+                "--base",
+                "HEAD",
+                "--fail-on-invalid",
+                "--json",
+                "--output",
+                self.directory / "added-reference-audit",
+            )
+        )
+        self.assertTrue(value["complete"])
+        self.assertEqual(value["selection"]["keys"], [])
+        self.assertEqual(value["summary"]["eligible"], 0)
+        report = json.loads(Path(value["report_path"]).read_text())
+        self.assertEqual(report["items"], [])
 
     def test_installed_latex_clean(self):
         root = self.directory / "latex-clean"

@@ -1,0 +1,38 @@
+name: SciSkill new reference check
+description: Audit only new BibTeX keys introduced by a pull request.
+inputs:
+  path:
+    description: Tracked bibliography path
+    default: references.bib
+  base:
+    description: Target Git revision; comparison uses its merge base with head
+    required: true
+  head:
+    description: Committed PR head
+    default: HEAD
+  output:
+    description: Audit output directory
+    default: .out/bib-lint
+  version:
+    description: SciSkill package version
+    default: '0.3.0'
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      with:
+        version: '0.13.6'
+        python-version: '3.12'
+        enable-cache: false
+    - name: Check newly added references
+      shell: bash
+      env:
+        SCISKILL_BIB_PATH: ${{ inputs.path }}
+        SCISKILL_BIB_BASE: ${{ inputs.base }}
+        SCISKILL_BIB_HEAD: ${{ inputs.head }}
+        SCISKILL_BIB_OUTPUT: ${{ inputs.output }}
+        SCISKILL_BIB_VERSION: ${{ inputs.version }}
+        SCISKILL_BIB_ACTION: ${{ github.action_path }}
+      run: >-
+        uv run --no-project --python 3.12 --with "sciskill==$SCISKILL_BIB_VERSION"
+        python "$SCISKILL_BIB_ACTION/check.py"

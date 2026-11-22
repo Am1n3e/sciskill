@@ -46,36 +46,59 @@ class Workspace:
         return self.checkpoint if self.checkpoint.exists() else self.final
 
 
-def prepare_input(source, *, aux=None, encoding=None, include_source=False):
+def _check_git_options(source, aux, base, head):
+    if base is None and head is None:
+        return
+    if Path(source).suffix.lower() != ".bib" or aux is not None or base is None:
+        raise ValueError("Git selection requires .bib input and --base; it cannot use --aux")
+
+
+def _prepare_bib(source, aux, encoding, include_source, base, head):
+    warnings, inputs = [], [source]
+    selection = None
+    if base is not None:
+        from bib_lint.git_diff import added_bibliography
+
+        bib, selection = added_bibliography(source, base, head, encoding=encoding or "utf-8")
+    else:
+        bib = parse_file(source, encoding=encoding or "utf-8")
+    citations = read_aux(aux, encoding=encoding or "utf-8") if aux is not None else None
+    if citations:
+        inputs.extend(citations.files)
+        missing = resolve_citation_usage(bib.entries, citations.keys).missing_keys
+        if missing:
+            warnings.append("Missing citation keys: " + ", ".join(missing))
+    report = bib.to_dict(
+        include_source=include_source, used_keys=citations.keys if citations else None
+    )
+    report["schema_version"] = 3
+    report["verification_scope"] = {
+        "mode": "used" if citations else "all",
+        "eligible_keys": [
+            i["entry"]["key"]
+            for i in report["items"]
+            if citations is None or i["validations"].get("is_used")
+        ],
+    }
+    report["audit_input"] = {
+        "path": str(source),
+        "aux": str(Path(aux).absolute()) if aux is not None else None,
+        "encoding": encoding or "utf-8",
+        "include_source": include_source,
+    }
+    if selection is not None:
+        report["selection"] = selection
+        report["audit_input"].update(base=selection["base"], head=selection["head"])
+    return report, inputs, warnings
+
+
+def prepare_input(source, *, aux=None, encoding=None, include_source=False, base=None, head=None):
     source = Path(source).absolute()
+    _check_git_options(source, aux, base, head)
     warnings = []
     inputs = [source]
     if source.suffix.lower() == ".bib":
-        bib = parse_file(source, encoding=encoding or "utf-8")
-        citations = read_aux(aux, encoding=encoding or "utf-8") if aux is not None else None
-        if citations:
-            inputs.extend(citations.files)
-            missing = resolve_citation_usage(bib.entries, citations.keys).missing_keys
-            if missing:
-                warnings.append("Missing citation keys: " + ", ".join(missing))
-        report = bib.to_dict(
-            include_source=include_source, used_keys=citations.keys if citations else None
-        )
-        report["schema_version"] = 3
-        report["verification_scope"] = {
-            "mode": "used" if citations else "all",
-            "eligible_keys": [
-                i["entry"]["key"]
-                for i in report["items"]
-                if citations is None or i["validations"].get("is_used")
-            ],
-        }
-        report["audit_input"] = {
-            "path": str(source),
-            "aux": str(Path(aux).absolute()) if aux is not None else None,
-            "encoding": encoding or "utf-8",
-            "include_source": include_source,
-        }
+        report, inputs, warnings = _prepare_bib(source, aux, encoding, include_source, base, head)
     elif source.suffix.lower() == ".pdf":
         _check_pdf_options(aux, encoding, include_source)
         from bib_lint.pdf_input import extract_pdf
@@ -113,8 +136,9 @@ def _check_pdf_options(aux, encoding, include_source):
         raise ValueError("--aux, --encoding and --include-source are not available for PDF input")
 
 
-def _prepare_for_workspace(source, workspace, *, aux, encoding, include_source):
+def _prepare_for_workspace(source, workspace, *, aux, encoding, include_source, base, head):
     source = Path(source).absolute()
+    _check_git_options(source, aux, base, head)
     if source.suffix.lower() == ".pdf" and workspace.active().exists():
         _check_pdf_options(aux, encoding, include_source)
         from bib_lint.pdf_evidence import saved_identity
@@ -126,7 +150,9 @@ def _prepare_for_workspace(source, workspace, *, aux, encoding, include_source):
             raise ValueError("Workspace belongs to different inputs; choose a new output directory")
         saved["audit_input"] = {"path": str(source), "aux": None}
         return saved, [source], saved.get("audit_warnings", [])
-    return prepare_input(source, aux=aux, encoding=encoding, include_source=include_source)
+    return prepare_input(
+        source, aux=aux, encoding=encoding, include_source=include_source, base=base, head=head
+    )
 
 
 def run_audit(
@@ -137,6 +163,8 @@ def run_audit(
     encoding=None,
     include_source=False,
     citation_key=None,
+    base=None,
+    head=None,
     refresh=False,
     verbose=False,
     preview=False,
@@ -148,7 +176,13 @@ def run_audit(
     registry = validate_registry(METHODS if methods is None else methods)
     workspace = Workspace.for_input(source, output)
     report, inputs, warnings = _prepare_for_workspace(
-        source, workspace, aux=aux, encoding=encoding, include_source=include_source
+        source,
+        workspace,
+        aux=aux,
+        encoding=encoding,
+        include_source=include_source,
+        base=base,
+        head=head,
     )
     selected_items(report, citation_key)  # Invalid keys must never replace saved work.
     for target in (
